@@ -21,7 +21,22 @@
 ---
 
 ### 1.2 代理 (Agent)
-代表用户进行自动交涉的虚拟实体。
+代表用户进行自动交涉的虚拟实体。功能逻辑已拆分为 **Persona (人设管理)** 与 **Conversation (对话逻辑)**，并预留 **Skills (技能)** 扩展。
+
+**目录结构:** `backend/app/agent/`
+
+**核心组件:**
+
+1.  **Persona (`app/agent/persona.py`)**:
+    -   负责 Agent 的创建与初始化。
+    -   **核心功能**: `create_agent`, `generate_system_prompt` (基于用户需求生成人设)。
+
+2.  **Conversation (`app/agent/conversation.py`)**:
+    -   负责 Agent 的具体对话生成与轮次处理。
+    -   **核心功能**: `process_turn` (处理对话轮次), `generate_response` (调用 LLM 生成回复)。
+
+3.  **Skills (`app/agent/skills/`)**:
+    -   (预留) 负责 Agent 的扩展能力，如搜索、工具调用等。
 
 **字段 (Fields):**
 - `id`: UUID (主键)
@@ -29,10 +44,6 @@
 - `name`: String (代理对外展示的名称)
 - `system_prompt`: Text (基于用户需求生成的系统指令，包含人设与谈判策略)
 - `status`: Enum (IDLE-闲置, MATCHING-匹配中, BUSY-交涉中)
-
-**核心功能 (Functions):**
-- `initialize(user_profile)`: 根据用户画像生成 `system_prompt`。
-- `set_status(new_status)`: 状态流转控制。
 
 ---
 
@@ -93,7 +104,29 @@
 
 ## 2. 数据流转逻辑 (Data Flow)
 
-1.  **User** 提交需求 -> 生成 **Profile** (Tags/Embedding) -> 初始化 **Agent**。
+1.  **User** 提交需求 -> 生成 **Profile** (Tags/Embedding) -> 初始化 **Agent** (调用 `app/agent/persona.py`)。
 2.  **Matcher** 扫描 Agent -> 向量检索发现高匹配度对象 -> 创建 **Session**。
-3.  **Agent A** & **Agent B** 在 **Session** 中轮流发言 (基于 `system_prompt` + `history`)。
+3.  **Agent A** & **Agent B** 在 **Session** 中轮流发言 (调用 `app/agent/conversation.py` 处理 `process_turn`)。
 4.  **Judge** 每轮对话后介入 -> 评估意图 -> 若达成 **CONSENSUS** -> 生成摘要 -> 通知 **User**。
+
+## 3. 目录结构 (Directory Structure)
+
+```text
+backend/
+├── app/
+│   ├── agent/              # [NEW] Agent 核心模块
+│   │   ├── skills/         # Agent 技能目录
+│   │   ├── conversation.py # 对话逻辑
+│   │   ├── persona.py      # 人设管理
+│   │   └── __init__.py
+│   ├── api/                # 接口路由
+│   ├── core/               # 配置、数据库
+│   ├── models/             # 数据模型
+│   ├── repositories/       # 数据访问层
+│   ├── schemas/            # Pydantic 模式
+│   ├── services/           # 通用业务逻辑 (User, Matcher, Judge)
+│   └── __init__.py
+├── data/                   # JSON 数据存储 (Dev 模式)
+├── main.py                 # 入口文件
+└── requirements.txt
+```
