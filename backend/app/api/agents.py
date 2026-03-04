@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.agent import Agent, AgentStatus
 from app.schemas.agent import AgentCreate, AgentRead
-from app.services.agent_service import create_agent
+from app.agent.persona import create_agent
 from app.repositories.base import AgentRepository, UserRepository
 from app.core.deps import get_agent_repo, get_user_repo
 

@@ -1,6 +1,6 @@
 import asyncio
 from app.models.session import SessionStatus
-from app.services.chat_service import process_turn
+from app.agent.conversation import process_turn
 from app.services.judge_service import audit_session
 from app.services.matcher_service import scan_and_match
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository, MatcherRepository, MatchResultRepository
