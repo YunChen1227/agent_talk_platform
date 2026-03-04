@@ -14,7 +14,7 @@ async def run_orchestrator(
 ):
     # 1. Matcher
     # Pass agent_repo to scan_and_match for LLM verification
-    await scan_and_match(matcher_repo, session_repo, agent_repo)
+    await scan_and_match(matcher_repo, session_repo, agent_repo, message_repo)
     
     # 2. Process Active Sessions
     active_sessions = await session_repo.list_active()

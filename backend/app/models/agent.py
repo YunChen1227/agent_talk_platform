@@ -6,6 +6,7 @@ from app.models.enums import AgentStatus
 class AgentBase(SQLModel):
     name: str
     system_prompt: str
+    opening_remark: Optional[str] = Field(default=None)
     status: AgentStatus = Field(default=AgentStatus.IDLE)
 
 class Agent(AgentBase, table=True):

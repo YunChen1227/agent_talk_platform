@@ -9,13 +9,13 @@
 
 **字段 (Fields):**
 - `id`: UUID (主键)
-- `contact`: String (联系方式，仅在达成一致后展示)
-- `raw_demand`: Text (用户输入的原始需求描述)
+- `contact`: String (可选，联系方式，仅在达成一致后展示)
+- `raw_demand`: Text (可选，用户输入的原始需求描述)
 - `tags`: List[String] (LLM 提取的关键标签，用于硬过滤，如行业、城市)
 - `embedding`: Vector (基于需求生成的向量，用于语义匹配)
 
 **核心功能 (Functions):**
-- `create_profile(input_data)`: 创建用户 -> 调用 LLM 提取标签 -> 生成向量。
+- `create_profile(input_data)`: 创建用户 (简化注册流程，需求与联系方式可选) -> 调用 LLM 提取标签 -> 生成向量。
 - `update_demand(text)`: 更新需求 -> 重新生成标签与向量。
 
 ---
@@ -29,7 +29,7 @@
 
 1.  **Persona (`app/agent/persona.py`)**:
     -   负责 Agent 的创建与初始化。
-    -   **核心功能**: `create_agent`, `generate_system_prompt` (基于用户需求生成人设)。
+    -   **核心功能**: `create_agent`, `generate_system_prompt` (基于用户需求生成人设与开场白)。
 
 2.  **Conversation (`app/agent/conversation.py`)**:
     -   负责 Agent 的具体对话生成与轮次处理。
@@ -43,7 +43,12 @@
 - `user_id`: UUID (关联用户)
 - `name`: String (代理对外展示的名称)
 - `system_prompt`: Text (基于用户需求生成的系统指令，包含人设与谈判策略)
+- `opening_remark`: Text (自动生成的开场白，用于会话初始化)
 - `status`: Enum (IDLE-闲置, MATCHING-匹配中, BUSY-交涉中)
+
+**管理功能:**
+- `update_agent`: 更新人设、开场白等。
+- `delete_agent`: 删除代理。
 
 ---
 
@@ -59,6 +64,7 @@
     1. **硬过滤**: 匹配 `tags` (可选)。
     2. **软匹配**: 计算 `embedding` 相似度 (Cosine Similarity)。
     3. **阈值判定**: 相似度 > Threshold 则触发会话。
+    4. **会话初始化**: 创建 Session 并自动注入双方的 `opening_remark` 作为初始消息。
 
 ---
 

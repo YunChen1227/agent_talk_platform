@@ -7,8 +7,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 
 class UserBase(SQLModel):
     contact: Optional[str] = Field(default=None)
-    raw_demand: str
-    tags: List[str] = Field(sa_column=Column(ARRAY(TEXT)))
+    raw_demand: Optional[str] = Field(default="")
+    tags: List[str] = Field(default=[], sa_column=Column(ARRAY(TEXT)))
     username: str = Field(unique=True, index=True)
     password_hash: str
 

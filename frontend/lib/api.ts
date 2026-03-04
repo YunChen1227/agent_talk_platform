@@ -23,9 +23,30 @@ export async function listAgents(user_id: string) {
   return res.json();
 }
 
+export async function getAgent(agent_id: string) {
+  const res = await fetch(`${API_URL}/agents/${agent_id}`);
+  return res.json();
+}
+
+export async function updateAgent(agent_id: string, data: { name?: string; system_prompt?: string; opening_remark?: string }) {
+  const res = await fetch(`${API_URL}/agents/${agent_id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 export async function startMatching(agent_id: string) {
   const res = await fetch(`${API_URL}/agents/${agent_id}/match`, {
     method: "POST",
   });
   return res.json();
+}
+
+export async function deleteAgent(agent_id: string) {
+  const res = await fetch(`${API_URL}/agents/${agent_id}`, {
+    method: "DELETE",
+  });
+  return res.status === 204;
 }

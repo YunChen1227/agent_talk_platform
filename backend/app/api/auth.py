@@ -12,9 +12,7 @@ async def register(user_in: UserCreate, repo: UserRepository = Depends(get_user_
         user = await create_user(
             repo, 
             user_in.username, 
-            user_in.password, 
-            user_in.raw_demand, 
-            user_in.contact
+            user_in.password
         )
         return user
     except ValueError as e:

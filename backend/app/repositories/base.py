@@ -40,6 +40,14 @@ class AgentRepository(ABC):
     async def get_matching_candidates(self) -> List[Agent]:
         pass
 
+    @abstractmethod
+    async def update(self, agent: Agent) -> Agent:
+        pass
+
+    @abstractmethod
+    async def delete(self, agent_id: UUID) -> bool:
+        pass
+
 class MatcherRepository(ABC):
     @abstractmethod
     async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:

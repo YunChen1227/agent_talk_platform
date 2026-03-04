@@ -8,8 +8,6 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
-  const [demand, setDemand] = useState("");
-  const [contact, setContact] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,10 +15,6 @@ export default function Login() {
     const endpoint = isRegister ? "/auth/register" : "/auth/login";
     
     const body: any = { username, password };
-    if (isRegister) {
-      body.raw_demand = demand;
-      body.contact = contact;
-    }
 
     try {
       const res = await fetch(`${API_URL}${endpoint}`, {
@@ -74,24 +68,6 @@ export default function Login() {
 
           {isRegister && (
             <>
-              <div>
-                <label className="block text-sm font-medium mb-1">Your Demand</label>
-                <textarea
-                  className="w-full p-2 border rounded"
-                  placeholder="I need a React developer..."
-                  value={demand}
-                  onChange={(e) => setDemand(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Contact Info</label>
-                <input
-                  className="w-full p-2 border rounded"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                />
-              </div>
             </>
           )}
 

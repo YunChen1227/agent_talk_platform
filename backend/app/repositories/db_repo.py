@@ -56,6 +56,20 @@ class DBAgentRepository(AgentRepository):
         statement = select(Agent).where(Agent.status == AgentStatus.MATCHING)
         return (await self.session.exec(statement)).all()
 
+    async def update(self, agent: Agent) -> Agent:
+        self.session.add(agent)
+        await self.session.commit()
+        await self.session.refresh(agent)
+        return agent
+
+    async def delete(self, agent_id: UUID) -> bool:
+        agent = await self.get(agent_id)
+        if agent:
+            await self.session.delete(agent)
+            await self.session.commit()
+            return True
+        return False
+
 class DBMatcherRepository(MatcherRepository):
     def __init__(self, session: AsyncSession):
         self.session = session

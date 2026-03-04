@@ -61,6 +61,15 @@ class JSONStore:
                 return item
         return None
 
+    def delete(self, model_class: Type[T], id: UUID) -> bool:
+        items = self.load(model_class)
+        initial_len = len(items)
+        items = [item for item in items if item.id != id]
+        if len(items) < initial_len:
+            self.save(model_class, items)
+            return True
+        return False
+
     def list_all(self, model_class: Type[T]) -> List[T]:
         return self.load(model_class)
 
@@ -109,6 +118,12 @@ class JSONAgentRepository(AgentRepository):
     async def get_matching_candidates(self) -> List[Agent]:
         agents = await self.list_all()
         return [a for a in agents if a.status == AgentStatus.MATCHING]
+
+    async def update(self, agent: Agent) -> Agent:
+        return self.store.add(agent)
+
+    async def delete(self, agent_id: UUID) -> bool:
+        return self.store.delete(Agent, agent_id)
 
 class JSONSessionRepository(SessionRepository):
     def __init__(self, store: JSONStore):

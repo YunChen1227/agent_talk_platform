@@ -10,14 +10,18 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return hash_password(plain_password) == hashed_password
 
-async def create_user(repo: UserRepository, username: str, password: str, raw_demand: str, contact: Optional[str] = None) -> User:
+async def create_user(repo: UserRepository, username: str, password: str, raw_demand: str = "", contact: Optional[str] = None) -> User:
     # Check if user exists
     existing_user = await repo.get_by_username(username)
     if existing_user:
         raise ValueError("Username already exists")
 
-    tags = await extract_tags(raw_demand)
-    embedding = await get_embedding(raw_demand)
+    tags = []
+    embedding = None
+    
+    if raw_demand:
+        tags = await extract_tags(raw_demand)
+        embedding = await get_embedding(raw_demand)
     
     hashed_password = hash_password(password)
     
