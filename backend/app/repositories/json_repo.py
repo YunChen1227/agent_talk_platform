@@ -141,6 +141,23 @@ class JSONSessionRepository(SessionRepository):
         sessions = self.store.list_all(Session)
         return [s for s in sessions if s.status == SessionStatus.ACTIVE]
         
+    async def reset_judging_sessions(self) -> None:
+        sessions = self.store.list_all(Session)
+        updated = False
+        for s in sessions:
+            if s.status == SessionStatus.JUDGING:
+                s.status = SessionStatus.ACTIVE
+                updated = True
+        if updated:
+            self.store.save(Session, sessions)
+        
+    async def find_by_agent(self, agent_id: UUID) -> Optional[Session]:
+        sessions = self.store.list_all(Session)
+        for s in sorted(sessions, key=lambda x: x.created_at, reverse=True):
+            if s.agent_a_id == agent_id or s.agent_b_id == agent_id:
+                return s
+        return None
+
     async def update(self, session: Session) -> Session:
         return self.store.add(session)
 
@@ -168,6 +185,13 @@ class JSONMatchResultRepository(MatchResultRepository):
         if not result.id:
             result.id = uuid4()
         return self.store.add(result)
+
+    async def get_by_session_id(self, session_id: UUID) -> Optional[MatchResult]:
+        results = self.store.list_all(MatchResult)
+        for r in results:
+            if r.session_id == session_id:
+                return r
+        return None
 
 class JSONMatcherRepository(MatcherRepository):
     def __init__(self, store: JSONStore):

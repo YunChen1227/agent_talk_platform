@@ -50,3 +50,8 @@ export async function deleteAgent(agent_id: string) {
   });
   return res.status === 204;
 }
+
+export async function getAgentResult(agent_id: string) {
+  const res = await fetch(`${API_URL}/agents/${agent_id}/result`);
+  return res.json();
+}

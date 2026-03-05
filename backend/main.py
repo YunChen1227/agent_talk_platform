@@ -43,6 +43,20 @@ async def lifespan(app: FastAPI):
     
     if settings.MODE != "dev":
         await init_db()
+        
+    # Reset stuck JUDGING sessions
+    try:
+        if settings.MODE == "dev":
+            session_repo = await get_session_repo(None)
+            await session_repo.reset_judging_sessions()
+        else:
+            async for session in get_session():
+                session_repo = await get_session_repo(session)
+                await session_repo.reset_judging_sessions()
+                break
+        print("Reset any stuck JUDGING sessions to ACTIVE")
+    except Exception as e:
+        print(f"Error resetting sessions: {e}")
     
     # Start background task
     asyncio.create_task(background_task())

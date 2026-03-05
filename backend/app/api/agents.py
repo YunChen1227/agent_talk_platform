@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.agent import Agent, AgentStatus
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.agent.persona import create_agent
-from app.repositories.base import AgentRepository, UserRepository
-from app.core.deps import get_agent_repo, get_user_repo
+from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository
+from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo
 
 router = APIRouter()
 
@@ -71,3 +71,55 @@ async def start_matching(id: UUID, repo: AgentRepository = Depends(get_agent_rep
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     return agent
+
+@router.get("/{id}/result")
+async def get_agent_result(
+    id: UUID,
+    agent_repo: AgentRepository = Depends(get_agent_repo),
+    session_repo: SessionRepository = Depends(get_session_repo),
+    message_repo: MessageRepository = Depends(get_message_repo),
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    agent = await agent_repo.get(id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    session_obj = await session_repo.find_by_agent(id)
+    if not session_obj:
+        return {"status": agent.status, "session": None}
+
+    other_agent_id = session_obj.agent_b_id if session_obj.agent_a_id == id else session_obj.agent_a_id
+    other_agent = await agent_repo.get(other_agent_id)
+
+    history = await message_repo.get_history(session_obj.id)
+    messages = [
+        {"sender": "self" if m.sender_id == id else "other", "content": m.content, "timestamp": str(m.timestamp)}
+        for m in history
+    ]
+
+    result = await match_result_repo.get_by_session_id(session_obj.id)
+
+    contact = None
+    other_agent_name = other_agent.name if other_agent else None
+    if result and result.verdict == "CONSENSUS" and other_agent:
+        other_user = await user_repo.get(other_agent.user_id)
+        if other_user:
+            contact = other_user.contact
+
+    return {
+        "status": agent.status,
+        "session": {
+            "id": str(session_obj.id),
+            "status": session_obj.status,
+            "created_at": str(session_obj.created_at),
+        },
+        "other_agent_name": other_agent_name,
+        "messages": messages,
+        "result": {
+            "verdict": result.verdict,
+            "summary": result.summary,
+            "reason": result.reason,
+        } if result else None,
+        "contact": contact,
+    }

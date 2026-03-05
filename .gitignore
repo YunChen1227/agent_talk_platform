@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 backend/.env
+backend/config.json
 backend/venv/
 backend/.venv/
 backend/data/

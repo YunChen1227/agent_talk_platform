@@ -67,6 +67,14 @@ class SessionRepository(ABC):
         pass
         
     @abstractmethod
+    async def reset_judging_sessions(self) -> None:
+        pass
+
+    @abstractmethod
+    async def find_by_agent(self, agent_id: UUID) -> Optional[Session]:
+        pass
+
+    @abstractmethod
     async def update(self, session: Session) -> Session:
         pass
 
@@ -82,4 +90,8 @@ class MessageRepository(ABC):
 class MatchResultRepository(ABC):
     @abstractmethod
     async def create(self, result: MatchResult) -> MatchResult:
+        pass
+
+    @abstractmethod
+    async def get_by_session_id(self, session_id: UUID) -> Optional[MatchResult]:
         pass

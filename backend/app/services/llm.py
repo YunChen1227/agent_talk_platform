@@ -43,14 +43,23 @@ def validate_api_keys():
         except Exception as e:
             print(f"OpenAI validation failed: {e}")
 
-    # Gemini
-    if settings.GEMINI_API_KEY:
+    # UCloud
+    if settings.UCLOUD_API_KEY:
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            valid_clients["gemini"] = {"client": genai, "model": "gemini-2.0-flash"} 
-            print("Gemini API key configured.")
+            client = AsyncOpenAI(api_key=settings.UCLOUD_API_KEY, base_url="https://api.modelverse.cn/v1/")
+            valid_clients["ucloud"] = {"client": client, "model": "qwen3.5-plus"}
+            print("UCloud API key configured.")
         except Exception as e:
-            print(f"Gemini validation failed: {e}")
+            print(f"UCloud validation failed: {e}")
+
+    # Gemini
+    # if settings.GEMINI_API_KEY:
+    #     try:
+    #         genai.configure(api_key=settings.GEMINI_API_KEY)
+    #         valid_clients["gemini"] = {"client": genai, "model": "gemini-2.0-flash"} 
+    #         print("Gemini API key configured.")
+    #     except Exception as e:
+    #         print(f"Gemini validation failed: {e}")
 
     print(f"Validation complete. Valid providers: {list(valid_clients.keys())}")
 

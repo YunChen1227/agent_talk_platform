@@ -145,6 +145,22 @@ class DBSessionRepository(SessionRepository):
         statement = select(Session).where(Session.status == SessionStatus.ACTIVE)
         return (await self.session.exec(statement)).all()
         
+    async def reset_judging_sessions(self) -> None:
+        statement = select(Session).where(Session.status == SessionStatus.JUDGING)
+        results = (await self.session.exec(statement)).all()
+        for session in results:
+            session.status = SessionStatus.ACTIVE
+            self.session.add(session)
+        if results:
+            await self.session.commit()
+        
+    async def find_by_agent(self, agent_id: UUID) -> Optional[Session]:
+        statement = select(Session).where(
+            or_(Session.agent_a_id == agent_id, Session.agent_b_id == agent_id)
+        ).order_by(Session.created_at.desc())
+        result = (await self.session.exec(statement)).first()
+        return result
+
     async def update(self, session: Session) -> Session:
         self.session.add(session)
         await self.session.commit()
@@ -174,3 +190,7 @@ class DBMatchResultRepository(MatchResultRepository):
         await self.session.commit()
         await self.session.refresh(result)
         return result
+
+    async def get_by_session_id(self, session_id: UUID) -> Optional[MatchResult]:
+        statement = select(MatchResult).where(MatchResult.session_id == session_id)
+        return (await self.session.exec(statement)).first()
