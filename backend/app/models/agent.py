@@ -16,6 +16,6 @@ class AgentBase(SQLModel):
 class Agent(AgentBase, table=True):
     id: Optional[UUID] = Field(default_factory=uuid4, primary_key=True)
     user_id: UUID = Field(foreign_key="user.id")
-    embedding: Optional[List[float]] = Field(sa_column=Column(Vector(1536)))
+    embedding: Optional[List[float]] = Field(default=None, sa_column=Column(Vector(1536)))
     
     user: "User" = Relationship(back_populates="agents")

@@ -2,7 +2,6 @@ from typing import List, Dict, Any, Optional
 import json
 import random
 from openai import AsyncOpenAI
-import google.generativeai as genai
 from app.core.config import settings
 
 # Global dictionary to store valid clients
@@ -52,15 +51,6 @@ def validate_api_keys():
         except Exception as e:
             print(f"UCloud validation failed: {e}")
 
-    # Gemini
-    # if settings.GEMINI_API_KEY:
-    #     try:
-    #         genai.configure(api_key=settings.GEMINI_API_KEY)
-    #         valid_clients["gemini"] = {"client": genai, "model": "gemini-2.0-flash"} 
-    #         print("Gemini API key configured.")
-    #     except Exception as e:
-    #         print(f"Gemini validation failed: {e}")
-
     print(f"Validation complete. Valid providers: {list(valid_clients.keys())}")
 
 
@@ -95,19 +85,13 @@ async def extract_tags(text: str) -> List[str]:
     prompt = f"Extract 3-5 key tags from the following user demand. Return only the tags separated by commas.\n\nDemand: {text}\n\nTags:"
     
     try:
-        if client_info["provider"] == "gemini":
-            model = genai.GenerativeModel(client_info["model"])
-            response = await model.generate_content_async(prompt)
-            content = response.text
-        else:
-            client = client_info["client"]
-            response = await client.chat.completions.create(
-                model=client_info["model"],
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3
-            )
-            content = response.choices[0].message.content
-
+        client = client_info["client"]
+        response = await client.chat.completions.create(
+            model=client_info["model"],
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+        content = response.choices[0].message.content
         return [tag.strip() for tag in content.strip().split(',')]
     except Exception as e:
         print(f"Error extracting tags: {e}")
@@ -129,19 +113,13 @@ async def check_match_with_llm(user_a_demand: str, user_b_demand: str) -> bool:
     """
     
     try:
-        if client_info["provider"] == "gemini":
-            model = genai.GenerativeModel(client_info["model"])
-            response = await model.generate_content_async(prompt)
-            result = response.text.strip().upper()
-        else:
-            client = client_info["client"]
-            response = await client.chat.completions.create(
-                model=client_info["model"],
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1
-            )
-            result = response.choices[0].message.content.strip().upper()
-            
+        client = client_info["client"]
+        response = await client.chat.completions.create(
+            model=client_info["model"],
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
+        )
+        result = response.choices[0].message.content.strip().upper()
         return "YES" in result
     except Exception as e:
         print(f"Error checking match with LLM: {e}")
@@ -174,20 +152,14 @@ async def judge_conversation(history: List[Dict[str, str]]) -> Dict[str, Any]:
     """
     
     try:
-        if client_info["provider"] == "gemini":
-            model = genai.GenerativeModel(client_info["model"])
-            response = await model.generate_content_async(prompt)
-            text = response.text.replace("```json", "").replace("```", "").strip()
-            return json.loads(text)
-        else:
-            client = client_info["client"]
-            response = await client.chat.completions.create(
-                model=client_info["model"],
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                response_format={"type": "json_object"}
-            )
-            return json.loads(response.choices[0].message.content)
+        client = client_info["client"]
+        response = await client.chat.completions.create(
+            model=client_info["model"],
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(response.choices[0].message.content)
             
     except Exception as e:
         print(f"Error judging conversation: {e}")

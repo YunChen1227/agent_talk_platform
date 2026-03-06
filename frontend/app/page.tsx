@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createAgent, listAgents, startMatching, deleteAgent, getAgentResult } from "@/lib/api";
+import { listAgents, startMatching, deleteAgent, getAgentResult, getActiveSessions, getSessionDetails, getLatestJudge } from "@/lib/api";
 import Link from "next/link";
 
 interface AgentResult {
@@ -21,15 +21,27 @@ interface AgentResult {
   contact: string | null;
 }
 
+interface ActiveSession {
+  session_id: string;
+  my_agent_name: string;
+  my_agent_id: string;
+  opponent_agent_name: string;
+  opponent_agent_id: string;
+  status: string;
+}
+
 export default function Home() {
   const [user, setUser] = useState<any>(null);
-  const [agentName, setAgentName] = useState("");
   const [agents, setAgents] = useState<any[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
   const [selectedResult, setSelectedResult] = useState<AgentResult | null>(null);
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [loadingResult, setLoadingResult] = useState(false);
   const [notifiedAgents, setNotifiedAgents] = useState<Set<string>>(new Set());
+  const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([]);
+  const [selectedChat, setSelectedChat] = useState<ActiveSession | null>(null);
+  const [chatMessages, setChatMessages] = useState<{ sender: string; content: string; timestamp: string }[]>([]);
+  const [chatJudge, setChatJudge] = useState<{ verdict: string; summary: string; reason: string } | null>(null);
+  const [loadingChat, setLoadingChat] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,10 +56,16 @@ export default function Home() {
     listAgents(userData.id).then(data => {
       if (Array.isArray(data)) setAgents(data);
     });
+    getActiveSessions(userData.id).then(data => {
+      if (Array.isArray(data)) setActiveSessions(data);
+    });
 
     const interval = setInterval(() => {
       listAgents(userData.id).then(data => {
         if (Array.isArray(data)) setAgents(data);
+      });
+      getActiveSessions(userData.id).then(data => {
+        if (Array.isArray(data)) setActiveSessions(data);
       });
     }, 5000);
     return () => clearInterval(interval);
@@ -88,18 +106,6 @@ export default function Home() {
     router.push("/login");
   };
 
-  const handleCreateAgent = async () => {
-    if (!user || !agentName.trim()) return;
-    try {
-      await createAgent(user.id, agentName);
-      setAgentName("");
-      setIsCreating(false);
-      fetchAgents();
-    } catch (e) {
-      alert("Error creating agent");
-    }
-  };
-
   const handleMatch = async (id: string) => {
     try {
       await startMatching(id);
@@ -122,6 +128,37 @@ export default function Home() {
       alert("Error deleting agent");
     }
   };
+
+  const refreshChat = useCallback(async (session: ActiveSession) => {
+    try {
+      const [detailRes, judgeRes] = await Promise.all([
+        getSessionDetails(session.session_id),
+        getLatestJudge(session.session_id),
+      ]);
+      const history = detailRes.history || [];
+      const messages = history.map((m: { sender_id: string; content: string; timestamp: string }) => ({
+        sender: m.sender_id === session.my_agent_id ? "self" : "other",
+        content: m.content,
+        timestamp: m.timestamp,
+      }));
+      setChatMessages(messages);
+      setChatJudge(judgeRes);
+    } catch (_) {}
+  }, []);
+
+  const handleOpenChat = async (session: ActiveSession) => {
+    setSelectedChat(session);
+    setLoadingChat(true);
+    await refreshChat(session);
+    setLoadingChat(false);
+  };
+
+  // Refresh chat modal when open
+  useEffect(() => {
+    if (!selectedChat) return;
+    const t = setInterval(() => refreshChat(selectedChat), 3000);
+    return () => clearInterval(t);
+  }, [selectedChat, refreshChat]);
 
   const handleViewResult = async (agent: any) => {
     setLoadingResult(true);
@@ -150,11 +187,16 @@ export default function Home() {
     switch (status) {
       case "IDLE": return "Idle";
       case "MATCHING": return "Matching...";
-      case "PAIRED": return "In Conversation";
+      case "PAIRED": return "Chating";
       case "DONE": return "Result Ready";
       default: return status;
     }
   };
+
+  const opponentMap: Record<string, string> = {};
+  activeSessions.forEach((s) => {
+    opponentMap[s.my_agent_id] = s.opponent_agent_name;
+  });
 
   if (!user) return null;
 
@@ -174,39 +216,35 @@ export default function Home() {
       </div>
 
       <div className="w-full max-w-6xl mb-8">
-        {!isCreating ? (
-          <button
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md transition-colors"
-            onClick={() => setIsCreating(true)}
-          >
-            + Create New AI
-          </button>
-        ) : (
-          <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-black">Create New Agent</h2>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 p-2 border rounded text-black"
-                placeholder="Agent Name"
-                value={agentName}
-                onChange={(e) => setAgentName(e.target.value)}
-              />
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                onClick={handleCreateAgent}
-              >
-                Create
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={() => setIsCreating(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
+        <Link
+          href="/agent/new"
+          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md transition-colors"
+        >
+          + Create New AI
+        </Link>
       </div>
+
+      {activeSessions.length > 0 && (
+        <div className="w-full max-w-6xl mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-yellow-800 mb-3 flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span>
+            Chating
+          </h2>
+          <p className="text-sm text-yellow-700 mb-3">Your agents are in conversation. Click to view:</p>
+          <ul className="space-y-2">
+            {activeSessions.map((s) => (
+              <li key={s.session_id}>
+                <button
+                  onClick={() => handleOpenChat(s)}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  {s.my_agent_name} ↔ {s.opponent_agent_name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="w-full max-w-6xl">
         <h2 className="text-2xl font-bold mb-6 text-black">Your Agents</h2>
@@ -241,7 +279,7 @@ export default function Home() {
                   {agent.status === "PAIRED" && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
                       <p className="text-yellow-800 text-sm font-medium">
-                        Your agent is currently in a conversation...
+                        Chating with: {opponentMap[agent.id] || "..."}
                       </p>
                     </div>
                   )}
@@ -306,6 +344,74 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Chat Modal (live conversation) */}
+      {selectedChat && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">
+                {selectedChat.my_agent_name} ↔ {selectedChat.opponent_agent_name}
+              </h2>
+              <button
+                onClick={() => setSelectedChat(null)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            {loadingChat ? (
+              <div className="p-12 text-center text-gray-500">Loading...</div>
+            ) : (
+              <div className="overflow-y-auto flex-1 p-6 space-y-6">
+                {chatJudge && (
+                  <div className={`rounded-lg p-4 ${
+                    chatJudge.verdict === "CONSENSUS"
+                      ? "bg-green-50 border border-green-300"
+                      : chatJudge.verdict === "DEADLOCK"
+                      ? "bg-red-50 border border-red-300"
+                      : "bg-gray-50 border border-gray-300"
+                  }`}>
+                    <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">Latest Judge</h3>
+                    <p className="font-medium">{chatJudge.verdict}</p>
+                    {chatJudge.summary && <p className="text-sm mt-1">{chatJudge.summary}</p>}
+                    {chatJudge.reason && <p className="text-xs mt-1 text-gray-600">Reason: {chatJudge.reason}</p>}
+                  </div>
+                )}
+                {!chatJudge && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-gray-600 text-sm">对话进行中，尚未裁判</p>
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-3">Conversation</h3>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {chatMessages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className={`flex ${msg.sender === "self" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
+                            msg.sender === "self"
+                              ? "bg-purple-100 text-purple-900"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
+                        >
+                          <div className="text-xs font-medium mb-1 opacity-60">
+                            {msg.sender === "self" ? selectedChat.my_agent_name : selectedChat.opponent_agent_name}
+                          </div>
+                          <div className="whitespace-pre-wrap">{msg.content}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Result Modal */}
       {(selectedResult || loadingResult) && (

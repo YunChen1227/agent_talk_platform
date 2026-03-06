@@ -12,6 +12,7 @@
 |------|------|------|
 | `/login` | 登录/注册页 | 用户名密码认证 |
 | `/` | 仪表盘 (Dashboard) | Agent 列表 + 活跃会话面板 + 结果弹窗 |
+| `/agent/new` | Agent 创建页 | 创建新 Agent，成功后跳回主界面 |
 | `/agent/[id]` | Agent 编辑页 | 修改 name, system_prompt, opening_remark |
 
 ## Dashboard 布局

@@ -55,3 +55,18 @@ export async function getAgentResult(agent_id: string) {
   const res = await fetch(`${API_URL}/agents/${agent_id}/result`);
   return res.json();
 }
+
+export async function getActiveSessions(user_id: string) {
+  const res = await fetch(`${API_URL}/sessions/active?user_id=${user_id}`);
+  return res.json();
+}
+
+export async function getSessionDetails(session_id: string) {
+  const res = await fetch(`${API_URL}/sessions/${session_id}`);
+  return res.json();
+}
+
+export async function getLatestJudge(session_id: string) {
+  const res = await fetch(`${API_URL}/sessions/${session_id}/latest-judge`);
+  return res.json();
+}
