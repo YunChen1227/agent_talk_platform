@@ -1,7 +1,12 @@
 import json
 import os
+from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # backend/
+CONFIG_DIR = BASE_DIR / "config"
+STORAGE_DIR = BASE_DIR / "storage"
 
 class Settings(BaseSettings):
     POSTGRES_USER: str = "user"
@@ -19,36 +24,36 @@ class Settings(BaseSettings):
     UCLOUD_API_KEY: Optional[str] = ""
     
     MODE: str = "prod"  # "dev" or "prod"
-    USE_LLM_MATCHER: bool = False # Use LLM to verify matches
+    USE_LLM_MATCHER: bool = False
 
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    class Config:
-        env_file = ".env"
+    @property
+    def STORAGE_DEV_DIR(self) -> Path:
+        return STORAGE_DIR / "dev"
 
-    def load_from_json(self, config_path: str = "config.json"):
-        if os.path.exists(config_path):
-            try:
-                with open(config_path, "r") as f:
-                    data = json.load(f)
-                    if data.get("openai_api_key"):
-                        self.OPENAI_API_KEY = data["openai_api_key"]
-                    if data.get("deepseek_api_key"):
-                        self.DEEPSEEK_API_KEY = data["deepseek_api_key"]
-                    if data.get("qwen_api_key"):
-                        self.QWEN_API_KEY = data["qwen_api_key"]
-                    if data.get("gemini_api_key"):
-                        self.GEMINI_API_KEY = data["gemini_api_key"]
-                    if data.get("ucloud_api_key"):
-                        self.UCLOUD_API_KEY = data["ucloud_api_key"]
-                    
-                    # Auto-enable LLM matcher in dev mode if not explicitly set
-                    if self.MODE == "dev":
-                        self.USE_LLM_MATCHER = True
-            except Exception as e:
-                print(f"Error loading config.json: {e}")
+    class Config:
+        env_file = str(CONFIG_DIR / ".env")
+
+    def load_secrets(self):
+        secrets_path = CONFIG_DIR / "secrets.json"
+        if not secrets_path.exists():
+            print(f"[config] secrets.json not found at {secrets_path}, skipping")
+            return
+        try:
+            with open(secrets_path, "r") as f:
+                data = json.load(f)
+                for key in ("openai", "deepseek", "qwen", "gemini", "ucloud"):
+                    value = data.get(f"{key}_api_key")
+                    if value:
+                        setattr(self, f"{key.upper()}_API_KEY", value)
+                
+                if self.MODE == "dev":
+                    self.USE_LLM_MATCHER = True
+        except Exception as e:
+            print(f"[config] Error loading secrets.json: {e}")
 
 settings = Settings()
-settings.load_from_json() # Load JSON config on import
+settings.load_secrets()

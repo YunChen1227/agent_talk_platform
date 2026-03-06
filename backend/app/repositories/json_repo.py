@@ -15,10 +15,13 @@ from app.repositories.base import UserRepository, AgentRepository, MatcherReposi
 T = TypeVar("T", bound=BaseModel)
 
 class JSONStore:
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            from app.core.config import STORAGE_DIR
+            data_dir = str(STORAGE_DIR / "dev")
         self.data_dir = data_dir
         if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
+            os.makedirs(data_dir, exist_ok=True)
 
     def _get_path(self, model_class: Type[T]) -> str:
         return os.path.join(self.data_dir, f"{model_class.__name__.lower()}s.json")

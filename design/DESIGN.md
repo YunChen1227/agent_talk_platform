@@ -160,25 +160,36 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 
 ```text
 agent_talk_platform/
-├── DESIGN.md                      # 本文档 (总览)
-├── DESIGN-USER.md                 # 用户模块设计
-├── DESIGN-AGENT.md                # 代理模块设计
-├── DESIGN-MATCHER.md              # 撮合引擎设计
-├── DESIGN-SESSION.md              # 会话沙盒设计
-├── DESIGN-JUDGE.md                # 裁判系统设计
-├── DESIGN-ORCHESTRATOR.md         # 编排器设计
-├── DESIGN-LLM.md                  # LLM 服务设计
-├── DESIGN-API.md                  # API 接口设计
-├── DESIGN-FRONTEND.md             # 前端页面设计
+├── design/                        # 设计文档目录
+│   ├── DESIGN.md                  # 本文档 (总览)
+│   ├── DESIGN-USER.md             # 用户模块设计
+│   ├── DESIGN-AGENT.md            # 代理模块设计
+│   ├── DESIGN-MATCHER.md          # 撮合引擎设计
+│   ├── DESIGN-SESSION.md          # 会话沙盒设计
+│   ├── DESIGN-JUDGE.md            # 裁判系统设计
+│   ├── DESIGN-ORCHESTRATOR.md     # 编排器设计
+│   ├── DESIGN-LLM.md             # LLM 服务设计
+│   ├── DESIGN-API.md             # API 接口设计
+│   └── DESIGN-FRONTEND.md        # 前端页面设计
 ├── README.md
 ├── .gitignore
 │
 ├── backend/
 │   ├── main.py                    # FastAPI 入口，Lifespan 启动逻辑
 │   ├── run.py                     # 启动脚本 (--mode dev/prod --reload)
-│   ├── config.json                # API Key 配置 (不入库)
 │   ├── requirements.txt
-│   ├── .env
+│   ├── config/                    # ── 配置中心 (统一管理) ──
+│   │   ├── .env                   # 环境变量 (MODE, DB 连接等)
+│   │   ├── .env.example           # 环境变量模板 (入库)
+│   │   ├── secrets.json           # 平台 API Keys (不入库)
+│   │   └── secrets.example.json   # API Keys 模板 (入库)
+│   ├── storage/                   # ── 持久化存储 ──
+│   │   └── dev/                   # Dev 模式 JSON 数据
+│   │       ├── users.json
+│   │       ├── agents.json
+│   │       ├── sessions.json
+│   │       ├── messages.json
+│   │       └── matchresults.json
 │   ├── app/
 │   │   ├── agent/                 # Agent 核心模块
 │   │   ├── api/                   # 接口路由
@@ -187,7 +198,6 @@ agent_talk_platform/
 │   │   ├── repositories/          # 数据访问层 (Repository Pattern)
 │   │   ├── schemas/               # Pydantic 请求/响应模式
 │   │   └── services/              # 业务逻辑层
-│   └── data/                      # JSON 数据存储 (Dev 模式)
 │
 └── frontend/                      # Next.js 14 + Tailwind CSS
     ├── app/                       # 页面路由
@@ -200,10 +210,33 @@ agent_talk_platform/
 
 | 维度 | Dev 模式 | Prod 模式 |
 |------|----------|-----------|
-| 数据存储 | JSON 文件 (`data/*.json`) | PostgreSQL + pgvector |
+| 数据存储 | JSON 文件 (`storage/dev/*.json`) | PostgreSQL + pgvector |
+| 配置管理 | `config/.env` + `config/secrets.json` | 同左 |
 | Embedding | Mock 随机向量 | OpenAI `text-embedding-ada-002` |
 | 匹配阈值 | 2.0 (放宽) + LLM 验证 | 0.2 (严格 Cosine Distance) |
 | 切换方式 | `--mode dev` | `--mode prod` (需配置 DB) |
+
+### 配置管理规范
+
+```
+backend/config/                    # 所有配置统一在此管理
+├── .env                           # 环境变量 (MODE, DB 等运行时参数)
+├── .env.example                   # 环境变量模板 (入库，供新成员参考)
+├── secrets.json                   # 平台 API Keys (不入库，.gitignore)
+└── secrets.example.json           # API Keys 模板 (入库，仅含空值字段名)
+
+backend/storage/                   # 所有持久化数据统一在此管理
+└── dev/                           # Dev 模式 JSON 文件存储
+    ├── users.json
+    ├── agents.json
+    ├── sessions.json
+    ├── messages.json
+    └── matchresults.json
+```
+
+- **配置与代码分离**: 所有配置集中在 `config/`，不散落在项目根目录。
+- **敏感信息隔离**: `secrets.json` 存储 API Keys，通过 `.gitignore` 防止泄露；`secrets.example.json` 入库作为模板。
+- **存储路径可寻址**: `config.py` 通过 `BASE_DIR / "config"` 和 `BASE_DIR / "storage"` 构建绝对路径，不依赖工作目录。
 
 ## 6. 关键设计决策
 

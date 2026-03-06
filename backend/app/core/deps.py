@@ -7,7 +7,7 @@ from app.repositories.base import UserRepository, AgentRepository, SessionReposi
 from app.repositories.db_repo import DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository, DBMatcherRepository, DBMatchResultRepository
 from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONStore
 
-# Global JSON Store instance
+# Global JSON Store instance (uses storage/dev/ via config)
 json_store = JSONStore()
 
 async def get_db_session() -> AsyncGenerator[Optional[AsyncSession], None]:

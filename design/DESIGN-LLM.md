@@ -58,7 +58,7 @@ LLM 服务分为两层: **平台 LLM** 和 **用户 LLM**。平台 LLM 提供撮
 
 ### 配置
 
-平台 API Key 通过 `backend/config.json` 管理 (不入库):
+平台 API Key 通过 `backend/config/secrets.json` 管理 (不入库):
 
 ```json
 {
@@ -69,6 +69,8 @@ LLM 服务分为两层: **平台 LLM** 和 **用户 LLM**。平台 LLM 提供撮
   "gemini_api_key": "..."
 }
 ```
+
+新成员参考 `backend/config/secrets.example.json` 创建自己的 `secrets.json`。
 
 ## 用户 LLM
 
@@ -109,5 +111,7 @@ def get_llm_client_for_agent(agent, user):
 | 文件路径 | 说明 |
 |----------|------|
 | `backend/app/services/llm.py` | 平台 LLM 统一接入 (多 Provider) |
-| `backend/config.json` | 平台 API Key 配置 |
-| `backend/app/core/config.py` | Settings (支持 .env + config.json) |
+| `backend/config/secrets.json` | 平台 API Key 配置 (不入库) |
+| `backend/config/secrets.example.json` | API Key 模板 (入库) |
+| `backend/config/.env` | 环境变量 (MODE 等) |
+| `backend/app/core/config.py` | Settings (加载 config/.env + config/secrets.json) |
