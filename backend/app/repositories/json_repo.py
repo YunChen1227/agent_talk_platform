@@ -209,10 +209,8 @@ class JSONMatcherRepository(MatcherRepository):
 
     async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:
         agents = self.store.load(Agent)
-        users = {u.id: u for u in self.store.load(User)}
         sessions = self.store.load(Session)
         
-        # Get ALL session pairs to prevent re-matching
         existing_pairs = set()
         for s in sessions:
             existing_pairs.add((s.agent_a_id, s.agent_b_id))
@@ -223,8 +221,7 @@ class JSONMatcherRepository(MatcherRepository):
         processed_pairs = set()
 
         for agent in matching_agents:
-            user = users.get(agent.user_id)
-            if not user or not user.embedding:
+            if not agent.embedding:
                 continue
 
             best_match = None
@@ -234,19 +231,16 @@ class JSONMatcherRepository(MatcherRepository):
                 if candidate.id == agent.id:
                     continue
                 
-                # Check if already matched in this batch
                 if (agent.id, candidate.id) in processed_pairs or (candidate.id, agent.id) in processed_pairs:
                     continue
                     
-                # Check for ANY existing session
                 if (agent.id, candidate.id) in existing_pairs:
                     continue
                 
-                candidate_user = users.get(candidate.user_id)
-                if not candidate_user or not candidate_user.embedding:
+                if not candidate.embedding:
                     continue
 
-                similarity = self._cosine_similarity(user.embedding, candidate_user.embedding)
+                similarity = self._cosine_similarity(agent.embedding, candidate.embedding)
                 distance = 1 - similarity
 
                 if distance < min_dist:
@@ -256,7 +250,5 @@ class JSONMatcherRepository(MatcherRepository):
             if best_match and min_dist < threshold:
                 matched_pairs.append((agent.id, best_match.id))
                 processed_pairs.add((agent.id, best_match.id))
-                
-                # Do NOT update status to BUSY
                 
         return matched_pairs

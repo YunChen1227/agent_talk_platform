@@ -282,14 +282,24 @@ export default function Home() {
                     </button>
                   )}
 
-                  {(agent.status === "DONE" || agent.status === "PAIRED") && (
-                    <button
-                      className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
-                      onClick={() => handleViewResult(agent)}
-                    >
-                      View Result
-                    </button>
-                  )}
+                  <div className="flex gap-2">
+                    {agent.status === "DONE" && (
+                      <button
+                        className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
+                        onClick={() => handleMatch(agent.id)}
+                      >
+                        Re-Match
+                      </button>
+                    )}
+                    {(agent.status === "DONE" || agent.status === "PAIRED") && (
+                      <button
+                        className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
+                        onClick={() => handleViewResult(agent)}
+                      >
+                        View Result
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

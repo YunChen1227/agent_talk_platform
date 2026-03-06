@@ -83,32 +83,28 @@ class DBMatcherRepository(MatcherRepository):
         processed_pairs = set()
         
         for agent in agents:
-            # Refresh to ensure status is current
             await self.session.refresh(agent)
             if agent.status != AgentStatus.MATCHING:
                 continue
                 
-            user = await self.session.get(User, agent.user_id)
-            if not user or user.embedding is None:
+            if agent.embedding is None:
                 continue
                 
-            # Find candidates
-            stmt = select(Agent, User.embedding.cosine_distance(user.embedding)).join(User).where(
+            stmt = select(Agent, Agent.embedding.cosine_distance(agent.embedding)).where(
                 Agent.status == AgentStatus.MATCHING,
-                Agent.id != agent.id
-            ).order_by(User.embedding.cosine_distance(user.embedding))
+                Agent.id != agent.id,
+                Agent.embedding.isnot(None),
+            ).order_by(Agent.embedding.cosine_distance(agent.embedding))
             
             candidate_results = (await self.session.exec(stmt)).all()
             
             for match in candidate_results:
                 candidate, distance = match
                 
-                # Avoid duplicates in this batch
                 if (candidate.id, agent.id) in processed_pairs or (agent.id, candidate.id) in processed_pairs:
                     continue
 
                 if distance is not None and distance < threshold:
-                    # Check for ANY existing session (active or completed) to prevent re-matching
                     existing_session_stmt = select(Session).where(
                         or_(
                             and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
@@ -122,8 +118,6 @@ class DBMatcherRepository(MatcherRepository):
 
                     matched_pairs.append((agent.id, candidate.id))
                     processed_pairs.add((agent.id, candidate.id))
-                    
-                    # Do NOT update status to BUSY
                     break 
                     
         return matched_pairs

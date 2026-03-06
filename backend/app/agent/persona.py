@@ -3,7 +3,7 @@ from typing import Tuple, List, Union
 from app.models.agent import Agent, AgentStatus
 from app.models.user import User
 from app.repositories.base import AgentRepository, UserRepository
-from app.services.llm import get_random_client
+from app.services.llm import get_random_client, extract_tags, get_embedding
 import google.generativeai as genai
 
 async def generate_system_prompt(user_demand: str, user_tags: List[str]) -> Tuple[str, str]:
@@ -70,14 +70,20 @@ async def create_agent(agent_repo: AgentRepository, user_repo: UserRepository, u
     user = await user_repo.get(user_id)
     if not user:
         raise ValueError("User not found")
-        
-    system_prompt, opening_remark = await generate_system_prompt(user.raw_demand, user.tags)
+
+    demand = user.raw_demand or ""
+    tags = await extract_tags(demand) if demand else []
+    embedding = await get_embedding(demand) if demand else None
+
+    system_prompt, opening_remark = await generate_system_prompt(demand, tags)
     
     agent = Agent(
         user_id=user_id,
         name=name,
         system_prompt=system_prompt,
         opening_remark=opening_remark,
-        status=AgentStatus.IDLE
+        status=AgentStatus.IDLE,
+        tags=tags,
+        embedding=embedding,
     )
     return await agent_repo.create(agent)

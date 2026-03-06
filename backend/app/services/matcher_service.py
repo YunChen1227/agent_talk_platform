@@ -25,17 +25,21 @@ async def scan_and_match(
     
     final_pairs = []
     for agent_id, candidate_id in matched_pairs:
-        # If LLM matcher is enabled (e.g. in dev mode), verify the match
         if settings.USE_LLM_MATCHER:
             agent_a = await agent_repo.get(agent_id)
             agent_b = await agent_repo.get(candidate_id)
             
             if agent_a and agent_b:
-                # We use system_prompt as a proxy for demand since it contains it
-                # "System prompt for demand: ..."
                 is_compatible = await check_match_with_llm(agent_a.system_prompt, agent_b.system_prompt)
                 if not is_compatible:
                     print(f"LLM rejected match between {agent_a.name} and {agent_b.name}")
+                    # Mark as TERMINATED so this pair is never retried
+                    rejected_session = Session(
+                        agent_a_id=agent_id,
+                        agent_b_id=candidate_id,
+                        status=SessionStatus.TERMINATED
+                    )
+                    await session_repo.create(rejected_session)
                     continue
                 print(f"LLM approved match between {agent_a.name} and {agent_b.name}")
 

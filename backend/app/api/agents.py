@@ -67,9 +67,12 @@ async def delete_agent(
 
 @router.post("/{id}/match", response_model=AgentRead)
 async def start_matching(id: UUID, repo: AgentRepository = Depends(get_agent_repo)):
-    agent = await repo.update_status(id, AgentStatus.MATCHING)
+    agent = await repo.get(id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    if agent.status not in (AgentStatus.IDLE, AgentStatus.DONE):
+        raise HTTPException(status_code=400, detail=f"Agent is currently {agent.status}, cannot start matching")
+    agent = await repo.update_status(id, AgentStatus.MATCHING)
     return agent
 
 @router.get("/{id}/result")

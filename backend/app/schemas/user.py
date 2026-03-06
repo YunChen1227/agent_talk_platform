@@ -14,4 +14,3 @@ from uuid import UUID
 class UserRead(BaseModel):
     id: UUID
     raw_demand: Optional[str] = None
-    tags: list[str] = []
