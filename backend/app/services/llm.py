@@ -78,6 +78,11 @@ async def get_embedding(text: str) -> List[float]:
 
 
 async def extract_tags(text: str) -> List[str]:
+    # In dev mode, skip LLM call for speed
+    if settings.MODE == "dev":
+        print("[LLM] Dev mode: Returning mock tags")
+        return ["dev_tag_1", "dev_tag_2", "dev_tag_3"]
+
     client_info = get_random_client()
     if not client_info:
         return ["mock_tag_1", "mock_tag_2"]

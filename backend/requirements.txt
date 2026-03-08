@@ -10,3 +10,5 @@ pydantic-settings
 openai
 httpx
 alembic
+google-generativeai
+greenlet

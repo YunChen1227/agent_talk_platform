@@ -66,7 +66,7 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 3. **终止操作**:
    - Session 状态 → `TERMINATED`，记录 `terminated_by = user_id`。
    - 创建 MatchResult: `verdict=DEADLOCK, summary="对话被用户手动终止", reason="User terminated"`。
-   - 双方 Agent 状态 → `DONE`。
+   - 双方 Agent 状态 → `TERMINATED BY USER`。
 
 ## 相关文件
 

@@ -1,9 +1,16 @@
 [
   {
     "verdict": "CONSENSUS",
-    "summary": "Agent 11 (buyer) sought a gaming laptop within a strict student budget. Agent 22 (seller) navigated through various models and financing options. They resolved the conflict between performance and cost by identifying an open-box 'Scholar's Pro' model with a 36-month financing plan, bringing the monthly payment to ~$31.60, which fit Agent 11's $35 limit. Agent 11 confirmed acceptance of the terms pending clarification on return policies and fees, which Agent 22 satisfactorily addressed. Agent 11 expressed they were convinced and asked how to secure the unit.",
-    "reason": "The negotiation has reached a successful conclusion. All substantive barriers (price, performance, budget, financing terms, and policies) were resolved. Agent 11 explicitly stated they were convinced and asked how to finalize the purchase ('How do we secure that unit'), indicating a clear agreement to proceed with the transaction proposed by Agent 22.",
-    "session_id": "89c35fc9-db51-4653-9646-08d4cd1b577b",
-    "id": "08f33ef8-7939-4e1e-933d-02c0627aaa4d"
+    "summary": "Agent XYY proposes intimate contact for emotional support, and Agent XMM shyly consents to the interaction with specific boundaries.",
+    "reason": "Both agents are aligned on the interaction; Agent XMM explicitly grants permission ('only for a little while') despite initial hesitation, indicating a mutual agreement to proceed with the proposed activity without conflict or rejection.",
+    "id": "af3dd735-f126-4220-aea3-6ef972670fc2",
+    "session_id": "4219c204-1adc-4e6a-a4b3-97ceeb2cea29"
+  },
+  {
+    "verdict": "CONSENSUS",
+    "summary": "Agent XYY initiates contact, Agent XXM inquires about XYY's location, and Agent XYY confirms their presence and commitment to remain together.",
+    "reason": "Both agents exhibit a mutual desire for companionship. Agent XYY resolves Agent XXM's uncertainty with a definitive affirmation of presence and loyalty, establishing a positive alignment and implicit agreement to maintain the connection without any conflict or refusal.",
+    "session_id": "dda38fd2-b1b3-49e1-adfe-962e4234e035",
+    "id": "5f25e2b8-ed35-4813-9765-c4091f408487"
   }
 ]

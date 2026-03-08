@@ -211,13 +211,21 @@ class JSONMatcherRepository(MatcherRepository):
         return dot_product / (norm_a * norm_b)
 
     async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:
+        from app.core.config import settings
+        
         agents = self.store.load(Agent)
         sessions = self.store.load(Session)
         
         existing_pairs = set()
         for s in sessions:
-            existing_pairs.add((s.agent_a_id, s.agent_b_id))
-            existing_pairs.add((s.agent_b_id, s.agent_a_id))
+            # In dev mode, allow re-matching if session is not active/judging
+            if settings.MODE == "dev":
+                if s.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
+                    existing_pairs.add((s.agent_a_id, s.agent_b_id))
+                    existing_pairs.add((s.agent_b_id, s.agent_a_id))
+            else:
+                existing_pairs.add((s.agent_a_id, s.agent_b_id))
+                existing_pairs.add((s.agent_b_id, s.agent_a_id))
         
         matching_agents = [a for a in agents if a.status == AgentStatus.MATCHING]
         matched_pairs = []

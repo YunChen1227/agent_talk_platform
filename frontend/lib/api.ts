@@ -1,72 +1,91 @@
+import axios from "axios";
+
 const API_URL = "http://localhost:8000";
 
-export async function createUser(raw_demand: string, contact?: string) {
-  const res = await fetch(`${API_URL}/users/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ raw_demand, contact }),
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const listAgents = async (userId: string) => {
+  const res = await api.get(`/agents/?user_id=${userId}`);
+  return res.data;
+};
+
+export const createAgent = async (
+  userId: string, 
+  name: string, 
+  description?: string, 
+  systemPrompt?: string, 
+  openingRemark?: string
+) => {
+  const res = await api.post("/agents/", { 
+    user_id: userId, 
+    name,
+    description,
+    system_prompt: systemPrompt,
+    opening_remark: openingRemark
   });
-  return res.json();
-}
+  return res.data;
+};
 
-export async function createAgent(user_id: string, name: string) {
-  const res = await fetch(`${API_URL}/agents/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id, name }),
-  });
-  return res.json();
-}
+export const getAgent = async (id: string) => {
+  const res = await api.get(`/agents/${id}`);
+  return res.data;
+};
 
-export async function listAgents(user_id: string) {
-  const res = await fetch(`${API_URL}/agents/?user_id=${user_id}`);
-  return res.json();
-}
+export const updateAgent = async (id: string, data: any) => {
+  const res = await api.put(`/agents/${id}`, data);
+  return res.data;
+};
 
-export async function getAgent(agent_id: string) {
-  const res = await fetch(`${API_URL}/agents/${agent_id}`);
-  return res.json();
-}
+export const deleteAgent = async (id: string) => {
+  try {
+    await api.delete(`/agents/${id}`);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
-export async function updateAgent(agent_id: string, data: { name?: string; system_prompt?: string; opening_remark?: string }) {
-  const res = await fetch(`${API_URL}/agents/${agent_id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return res.json();
-}
+export const startMatching = async (id: string) => {
+  const res = await api.post(`/agents/${id}/match`);
+  return res.data;
+};
 
-export async function startMatching(agent_id: string) {
-  const res = await fetch(`${API_URL}/agents/${agent_id}/match`, {
-    method: "POST",
-  });
-  return res.json();
-}
+export const getAgentResult = async (id: string) => {
+  const res = await api.get(`/agents/${id}/result`);
+  return res.data;
+};
 
-export async function deleteAgent(agent_id: string) {
-  const res = await fetch(`${API_URL}/agents/${agent_id}`, {
-    method: "DELETE",
-  });
-  return res.status === 204;
-}
+export const getActiveSessions = async (userId: string) => {
+  const res = await api.get(`/sessions/active?user_id=${userId}`);
+  return res.data;
+};
 
-export async function getAgentResult(agent_id: string) {
-  const res = await fetch(`${API_URL}/agents/${agent_id}/result`);
-  return res.json();
-}
+export const getSessionDetails = async (sessionId: string) => {
+  const res = await api.get(`/sessions/${sessionId}`);
+  return res.data;
+};
 
-export async function getActiveSessions(user_id: string) {
-  const res = await fetch(`${API_URL}/sessions/active?user_id=${user_id}`);
-  return res.json();
-}
+export const getLatestJudge = async (sessionId: string) => {
+  const res = await api.get(`/sessions/${sessionId}/latest-judge`);
+  return res.data;
+};
 
-export async function getSessionDetails(session_id: string) {
-  const res = await fetch(`${API_URL}/sessions/${session_id}`);
-  return res.json();
-}
+export const terminateSession = async (sessionId: string, userId: string) => {
+  const res = await api.post(`/sessions/${sessionId}/terminate?user_id=${userId}`);
+  return res.data;
+};
 
-export async function getLatestJudge(session_id: string) {
-  const res = await fetch(`${API_URL}/sessions/${session_id}/latest-judge`);
-  return res.json();
-}
+export const getSystemStatus = async () => {
+  const res = await api.get("/api/status");
+  return res.data;
+};
+
+export const toggleLlmMatcher = async (enabled: boolean) => {
+  const res = await api.post(`/api/config/llm-matcher?enabled=${enabled}`);
+  return res.data;
+};

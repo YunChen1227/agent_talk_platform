@@ -46,7 +46,7 @@ async def generate_response(system_prompt: str, history: List[Dict[str, str]]) -
             
     except Exception as e:
         print(f"Error generating response: {e}")
-        return "..."
+        raise e
 
 async def process_turn(session_repo: SessionRepository, message_repo: MessageRepository, agent_repo: AgentRepository, session_id: UUID):
     session_obj = await session_repo.get(session_id)

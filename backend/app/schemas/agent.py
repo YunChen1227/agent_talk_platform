@@ -5,6 +5,9 @@ from typing import Optional
 class AgentCreate(BaseModel):
     user_id: UUID
     name: str
+    description: Optional[str] = None  # For PAID users
+    system_prompt: Optional[str] = None # For FREE users
+    opening_remark: Optional[str] = None # For FREE users
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None

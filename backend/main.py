@@ -85,5 +85,11 @@ async def get_status():
     return {
         "valid_providers": list(valid_clients.keys()),
         "has_valid_key": len(valid_clients) > 0,
-        "mode": settings.MODE
+        "mode": settings.MODE,
+        "use_llm_matcher": settings.USE_LLM_MATCHER
     }
+
+@app.post("/api/config/llm-matcher")
+async def toggle_llm_matcher(enabled: bool):
+    settings.USE_LLM_MATCHER = enabled
+    return {"use_llm_matcher": settings.USE_LLM_MATCHER}

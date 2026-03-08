@@ -6,6 +6,8 @@ backend/config.json
 backend/venv/
 backend/.venv/
 backend/data/
+backend/config/secrets.json
+backend/config/secrets.example.json
 
 # Frontend
 frontend/node_modules/

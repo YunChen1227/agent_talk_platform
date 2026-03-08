@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { listAgents, startMatching, deleteAgent, getAgentResult, getActiveSessions, getSessionDetails, getLatestJudge } from "@/lib/api";
+import { listAgents, startMatching, deleteAgent, getAgentResult, getActiveSessions, getSessionDetails, getLatestJudge, terminateSession, getSystemStatus, toggleLlmMatcher } from "@/lib/api";
 import Link from "next/link";
 
 interface AgentResult {
@@ -42,6 +42,9 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<{ sender: string; content: string; timestamp: string }[]>([]);
   const [chatJudge, setChatJudge] = useState<{ verdict: string; summary: string; reason: string } | null>(null);
   const [loadingChat, setLoadingChat] = useState(false);
+  const [terminating, setTerminating] = useState(false);
+  const [isDevMode, setIsDevMode] = useState(false);
+  const [useLlmMatcher, setUseLlmMatcher] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,6 +61,12 @@ export default function Home() {
     });
     getActiveSessions(userData.id).then(data => {
       if (Array.isArray(data)) setActiveSessions(data);
+    });
+    
+    // Check system status
+    getSystemStatus().then(status => {
+      setIsDevMode(status.mode === "dev");
+      setUseLlmMatcher(status.use_llm_matcher);
     });
 
     const interval = setInterval(() => {
@@ -115,12 +124,25 @@ export default function Home() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this agent?")) return;
+  const handleDelete = async (agent: any) => {
+    let confirmMessage = "Are you sure you want to delete this agent?";
+    
+    if (agent.status === "PAIRED") {
+      confirmMessage = "This agent is currently chatting! Deleting it will terminate the active conversation for BOTH parties. Are you sure you want to proceed?";
+    } else if (agent.status === "MATCHING") {
+      confirmMessage = "This agent is currently looking for a match. Deleting it will cancel the request. Proceed?";
+    }
+
+    if (!confirm(confirmMessage)) return;
+
     try {
-      const success = await deleteAgent(id);
+      const success = await deleteAgent(agent.id);
       if (success) {
         fetchAgents();
+        // If we deleted the agent currently open in chat modal, close it
+        if (selectedChat && selectedChat.my_agent_id === agent.id) {
+          setSelectedChat(null);
+        }
       } else {
         alert("Failed to delete agent");
       }
@@ -151,6 +173,33 @@ export default function Home() {
     setLoadingChat(true);
     await refreshChat(session);
     setLoadingChat(false);
+  };
+
+  const handleTerminate = async () => {
+    if (!selectedChat || !user) return;
+    if (!confirm("Are you sure you want to terminate this conversation? This will mark it as a DEADLOCK.")) return;
+    
+    setTerminating(true);
+    try {
+      await terminateSession(selectedChat.session_id, user.id);
+      alert("Conversation terminated.");
+      setSelectedChat(null); // Close modal
+      fetchAgents(); // Refresh list
+    } catch (e: any) {
+      alert(e.response?.data?.detail || "Error terminating session");
+    } finally {
+      setTerminating(false);
+    }
+  };
+  
+  const handleToggleLlmMatcher = async () => {
+    const newState = !useLlmMatcher;
+    try {
+      await toggleLlmMatcher(newState);
+      setUseLlmMatcher(newState);
+    } catch (e) {
+      alert("Failed to toggle LLM Matcher");
+    }
   };
 
   // Refresh chat modal when open
@@ -193,9 +242,9 @@ export default function Home() {
     }
   };
 
-  const opponentMap: Record<string, string> = {};
+  const sessionMap: Record<string, ActiveSession> = {};
   activeSessions.forEach((s) => {
-    opponentMap[s.my_agent_id] = s.opponent_agent_name;
+    sessionMap[s.my_agent_id] = s;
   });
 
   if (!user) return null;
@@ -205,6 +254,21 @@ export default function Home() {
       <div className="w-full max-w-6xl flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-black">AgentMatch Platform</h1>
         <div className="flex items-center gap-4">
+          {isDevMode && (
+            <div className="flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-gray-600 uppercase">Dev Mode</span>
+              <button 
+                onClick={handleToggleLlmMatcher}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                  useLlmMatcher 
+                    ? "bg-green-500 text-white hover:bg-green-600" 
+                    : "bg-red-500 text-white hover:bg-red-600"
+                }`}
+              >
+                AI Match: {useLlmMatcher ? "ON" : "OFF"}
+              </button>
+            </div>
+          )}
           <span className="text-gray-700">Welcome, {user.username}</span>
           <button
             onClick={handleLogout}
@@ -224,28 +288,6 @@ export default function Home() {
         </Link>
       </div>
 
-      {activeSessions.length > 0 && (
-        <div className="w-full max-w-6xl mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-yellow-800 mb-3 flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span>
-            Chating
-          </h2>
-          <p className="text-sm text-yellow-700 mb-3">Your agents are in conversation. Click to view:</p>
-          <ul className="space-y-2">
-            {activeSessions.map((s) => (
-              <li key={s.session_id}>
-                <button
-                  onClick={() => handleOpenChat(s)}
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  {s.my_agent_name} ↔ {s.opponent_agent_name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       <div className="w-full max-w-6xl">
         <h2 className="text-2xl font-bold mb-6 text-black">Your Agents</h2>
         {agents.length === 0 ? (
@@ -262,10 +304,11 @@ export default function Home() {
                 }`}
               >
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{agent.name}</h3>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`inline-block w-3 h-3 rounded-full ${getStatusColor(agent.status)}`}></span>
-                    <span className="text-sm text-gray-600 tracking-wide">{getStatusLabel(agent.status)}</span>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-bold text-gray-800">{agent.name}</h3>
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold text-white ${getStatusColor(agent.status)}`}>
+                      {getStatusLabel(agent.status)}
+                    </span>
                   </div>
 
                   {agent.status === "DONE" && (
@@ -276,11 +319,18 @@ export default function Home() {
                     </div>
                   )}
 
-                  {agent.status === "PAIRED" && (
+                  {agent.status === "PAIRED" && sessionMap[agent.id] && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
-                      <p className="text-yellow-800 text-sm font-medium">
-                        Chating with: {opponentMap[agent.id] || "..."}
+                      <p className="text-yellow-800 text-sm font-medium mb-1">
+                        Chatting with:
                       </p>
+                      <button
+                        onClick={() => handleOpenChat(sessionMap[agent.id])}
+                        className="text-blue-600 font-bold hover:underline text-lg flex items-center gap-1"
+                      >
+                        {sessionMap[agent.id].opponent_agent_name}
+                        <span className="text-xs text-gray-500">↗</span>
+                      </button>
                     </div>
                   )}
 
@@ -301,14 +351,12 @@ export default function Home() {
                     >
                       Edit
                     </Link>
-                    {agent.status === "IDLE" && (
-                      <button
-                        onClick={() => handleDelete(agent.id)}
-                        className="bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 text-sm font-medium transition-colors"
-                      >
-                        Delete
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDelete(agent)}
+                      className="bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 text-sm font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
 
                   {agent.status === "IDLE" && (
@@ -350,9 +398,20 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">
-                {selectedChat.my_agent_name} ↔ {selectedChat.opponent_agent_name}
-              </h2>
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-bold text-gray-800">
+                  {selectedChat.my_agent_name} ↔ {selectedChat.opponent_agent_name}
+                </h2>
+                {selectedChat.status === "ACTIVE" && (
+                  <button
+                    onClick={handleTerminate}
+                    disabled={terminating}
+                    className="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold hover:bg-red-200 transition-colors disabled:opacity-50"
+                  >
+                    {terminating ? "Terminating..." : "Terminate"}
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedChat(null)}
                 className="text-gray-400 hover:text-gray-600 text-2xl leading-none"

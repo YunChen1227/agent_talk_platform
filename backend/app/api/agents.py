@@ -2,6 +2,8 @@ from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.agent import Agent, AgentStatus
+from app.models.session import SessionStatus, MatchResult
+from app.models.enums import Verdict
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.agent.persona import create_agent
 from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository
@@ -15,7 +17,16 @@ async def create_new_agent(
     agent_repo: AgentRepository = Depends(get_agent_repo),
     user_repo: UserRepository = Depends(get_user_repo)
 ):
-    agent = await create_agent(agent_repo, user_repo, agent_in.user_id, agent_in.name)
+    # Pass optional fields to create_agent
+    agent = await create_agent(
+        agent_repo, 
+        user_repo, 
+        agent_in.user_id, 
+        agent_in.name,
+        description=agent_in.description,
+        system_prompt=agent_in.system_prompt,
+        opening_remark=agent_in.opening_remark
+    )
     return agent
 
 @router.get("/", response_model=List[AgentRead])
@@ -58,8 +69,38 @@ async def update_agent(
 @router.delete("/{id}", status_code=204)
 async def delete_agent(
     id: UUID,
-    repo: AgentRepository = Depends(get_agent_repo)
+    repo: AgentRepository = Depends(get_agent_repo),
+    session_repo: SessionRepository = Depends(get_session_repo),
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo)
 ):
+    agent = await repo.get(id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    # If agent is in an active session, terminate it properly
+    if agent.status == AgentStatus.PAIRED:
+        session_obj = await session_repo.find_by_agent(id)
+        if session_obj and session_obj.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
+            # Terminate session
+            session_obj.status = SessionStatus.TERMINATED
+            await session_repo.update(session_obj)
+            
+            # Record result
+            result = MatchResult(
+                session_id=session_obj.id,
+                verdict=Verdict.DEADLOCK,
+                summary="Agent was deleted by user.",
+                reason="Agent deletion"
+            )
+            await match_result_repo.create(result)
+            
+            # Notify OTHER agent (set to DONE so it stops waiting)
+            other_id = session_obj.agent_b_id if session_obj.agent_a_id == id else session_obj.agent_a_id
+            other_agent = await repo.get(other_id)
+            if other_agent:
+                other_agent.status = AgentStatus.DONE
+                await repo.update(other_agent)
+
     success = await repo.delete(id)
     if not success:
         raise HTTPException(status_code=404, detail="Agent not found")

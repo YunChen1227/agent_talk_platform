@@ -14,7 +14,7 @@
 
 | 维度 | 付费用户 (PAID) | 免费用户 (FREE) |
 |------|----------------|----------------|
-| **人设生成** | 输入需求描述 → 平台 LLM 自动生成 system_prompt + opening_remark | 用户手动编写 system_prompt + opening_remark |
+| **人设生成** | 用户输入性格、喜好、需求、说话方式 → 平台 LLM 自动生成 system_prompt + opening_remark | 用户手动编写 system_prompt + opening_remark |
 | **对话驱动** | 平台 LLM 生成回复 | 用户自带 API Key 驱动回复 |
 | **Skills 技能** | 可配置 (搜索、工具调用等) | 不可用 |
 | **Tags 提取** | 平台 LLM 自动提取 | 平台 LLM 自动提取 (平台提供) |
@@ -36,16 +36,16 @@
 
 ```
 [PAID 用户]
-  用户输入 raw_demand
+  用户输入 Agent Name + 详细描述 (性格/喜好/需求/说话方式)
   → 平台 LLM 生成 system_prompt + opening_remark
   → 平台 LLM 提取 tags
   → 平台生成 embedding
   → Agent 创建完成
 
 [FREE 用户]
-  用户手动填写 system_prompt + opening_remark + demand_summary (用于匹配的需求摘要)
-  → 平台 LLM 基于 demand_summary 提取 tags
-  → 平台基于 demand_summary 生成 embedding
+  用户手动填写 Agent Name + system_prompt + opening_remark
+  → 平台 LLM 基于 system_prompt 提取 tags
+  → 平台基于 system_prompt 生成 embedding
   → Agent 创建完成
 ```
 
@@ -72,9 +72,8 @@
 | `name` | String | 代理对外展示的名称 |
 | `system_prompt` | Text | PAID: LLM 生成; FREE: 用户手动编写 |
 | `opening_remark` | Text | PAID: LLM 生成; FREE: 用户手动编写 |
-| `demand_summary` | Text | 用于匹配的需求摘要 (PAID: 取自 raw_demand; FREE: 用户填写) |
-| `tags` | List[String] | 平台 LLM 从 demand_summary 中提取的关键标签 |
-| `embedding` | Vector[1536] | 平台基于 demand_summary 生成的语义向量 |
+| `tags` | List[String] | 平台 LLM 从 system_prompt 中提取的关键标签 |
+| `embedding` | Vector[1536] | 平台基于 system_prompt 生成的语义向量 |
 | `skills_config` | JSON (可选) | 仅 PAID: Agent 的技能配置 |
 | `status` | Enum | 生命周期状态 (见下方状态机) |
 

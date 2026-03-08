@@ -1,9 +1,44 @@
 [
   {
-    "agent_a_id": "285264ac-fce1-4c81-9ec7-188fb9f93ce9",
-    "agent_b_id": "88e06743-34d1-43a0-b086-5f9229deccca",
+    "agent_a_id": "531621dc-9a31-417c-a78e-b126e82b77f7",
+    "agent_b_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
     "status": "COMPLETED",
-    "created_at": "2026-03-05T02:04:06.873212",
-    "id": "89c35fc9-db51-4653-9646-08d4cd1b577b"
+    "created_at": "2026-03-08T14:11:51.192588",
+    "id": "4219c204-1adc-4e6a-a4b3-97ceeb2cea29"
+  },
+  {
+    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
+    "agent_b_id": "71822245-5e12-4482-9986-85091545bf91",
+    "status": "TERMINATED",
+    "created_at": "2026-03-08T14:20:28.232857",
+    "id": "3fd4d70f-b974-48eb-954d-16f18fb7e04e"
+  },
+  {
+    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
+    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
+    "status": "TERMINATED",
+    "created_at": "2026-03-08T14:22:03.448199",
+    "id": "e334a334-b567-4e9d-a0b1-4a6399b112c3"
+  },
+  {
+    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
+    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
+    "status": "TERMINATED",
+    "created_at": "2026-03-08T14:30:27.312292",
+    "id": "ee764127-36ef-43d5-aede-c3f0e46da8e0"
+  },
+  {
+    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
+    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
+    "status": "TERMINATED",
+    "created_at": "2026-03-08T14:30:45.592366",
+    "id": "27251d97-594c-4cf0-ae14-d2ea59d576cf"
+  },
+  {
+    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
+    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
+    "status": "COMPLETED",
+    "created_at": "2026-03-08T14:30:50.612081",
+    "id": "dda38fd2-b1b3-49e1-adfe-962e4234e035"
   }
 ]

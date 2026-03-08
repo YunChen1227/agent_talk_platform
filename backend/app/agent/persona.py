@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Optional
 from app.models.agent import Agent, AgentStatus
 from app.models.user import User
 from app.repositories.base import AgentRepository, UserRepository
@@ -12,7 +12,7 @@ async def generate_system_prompt(user_demand: str, user_tags: List[str]) -> Tupl
         return f"System prompt for demand: {user_demand}", "Hello! I am looking for a match."
 
     prompt = f"""
-    You are an AI agent representing a user with the following demand: "{user_demand}".
+    You are an AI agent representing a user with the following description: "{user_demand}".
     Key tags: {', '.join(user_tags)}.
     
     Your goal is to negotiate with other agents to find the best match for your user.
@@ -63,7 +63,15 @@ async def generate_system_prompt(user_demand: str, user_tags: List[str]) -> Tupl
         print(f"Error generating system prompt: {e}")
         return f"System prompt for demand: {user_demand}", "Hello!"
 
-async def create_agent(agent_repo: AgentRepository, user_repo: UserRepository, user_id: Union[str, UUID], name: str) -> Agent:
+async def create_agent(
+    agent_repo: AgentRepository, 
+    user_repo: UserRepository, 
+    user_id: Union[str, UUID], 
+    name: str,
+    description: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+    opening_remark: Optional[str] = None
+) -> Agent:
     if isinstance(user_id, str):
         user_id = UUID(user_id)
         
@@ -71,17 +79,33 @@ async def create_agent(agent_repo: AgentRepository, user_repo: UserRepository, u
     if not user:
         raise ValueError("User not found")
 
-    demand = user.raw_demand or ""
-    tags = await extract_tags(demand) if demand else []
-    embedding = await get_embedding(demand) if demand else None
+    # Determine if PAID or FREE logic (mock logic for now, assuming FREE if system_prompt provided)
+    # In real impl, check user.tier
+    is_paid_flow = (description is not None) and (system_prompt is None)
 
-    system_prompt, opening_remark = await generate_system_prompt(demand, tags)
+    final_system_prompt = ""
+    final_opening_remark = ""
+    tags = []
+    embedding = None
+
+    if is_paid_flow:
+        # PAID: Generate from description
+        tags = await extract_tags(description)
+        embedding = await get_embedding(description)
+        final_system_prompt, final_opening_remark = await generate_system_prompt(description, tags)
+    else:
+        # FREE: Use provided prompt
+        final_system_prompt = system_prompt or ""
+        final_opening_remark = opening_remark or ""
+        # Platform still generates tags/embedding for matching
+        tags = await extract_tags(final_system_prompt)
+        embedding = await get_embedding(final_system_prompt)
     
     agent = Agent(
         user_id=user_id,
         name=name,
-        system_prompt=system_prompt,
-        opening_remark=opening_remark,
+        system_prompt=final_system_prompt,
+        opening_remark=final_opening_remark,
         status=AgentStatus.IDLE,
         tags=tags,
         embedding=embedding,

@@ -2,7 +2,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.deps import get_session_repo, get_message_repo, get_agent_repo, get_match_result_repo
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository, MatchResultRepository
-from app.models.session import SessionStatus
+from app.models.session import SessionStatus, MatchResult
+from app.models.enums import Verdict, AgentStatus
+from app.models.agent import Agent
 
 router = APIRouter()
 
@@ -72,3 +74,52 @@ async def get_session_details(
         
     history = await message_repo.get_history(id)
     return {"session": session_obj, "history": history}
+
+
+@router.post("/{id}/terminate")
+async def terminate_session(
+    id: UUID,
+    user_id: UUID,
+    session_repo: SessionRepository = Depends(get_session_repo),
+    agent_repo: AgentRepository = Depends(get_agent_repo),
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+):
+    """Manually terminate a session by user."""
+    session_obj = await session_repo.get(id)
+    if not session_obj:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # 1. Permission Check
+    agent_a = await agent_repo.get(session_obj.agent_a_id)
+    agent_b = await agent_repo.get(session_obj.agent_b_id)
+    
+    if not agent_a or not agent_b:
+        raise HTTPException(status_code=500, detail="Agent data corrupted")
+
+    if agent_a.user_id != user_id and agent_b.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to terminate this session")
+
+    # 2. Status Check
+    if session_obj.status != SessionStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail=f"Cannot terminate session in {session_obj.status} status. Wait for judgment if JUDGING.")
+
+    # 3. Terminate
+    session_obj.status = SessionStatus.TERMINATED
+    await session_repo.update(session_obj)
+
+    # Create Deadlock Result
+    result = MatchResult(
+        session_id=id,
+        verdict=Verdict.DEADLOCK,
+        summary="User manually terminated the conversation.",
+        reason="User termination"
+    )
+    await match_result_repo.create(result)
+
+    # Update Agents to DONE
+    agent_a.status = AgentStatus.DONE
+    agent_b.status = AgentStatus.DONE
+    await agent_repo.update(agent_a)
+    await agent_repo.update(agent_b)
+
+    return {"status": "terminated"}

@@ -14,6 +14,9 @@ if __name__ == "__main__":
     # Set environment variable before importing app
     os.environ["MODE"] = args.mode
     
-    print(f"Starting server in {args.mode.upper()} mode...")
+    # Set log level based on mode
+    log_level = "debug" if args.mode == "dev" else "info"
     
-    uvicorn.run("main:app", host=args.host, port=args.port, reload=args.reload)
+    print(f"Starting server in {args.mode.upper()} mode with log level {log_level.upper()}...")
+    
+    uvicorn.run("main:app", host=args.host, port=args.port, reload=args.reload, log_level=log_level)
