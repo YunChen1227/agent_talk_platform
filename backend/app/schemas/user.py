@@ -13,4 +13,5 @@ from uuid import UUID
 
 class UserRead(BaseModel):
     id: UUID
+    username: str
     raw_demand: Optional[str] = None

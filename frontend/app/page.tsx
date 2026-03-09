@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { listAgents, startMatching, deleteAgent, getAgentResult, getActiveSessions, getSessionDetails, getLatestJudge, terminateSession, getSystemStatus, toggleLlmMatcher } from "@/lib/api";
+import { listAgents, startMatching, stopMatching, deleteAgent, getAgentResult, getActiveSessions, getCompletedSessions, getSessionDetails, getLatestJudge, terminateSession, getSystemStatus, toggleLlmMatcher, shareContact } from "@/lib/api";
 import Link from "next/link";
 
 interface AgentResult {
@@ -19,6 +19,7 @@ interface AgentResult {
     reason: string;
   } | null;
   contact: string | null;
+  my_contact_shared: boolean;
 }
 
 interface ActiveSession {
@@ -30,14 +31,26 @@ interface ActiveSession {
   status: string;
 }
 
+interface CompletedSession {
+  session_id: string;
+  my_agent_name: string;
+  my_agent_id: string;
+  opponent_agent_name: string;
+  opponent_agent_id: string;
+  status: string;
+  verdict: string | null;
+}
+
 export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [agents, setAgents] = useState<any[]>([]);
   const [selectedResult, setSelectedResult] = useState<AgentResult | null>(null);
   const [selectedAgentName, setSelectedAgentName] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState("");
   const [loadingResult, setLoadingResult] = useState(false);
-  const [notifiedAgents, setNotifiedAgents] = useState<Set<string>>(new Set());
+  const [sharingContact, setSharingContact] = useState(false);
   const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([]);
+  const [completedSessions, setCompletedSessions] = useState<CompletedSession[]>([]);
   const [selectedChat, setSelectedChat] = useState<ActiveSession | null>(null);
   const [chatMessages, setChatMessages] = useState<{ sender: string; content: string; timestamp: string }[]>([]);
   const [chatJudge, setChatJudge] = useState<{ verdict: string; summary: string; reason: string } | null>(null);
@@ -45,6 +58,7 @@ export default function Home() {
   const [terminating, setTerminating] = useState(false);
   const [isDevMode, setIsDevMode] = useState(false);
   const [useLlmMatcher, setUseLlmMatcher] = useState(false);
+  const [selectedResultSessionId, setSelectedResultSessionId] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -62,6 +76,9 @@ export default function Home() {
     getActiveSessions(userData.id).then(data => {
       if (Array.isArray(data)) setActiveSessions(data);
     });
+    getCompletedSessions(userData.id).then(data => {
+      if (Array.isArray(data)) setCompletedSessions(data);
+    });
     
     // Check system status
     getSystemStatus().then(status => {
@@ -76,27 +93,12 @@ export default function Home() {
       getActiveSessions(userData.id).then(data => {
         if (Array.isArray(data)) setActiveSessions(data);
       });
+      getCompletedSessions(userData.id).then(data => {
+        if (Array.isArray(data)) setCompletedSessions(data);
+      });
     }, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  // Detect newly completed agents for notification
-  useEffect(() => {
-    const doneAgents = agents.filter(a => a.status === "DONE");
-    const newNotifications: string[] = [];
-    doneAgents.forEach(a => {
-      if (!notifiedAgents.has(a.id)) {
-        newNotifications.push(a.id);
-      }
-    });
-    if (newNotifications.length > 0) {
-      setNotifiedAgents(prev => {
-        const next = new Set(prev);
-        newNotifications.forEach(id => next.add(id));
-        return next;
-      });
-    }
-  }, [agents]);
 
   const fetchAgents = async () => {
     if (!user) return;
@@ -105,6 +107,20 @@ export default function Home() {
       if (Array.isArray(data)) {
         setAgents(data);
       }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchSessions = async () => {
+    if (!user) return;
+    try {
+      const [activeData, completedData] = await Promise.all([
+        getActiveSessions(user.id),
+        getCompletedSessions(user.id),
+      ]);
+      if (Array.isArray(activeData)) setActiveSessions(activeData);
+      if (Array.isArray(completedData)) setCompletedSessions(completedData);
     } catch (e) {
       console.error(e);
     }
@@ -119,8 +135,18 @@ export default function Home() {
     try {
       await startMatching(id);
       fetchAgents();
+      fetchSessions();
     } catch (e) {
       alert("Error starting match");
+    }
+  };
+
+  const handleStopMatching = async (id: string) => {
+    try {
+      await stopMatching(id);
+      fetchAgents();
+    } catch (e) {
+      alert("Error stopping match");
     }
   };
 
@@ -139,6 +165,7 @@ export default function Home() {
       const success = await deleteAgent(agent.id);
       if (success) {
         fetchAgents();
+        fetchSessions();
         // If we deleted the agent currently open in chat modal, close it
         if (selectedChat && selectedChat.my_agent_id === agent.id) {
           setSelectedChat(null);
@@ -185,6 +212,7 @@ export default function Home() {
       alert("Conversation terminated.");
       setSelectedChat(null); // Close modal
       fetchAgents(); // Refresh list
+      fetchSessions();
     } catch (e: any) {
       alert(e.response?.data?.detail || "Error terminating session");
     } finally {
@@ -209,11 +237,13 @@ export default function Home() {
     return () => clearInterval(t);
   }, [selectedChat, refreshChat]);
 
-  const handleViewResult = async (agent: any) => {
+  const handleViewResult = async (session: CompletedSession) => {
     setLoadingResult(true);
-    setSelectedAgentName(agent.name);
+    setSelectedAgentName(session.my_agent_name);
+    setSelectedAgentId(session.my_agent_id);
+    setSelectedResultSessionId(session.session_id);
     try {
-      const data = await getAgentResult(agent.id);
+      const data = await getAgentResult(session.my_agent_id, session.session_id);
       setSelectedResult(data);
     } catch (e) {
       alert("Error loading result");
@@ -222,30 +252,35 @@ export default function Home() {
     }
   };
 
+  const handleShareContact = async () => {
+    if (!selectedAgentId || !selectedResultSessionId) return;
+    if (!confirm("确认向对方展示你的联系方式吗？")) return;
+    setSharingContact(true);
+    try {
+      await shareContact(selectedAgentId, selectedResultSessionId);
+      const data = await getAgentResult(selectedAgentId, selectedResultSessionId);
+      setSelectedResult(data);
+      fetchSessions();
+    } catch (e: any) {
+      alert(e.response?.data?.detail || "Failed to share contact");
+    } finally {
+      setSharingContact(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "IDLE": return "bg-green-500";
       case "MATCHING": return "bg-blue-500";
-      case "PAIRED": return "bg-yellow-500";
-      case "DONE": return "bg-purple-500";
-      default: return "bg-gray-500";
+      default: return "bg-green-500";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "IDLE": return "Idle";
       case "MATCHING": return "Matching...";
-      case "PAIRED": return "Chating";
-      case "DONE": return "Result Ready";
-      default: return status;
+      default: return "Idle";
     }
   };
-
-  const sessionMap: Record<string, ActiveSession> = {};
-  activeSessions.forEach((s) => {
-    sessionMap[s.my_agent_id] = s;
-  });
 
   if (!user) return null;
 
@@ -297,11 +332,7 @@ export default function Home() {
             {agents.map((agent) => (
               <div
                 key={agent.id}
-                className={`bg-white p-6 rounded-lg shadow-md border flex flex-col justify-between ${
-                  agent.status === "DONE"
-                    ? "border-purple-400 ring-2 ring-purple-200"
-                    : "border-gray-200"
-                }`}
+                className="bg-white p-6 rounded-lg shadow-md border flex flex-col justify-between border-gray-200"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
@@ -311,33 +342,10 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {agent.status === "DONE" && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-md p-3 mb-2">
-                      <p className="text-purple-800 text-sm font-medium">
-                        Negotiation complete! Click below to see the result.
-                      </p>
-                    </div>
-                  )}
-
-                  {agent.status === "PAIRED" && sessionMap[agent.id] && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
-                      <p className="text-yellow-800 text-sm font-medium mb-1">
-                        Chatting with:
-                      </p>
-                      <button
-                        onClick={() => handleOpenChat(sessionMap[agent.id])}
-                        className="text-blue-600 font-bold hover:underline text-lg flex items-center gap-1"
-                      >
-                        {sessionMap[agent.id].opponent_agent_name}
-                        <span className="text-xs text-gray-500">↗</span>
-                      </button>
-                    </div>
-                  )}
-
                   {agent.status === "MATCHING" && (
                     <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-2">
                       <p className="text-blue-800 text-sm font-medium">
-                        Looking for a match...
+                        Looking for matches...
                       </p>
                     </div>
                   )}
@@ -359,34 +367,92 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {agent.status === "IDLE" && (
+                  {agent.status !== "MATCHING" && (
                     <button
                       className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
                       onClick={() => handleMatch(agent.id)}
                     >
-                      Match
+                      Start Match
                     </button>
                   )}
-
-                  <div className="flex gap-2">
-                    {agent.status === "DONE" && (
-                      <button
-                        className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
-                        onClick={() => handleMatch(agent.id)}
-                      >
-                        Re-Match
-                      </button>
-                    )}
-                    {(agent.status === "DONE" || agent.status === "PAIRED") && (
-                      <button
-                        className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
-                        onClick={() => handleViewResult(agent)}
-                      >
-                        View Result
-                      </button>
-                    )}
-                  </div>
+                  {agent.status === "MATCHING" && (
+                    <button
+                      className="bg-gray-700 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-800 transition-colors"
+                      onClick={() => handleStopMatching(agent.id)}
+                    >
+                      Stop Match
+                    </button>
+                  )}
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="w-full max-w-6xl mt-10">
+        <h2 className="text-2xl font-bold mb-4 text-black">Active Sessions</h2>
+        {activeSessions.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <p className="text-gray-500">No active conversations. Start matching to begin.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activeSessions.map((session) => (
+              <button
+                key={session.session_id}
+                onClick={() => handleOpenChat(session)}
+                className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-900 font-medium">
+                    {session.my_agent_name} ↔ {session.opponent_agent_name}
+                  </p>
+                  <span className={`text-xs px-2 py-1 rounded-full font-bold ${
+                    session.status === "JUDGING"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}>
+                    {session.status}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="w-full max-w-6xl mt-10">
+        <h2 className="text-2xl font-bold mb-4 text-black">Completed Sessions</h2>
+        {completedSessions.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <p className="text-gray-500">No completed sessions yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {completedSessions.map((session) => (
+              <div
+                key={session.session_id}
+                className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-gray-900 font-medium">
+                    {session.my_agent_name} ↔ {session.opponent_agent_name}
+                  </p>
+                  <span className={`inline-block text-xs px-2 py-1 rounded-full font-bold mt-2 ${
+                    session.verdict === "CONSENSUS"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    {session.verdict || session.status}
+                  </span>
+                </div>
+                <button
+                  className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
+                  onClick={() => handleViewResult(session)}
+                >
+                  View Result
+                </button>
               </div>
             ))}
           </div>
@@ -482,7 +548,7 @@ export default function Home() {
                 {selectedAgentName} — Match Details
               </h2>
               <button
-                onClick={() => { setSelectedResult(null); }}
+                onClick={() => { setSelectedResult(null); setSelectedAgentId(""); setSelectedResultSessionId(""); }}
                 className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
               >
                 &times;
@@ -523,13 +589,41 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Contact Info */}
-                {selectedResult.contact && (
-                  <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
-                    <h3 className="text-sm font-bold text-blue-800 mb-1">Contact Information</h3>
-                    <p className="text-blue-900 text-lg font-mono">{selectedResult.contact}</p>
-                    {selectedResult.other_agent_name && (
-                      <p className="text-blue-600 text-xs mt-1">Matched with: {selectedResult.other_agent_name}</p>
+                {/* Contact Consent & Info */}
+                {selectedResult.result?.verdict === "CONSENSUS" && (
+                  <div className="space-y-3">
+                    {!selectedResult.my_contact_shared ? (
+                      <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+                        <h3 className="text-sm font-bold text-amber-800 mb-2">Share Your Contact</h3>
+                        <p className="text-amber-700 text-sm mb-3">
+                          You need to opt in before your contact details are shared with your match.
+                        </p>
+                        <button
+                          onClick={handleShareContact}
+                          disabled={sharingContact}
+                          className="bg-amber-600 text-white px-3 py-1.5 rounded text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
+                        >
+                          {sharingContact ? "Sharing..." : "Share My Contact"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-green-50 border border-green-300 rounded-lg p-4">
+                        <p className="text-green-800 text-sm font-medium">You have shared your contact.</p>
+                      </div>
+                    )}
+
+                    {selectedResult.contact ? (
+                      <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
+                        <h3 className="text-sm font-bold text-blue-800 mb-1">Contact Information</h3>
+                        <p className="text-blue-900 text-lg font-mono">{selectedResult.contact}</p>
+                        {selectedResult.other_agent_name && (
+                          <p className="text-blue-600 text-xs mt-1">Matched with: {selectedResult.other_agent_name}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                        <p className="text-gray-700 text-sm">Waiting for opponent to share their contact...</p>
+                      </div>
                     )}
                   </div>
                 )}

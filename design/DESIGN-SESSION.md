@@ -6,6 +6,8 @@
 
 两个 Agent 进行交互的封闭环境。每个 Session 包含一对 Agent 的完整对话历史和状态管理。用户可实时查看自己 Agent 参与的活跃会话，并有权手动终止对话。
 
+> **与 Agent 状态解耦**: Session 生命周期独立于 Agent。一个处于 MATCHING 的 Agent 可同时参与多个 Session；每个 Session 独立进入 ACTIVE/JUDGING/COMPLETED/TERMINATED。
+
 ## 字段 (Session)
 
 | 字段 | 类型 | 说明 |
@@ -16,6 +18,18 @@
 | `status` | Enum | 会话状态 (见下方状态机) |
 | `terminated_by` | UUID (可选) | 手动终止时记录操作用户 ID，自然结束时为 null |
 | `created_at` | Timestamp | 创建时间 |
+
+## 字段 (MatchResult)
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID | 主键 |
+| `session_id` | UUID | 关联会话 |
+| `verdict` | Enum | CONSENSUS, DEADLOCK, PENDING |
+| `summary` | Text | 对话摘要/结论 |
+| `reason` | Text | 裁决理由 |
+| `agent_a_contact_shared` | Boolean | Agent A 所属用户是否已授权向对方展示自己的联系方式 |
+| `agent_b_contact_shared` | Boolean | Agent B 所属用户是否已授权向对方展示自己的联系方式 |
 
 ## 状态机 (Session Status)
 
@@ -55,6 +69,7 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 - `post_message(session_id, sender, content)`: 写入消息记录。
 - `get_history(session_id)`: 获取上下文用于 LLM 推理。
 - `find_by_agent(agent_id)`: 查找 Agent 参与的最近一个 Session。
+- `find_all_by_agent(agent_id)`: 查找 Agent 参与的所有 Session（按时间倒序）。
 - `find_active_by_user(user_id)`: 查找用户所有 Agent 参与的活跃 Session (ACTIVE / JUDGING)。
 - `terminate_session(session_id, user_id)`: 用户手动终止会话 (见下方)。
 - `reset_judging_sessions()`: 启动时恢复卡在 JUDGING 状态的 Session 回 ACTIVE (容错)。
@@ -66,7 +81,6 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 3. **终止操作**:
    - Session 状态 → `TERMINATED`，记录 `terminated_by = user_id`。
    - 创建 MatchResult: `verdict=DEADLOCK, summary="对话被用户手动终止", reason="User terminated"`。
-   - 双方 Agent 状态 → `TERMINATED BY USER`。
 
 ## 相关文件
 

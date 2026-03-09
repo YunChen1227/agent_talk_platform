@@ -10,9 +10,11 @@
 
 每轮循环按顺序执行:
 
-1. **Matcher 阶段**: 调用 `scan_and_match()`，发现并创建新配对。
+1. **Matcher 阶段**: 调用 `scan_and_match()`，发现并创建新配对（不修改 Agent 状态）。
 2. **对话阶段**: 遍历所有 ACTIVE Session，为每个 Session 调用 `process_turn()` 让当前 Agent 发言。
 3. **裁判阶段**: 对同一 Session 调用 `audit_session()` 评估对话是否结束。
+
+> **状态解耦**: Orchestrator 仅驱动 Session 流程。Agent 处于 MATCHING 时可并行参与多个 Session，Session 结束不会将 Agent 强制置为 DONE。
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

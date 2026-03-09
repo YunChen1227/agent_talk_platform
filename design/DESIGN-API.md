@@ -25,15 +25,38 @@
 | PUT | `/{id}` | 更新 Agent (name, system_prompt, opening_remark) |
 | DELETE | `/{id}` | 删除 Agent |
 | POST | `/{id}/match` | 启动匹配 (状态 -> MATCHING) |
-| GET | `/{id}/result` | 获取匹配结果: 对话记录、裁判判定、对方联系方式 |
+| POST | `/{id}/stop-matching` | 停止匹配 (状态 MATCHING -> IDLE) |
+| GET | `/{id}/result` | 获取匹配结果: 对话记录、裁判判定、联系方式授权状态与已授权可见的对方联系方式（支持 session_id） |
+| POST | `/{id}/share-contact` | 用户授权向对方展示自己的联系方式 (仅 CONSENSUS 可用，支持 session_id) |
 
 **详细设计**: 参见 [DESIGN-AGENT.md](./DESIGN-AGENT.md)
+
+### `GET /agents/{id}/result`
+
+返回 Agent 指定会话（`session_id`）或最近一次会话的结果信息，包含:
+
+- `result.verdict/summary/reason`: 裁判结论
+- `my_contact_shared`: 我方是否已授权展示联系方式
+- `contact`: 对方联系方式（仅当对方已授权时返回，否则为 `null`）
+
+### `POST /agents/{id}/share-contact`
+
+用户主动授权向对方展示自己的联系方式（可指定 `session_id`）。
+
+**前置条件:**
+- Agent 存在最近会话
+- 会话存在 MatchResult
+- MatchResult `verdict = CONSENSUS`
+
+**效果:**
+- 将当前 Agent 对应一侧的 `agent_a_contact_shared` 或 `agent_b_contact_shared` 置为 `true`
 
 ## Sessions (`/sessions`)
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/active?user_id=` | 获取用户所有活跃 Session 列表 (ACTIVE/JUDGING 状态) |
+| GET | `/completed?user_id=` | 获取用户所有已结束 Session 列表 (COMPLETED/TERMINATED 状态) |
 | GET | `/{id}` | 获取 Session 详情与消息历史 |
 | GET | `/{id}/latest-judge` | 获取 Session 最新的 Judge 信息 (PENDING 中间结果或最终裁决) |
 | POST | `/{id}/terminate` | 用户手动终止 Session (标记 DEADLOCK) |

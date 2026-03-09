@@ -161,6 +161,11 @@ class JSONSessionRepository(SessionRepository):
                 return s
         return None
 
+    async def find_all_by_agent(self, agent_id: UUID) -> List[Session]:
+        sessions = self.store.list_all(Session)
+        matched = [s for s in sessions if s.agent_a_id == agent_id or s.agent_b_id == agent_id]
+        return sorted(matched, key=lambda x: x.created_at, reverse=True)
+
     async def update(self, session: Session) -> Session:
         return self.store.add(session)
 
@@ -187,6 +192,9 @@ class JSONMatchResultRepository(MatchResultRepository):
     async def create(self, result: MatchResult) -> MatchResult:
         if not result.id:
             result.id = uuid4()
+        return self.store.add(result)
+
+    async def update(self, result: MatchResult) -> MatchResult:
         return self.store.add(result)
 
     async def get_by_session_id(self, session_id: UUID) -> Optional[MatchResult]:
@@ -218,12 +226,9 @@ class JSONMatcherRepository(MatcherRepository):
         
         existing_pairs = set()
         for s in sessions:
-            # In dev mode, allow re-matching if session is not active/judging
-            if settings.MODE == "dev":
-                if s.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
-                    existing_pairs.add((s.agent_a_id, s.agent_b_id))
-                    existing_pairs.add((s.agent_b_id, s.agent_a_id))
-            else:
+            # Only block duplicate pairs while a session is active/judging.
+            # Completed/terminated pairs can match again later.
+            if s.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
                 existing_pairs.add((s.agent_a_id, s.agent_b_id))
                 existing_pairs.add((s.agent_b_id, s.agent_a_id))
         

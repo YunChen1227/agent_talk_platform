@@ -20,6 +20,8 @@ class MatchResultBase(SQLModel):
     verdict: Verdict
     summary: Optional[str] = None
     reason: Optional[str] = None
+    agent_a_contact_shared: bool = Field(default=False)
+    agent_b_contact_shared: bool = Field(default=False)
 
 class MatchResult(MatchResultBase, table=True):
     id: Optional[UUID] = Field(default_factory=uuid4, primary_key=True)

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.deps import get_session_repo, get_message_repo, get_agent_repo, get_match_result_repo
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository, MatchResultRepository
 from app.models.session import SessionStatus, MatchResult
-from app.models.enums import Verdict, AgentStatus
+from app.models.enums import Verdict
 from app.models.agent import Agent
 
 router = APIRouter()
@@ -17,31 +17,80 @@ async def get_active_sessions(
 ):
     """List all active sessions (ACTIVE/JUDGING) where the user's agents participate."""
     my_agents = await agent_repo.list_by_user(user_id)
-    paired_agents = [a for a in my_agents if a.status == "PAIRED"]
-    if not paired_agents:
+    if not my_agents:
         return []
 
     active_statuses = (SessionStatus.ACTIVE, SessionStatus.JUDGING)
     result = []
     seen = set()
+    my_agent_map = {a.id: a for a in my_agents}
 
-    for agent in paired_agents:
-        session_obj = await session_repo.find_by_agent(agent.id)
-        if not session_obj or session_obj.status not in active_statuses:
-            continue
-        if session_obj.id in seen:
-            continue
-        seen.add(session_obj.id)
-        other_id = session_obj.agent_b_id if agent.id == session_obj.agent_a_id else session_obj.agent_a_id
-        other_agent = await agent_repo.get(other_id)
-        result.append({
-            "session_id": str(session_obj.id),
-            "my_agent_name": agent.name,
-            "my_agent_id": str(agent.id),
-            "opponent_agent_name": other_agent.name if other_agent else "Unknown",
-            "opponent_agent_id": str(other_id),
-            "status": session_obj.status,
-        })
+    for my_agent in my_agents:
+        sessions = await session_repo.find_all_by_agent(my_agent.id)
+        for session_obj in sessions:
+            if session_obj.status not in active_statuses:
+                continue
+            if session_obj.id in seen:
+                continue
+            seen.add(session_obj.id)
+
+            my_agent_id = session_obj.agent_a_id if session_obj.agent_a_id in my_agent_map else session_obj.agent_b_id
+            other_id = session_obj.agent_b_id if my_agent_id == session_obj.agent_a_id else session_obj.agent_a_id
+            other_agent = await agent_repo.get(other_id)
+            owner_agent = my_agent_map.get(my_agent_id)
+            result.append({
+                "session_id": str(session_obj.id),
+                "my_agent_name": owner_agent.name if owner_agent else "Unknown",
+                "my_agent_id": str(my_agent_id),
+                "opponent_agent_name": other_agent.name if other_agent else "Unknown",
+                "opponent_agent_id": str(other_id),
+                "status": session_obj.status,
+            })
+
+    return result
+
+
+@router.get("/completed")
+async def get_completed_sessions(
+    user_id: UUID,
+    session_repo: SessionRepository = Depends(get_session_repo),
+    agent_repo: AgentRepository = Depends(get_agent_repo),
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+):
+    """List all completed/terminated sessions where the user's agents participate."""
+    my_agents = await agent_repo.list_by_user(user_id)
+    if not my_agents:
+        return []
+
+    completed_statuses = (SessionStatus.COMPLETED, SessionStatus.TERMINATED)
+    result = []
+    seen = set()
+    my_agent_map = {a.id: a for a in my_agents}
+
+    for my_agent in my_agents:
+        sessions = await session_repo.find_all_by_agent(my_agent.id)
+        for session_obj in sessions:
+            if session_obj.status not in completed_statuses:
+                continue
+            if session_obj.id in seen:
+                continue
+            seen.add(session_obj.id)
+
+            my_agent_id = session_obj.agent_a_id if session_obj.agent_a_id in my_agent_map else session_obj.agent_b_id
+            other_id = session_obj.agent_b_id if my_agent_id == session_obj.agent_a_id else session_obj.agent_a_id
+            other_agent = await agent_repo.get(other_id)
+            owner_agent = my_agent_map.get(my_agent_id)
+            match_result = await match_result_repo.get_by_session_id(session_obj.id)
+
+            result.append({
+                "session_id": str(session_obj.id),
+                "my_agent_name": owner_agent.name if owner_agent else "Unknown",
+                "my_agent_id": str(my_agent_id),
+                "opponent_agent_name": other_agent.name if other_agent else "Unknown",
+                "opponent_agent_id": str(other_id),
+                "status": session_obj.status,
+                "verdict": match_result.verdict if match_result else None,
+            })
 
     return result
 
@@ -115,11 +164,5 @@ async def terminate_session(
         reason="User termination"
     )
     await match_result_repo.create(result)
-
-    # Update Agents to DONE
-    agent_a.status = AgentStatus.DONE
-    agent_b.status = AgentStatus.DONE
-    await agent_repo.update(agent_a)
-    await agent_repo.update(agent_b)
 
     return {"status": "terminated"}

@@ -17,6 +17,8 @@
 | `verdict` | Enum | CONSENSUS-达成一致, DEADLOCK-僵局, PENDING-进行中 |
 | `summary` | Text | 对话摘要/结论 |
 | `reason` | Text | 裁决理由 |
+| `agent_a_contact_shared` | Boolean | Agent A 所属用户是否已授权向对方展示自己的联系方式 |
+| `agent_b_contact_shared` | Boolean | Agent B 所属用户是否已授权向对方展示自己的联系方式 |
 
 ## 核心功能
 

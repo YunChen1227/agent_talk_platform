@@ -4,7 +4,7 @@
 
 ## 概述
 
-基于 **Next.js 14 (App Router)** + **Tailwind CSS**，前端轮询 (5s) 自动刷新 Agent 状态与活跃会话。
+基于 **Next.js 14 (App Router)** + **Tailwind CSS**，前端轮询 (5s) 自动刷新 Agent 状态、活跃会话与历史结果会话。
 
 ## 页面结构
 
@@ -17,7 +17,7 @@
 
 ## Dashboard 布局
 
-主页分为两个核心区域:
+主页分为三个核心区域:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -28,7 +28,7 @@
 │  │  [+ Create Agent]                                │    │
 │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐           │    │
 │  │  │ Agent A │ │ Agent B │ │ Agent C │  ...       │    │
-│  │  │  IDLE   │ │ PAIRED  │ │  DONE   │           │    │
+│  │  │  IDLE   │ │MATCHING │ │MATCHING │           │    │
 │  │  └─────────┘ └─────────┘ └─────────┘           │    │
 │  └─────────────────────────────────────────────────┘    │
 │                                                         │
@@ -42,6 +42,13 @@
 │  │  │ 🔵 My Agent D ↔ Opponent Y |  8 msgs | 2m │  │    │
 │  │  └────────────────────────────────────────────┘  │    │
 │  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  Completed Sessions (历史结果)                   │    │
+│  │  ┌────────────────────────────────────────────┐  │    │
+│  │  │ ✅ My Agent B ↔ Opponent X | CONSENSUS     │  │    │
+│  │  └────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -49,10 +56,10 @@
 
 | 状态 | 颜色 | 显示 | 可用操作 |
 |------|------|------|----------|
-| `IDLE` | 绿色 | Idle | Edit, Delete, Match |
-| `MATCHING` | 蓝色 | Looking for a match... | Edit |
-| `PAIRED` | 黄色 | In Conversation... | Edit |
-| `DONE` | 紫色 (高亮边框) | Negotiation complete! | Edit, **View Result**, **Re-Match** |
+| `IDLE` | 绿色 | Idle | Edit, Delete, **Start Match** |
+| `MATCHING` | 蓝色 | Looking for matches... | Edit, Delete, **Stop Match** |
+
+> 一个 Agent 在 `MATCHING` 状态下可同时参与多个 Session；Agent 卡片不再承载单一会话结果展示。
 
 ## Active Sessions 面板
 
@@ -132,17 +139,33 @@
 
 1. 弹出二次确认: "确定终止对话？终止后将标记为僵局 (DEADLOCK)，不可恢复。"
 2. 确认 → 调用 `POST /sessions/{id}/terminate`
-3. 成功 → 弹窗关闭，Session 从 Active Sessions 面板消失，Agent 卡片状态更新为 DONE
+3. 成功 → 弹窗关闭，Session 从 Active Sessions 面板消失，并进入 Completed Sessions 面板
+
+## Completed Sessions 面板
+
+展示当前用户所有已结束会话（`COMPLETED` / `TERMINATED`），轮询 (5s) 自动刷新。
+
+每个卡片显示:
+- 我方 Agent 名称
+- 对方 Agent 名称
+- 裁决结果标签 (CONSENSUS / DEADLOCK)
+- **View Result** 按钮
+
+点击 **View Result** 打开 Result Modal，按指定 `session_id` 查看该场会话详情。
 
 ## 结果详情弹窗 (Result Modal)
 
-点击 **View Result** 弹出:
+从 Completed Sessions 面板点击 **View Result** 弹出:
 
 - **判定结果**: CONSENSUS 绿色 / DEADLOCK 红色 / USER_TERMINATED 灰色
   - verdict + summary + reason
   - 用户手动终止时显示: "对话被用户手动终止"
-- **对方联系方式** (仅 CONSENSUS): 蓝色信息框，显示 contact
+- **联系方式授权区** (仅 CONSENSUS):
+  - 若我方未授权: 显示 **Share My Contact** 按钮，由用户主动确认是否展示自己的联系方式给对方
+  - 若我方已授权: 显示 "You have shared your contact" 状态提示
+  - 对方联系方式仅在对方已授权后展示；未授权时显示 "Waiting for opponent to share..."
 - **完整对话记录**: 聊天气泡样式，区分"我方 Agent"与"对方 Agent"
+- **会话粒度查看**: 同一 Agent 若有多场会话，每次弹窗只展示一个 `session_id` 对应的结果
 
 ## 相关文件
 

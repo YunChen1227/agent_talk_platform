@@ -1,7 +1,6 @@
 from typing import List, Tuple
 from uuid import UUID
 from app.models.session import Session, SessionStatus
-from app.models.agent import AgentStatus
 from app.models.message import Message
 from app.repositories.base import MatcherRepository, SessionRepository, AgentRepository, MessageRepository
 
@@ -55,8 +54,6 @@ async def scan_and_match(
         agent_b = await agent_repo.get(candidate_id)
         
         if agent_a:
-            agent_a.status = AgentStatus.PAIRED
-            await agent_repo.update(agent_a)
             if agent_a.opening_remark:
                 msg_a = Message(
                     session_id=new_session.id,
@@ -66,8 +63,6 @@ async def scan_and_match(
                 await message_repo.create(msg_a)
             
         if agent_b:
-            agent_b.status = AgentStatus.PAIRED
-            await agent_repo.update(agent_b)
             if agent_b.opening_remark:
                 msg_b = Message(
                     session_id=new_session.id,

@@ -55,13 +55,30 @@ export const startMatching = async (id: string) => {
   return res.data;
 };
 
-export const getAgentResult = async (id: string) => {
-  const res = await api.get(`/agents/${id}/result`);
+export const stopMatching = async (id: string) => {
+  const res = await api.post(`/agents/${id}/stop-matching`);
+  return res.data;
+};
+
+export const getAgentResult = async (id: string, sessionId?: string) => {
+  const query = sessionId ? `?session_id=${sessionId}` : "";
+  const res = await api.get(`/agents/${id}/result${query}`);
+  return res.data;
+};
+
+export const shareContact = async (id: string, sessionId?: string) => {
+  const query = sessionId ? `?session_id=${sessionId}` : "";
+  const res = await api.post(`/agents/${id}/share-contact${query}`);
   return res.data;
 };
 
 export const getActiveSessions = async (userId: string) => {
   const res = await api.get(`/sessions/active?user_id=${userId}`);
+  return res.data;
+};
+
+export const getCompletedSessions = async (userId: string) => {
+  const res = await api.get(`/sessions/completed?user_id=${userId}`);
   return res.data;
 };
 

@@ -1,44 +1,23 @@
 [
   {
-    "agent_a_id": "531621dc-9a31-417c-a78e-b126e82b77f7",
-    "agent_b_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "status": "COMPLETED",
-    "created_at": "2026-03-08T14:11:51.192588",
-    "id": "4219c204-1adc-4e6a-a4b3-97ceeb2cea29"
+    "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "agent_b_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "status": "JUDGING",
+    "created_at": "2026-03-09T08:03:42.035227",
+    "id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
   {
-    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "agent_b_id": "71822245-5e12-4482-9986-85091545bf91",
-    "status": "TERMINATED",
-    "created_at": "2026-03-08T14:20:28.232857",
-    "id": "3fd4d70f-b974-48eb-954d-16f18fb7e04e"
+    "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "agent_b_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "status": "JUDGING",
+    "created_at": "2026-03-09T08:25:39.767461",
+    "id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
   {
-    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
-    "status": "TERMINATED",
-    "created_at": "2026-03-08T14:22:03.448199",
-    "id": "e334a334-b567-4e9d-a0b1-4a6399b112c3"
-  },
-  {
-    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
-    "status": "TERMINATED",
-    "created_at": "2026-03-08T14:30:27.312292",
-    "id": "ee764127-36ef-43d5-aede-c3f0e46da8e0"
-  },
-  {
-    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
-    "status": "TERMINATED",
-    "created_at": "2026-03-08T14:30:45.592366",
-    "id": "27251d97-594c-4cf0-ae14-d2ea59d576cf"
-  },
-  {
-    "agent_a_id": "db2e26e3-2e1c-48eb-8d64-39304681548a",
-    "agent_b_id": "400279f2-29c0-4896-9d9a-910c63218806",
-    "status": "COMPLETED",
-    "created_at": "2026-03-08T14:30:50.612081",
-    "id": "dda38fd2-b1b3-49e1-adfe-962e4234e035"
+    "agent_a_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "agent_b_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "status": "JUDGING",
+    "created_at": "2026-03-09T08:25:39.783676",
+    "id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   }
 ]

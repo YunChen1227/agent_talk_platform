@@ -77,29 +77,25 @@ async def delete_agent(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    # If agent is in an active session, terminate it properly
-    if agent.status == AgentStatus.PAIRED:
-        session_obj = await session_repo.find_by_agent(id)
-        if session_obj and session_obj.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
-            # Terminate session
-            session_obj.status = SessionStatus.TERMINATED
-            await session_repo.update(session_obj)
-            
-            # Record result
-            result = MatchResult(
-                session_id=session_obj.id,
-                verdict=Verdict.DEADLOCK,
-                summary="Agent was deleted by user.",
-                reason="Agent deletion"
-            )
-            await match_result_repo.create(result)
-            
-            # Notify OTHER agent (set to DONE so it stops waiting)
-            other_id = session_obj.agent_b_id if session_obj.agent_a_id == id else session_obj.agent_a_id
-            other_agent = await repo.get(other_id)
-            if other_agent:
-                other_agent.status = AgentStatus.DONE
-                await repo.update(other_agent)
+    sessions = await session_repo.find_all_by_agent(id)
+    for session_obj in sessions:
+        if session_obj.status not in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
+            continue
+
+        session_obj.status = SessionStatus.TERMINATED
+        await session_repo.update(session_obj)
+
+        existing_result = await match_result_repo.get_by_session_id(session_obj.id)
+        if existing_result:
+            continue
+
+        result = MatchResult(
+            session_id=session_obj.id,
+            verdict=Verdict.DEADLOCK,
+            summary="Agent was deleted by user.",
+            reason="Agent deletion"
+        )
+        await match_result_repo.create(result)
 
     success = await repo.delete(id)
     if not success:
@@ -111,14 +107,26 @@ async def start_matching(id: UUID, repo: AgentRepository = Depends(get_agent_rep
     agent = await repo.get(id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    if agent.status not in (AgentStatus.IDLE, AgentStatus.DONE):
+    if agent.status == AgentStatus.MATCHING:
         raise HTTPException(status_code=400, detail=f"Agent is currently {agent.status}, cannot start matching")
     agent = await repo.update_status(id, AgentStatus.MATCHING)
+    return agent
+
+
+@router.post("/{id}/stop-matching", response_model=AgentRead)
+async def stop_matching(id: UUID, repo: AgentRepository = Depends(get_agent_repo)):
+    agent = await repo.get(id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    if agent.status != AgentStatus.MATCHING:
+        raise HTTPException(status_code=400, detail=f"Agent is currently {agent.status}, cannot stop matching")
+    agent = await repo.update_status(id, AgentStatus.IDLE)
     return agent
 
 @router.get("/{id}/result")
 async def get_agent_result(
     id: UUID,
+    session_id: Optional[UUID] = None,
     agent_repo: AgentRepository = Depends(get_agent_repo),
     session_repo: SessionRepository = Depends(get_session_repo),
     message_repo: MessageRepository = Depends(get_message_repo),
@@ -129,9 +137,11 @@ async def get_agent_result(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    session_obj = await session_repo.find_by_agent(id)
+    session_obj = await session_repo.get(session_id) if session_id else await session_repo.find_by_agent(id)
     if not session_obj:
         return {"status": agent.status, "session": None}
+    if session_obj.agent_a_id != id and session_obj.agent_b_id != id:
+        raise HTTPException(status_code=400, detail="Session does not belong to this agent")
 
     other_agent_id = session_obj.agent_b_id if session_obj.agent_a_id == id else session_obj.agent_a_id
     other_agent = await agent_repo.get(other_agent_id)
@@ -145,11 +155,16 @@ async def get_agent_result(
     result = await match_result_repo.get_by_session_id(session_obj.id)
 
     contact = None
+    my_contact_shared = False
     other_agent_name = other_agent.name if other_agent else None
-    if result and result.verdict == "CONSENSUS" and other_agent:
-        other_user = await user_repo.get(other_agent.user_id)
-        if other_user:
-            contact = other_user.contact
+    is_agent_a = session_obj.agent_a_id == id
+    if result and result.verdict == Verdict.CONSENSUS:
+        my_contact_shared = result.agent_a_contact_shared if is_agent_a else result.agent_b_contact_shared
+        other_contact_shared = result.agent_b_contact_shared if is_agent_a else result.agent_a_contact_shared
+        if other_contact_shared and other_agent:
+            other_user = await user_repo.get(other_agent.user_id)
+            if other_user:
+                contact = other_user.contact
 
     return {
         "status": agent.status,
@@ -166,4 +181,46 @@ async def get_agent_result(
             "reason": result.reason,
         } if result else None,
         "contact": contact,
+        "my_contact_shared": my_contact_shared,
+    }
+
+
+@router.post("/{id}/share-contact")
+async def share_contact(
+    id: UUID,
+    session_id: Optional[UUID] = None,
+    agent_repo: AgentRepository = Depends(get_agent_repo),
+    session_repo: SessionRepository = Depends(get_session_repo),
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+):
+    agent = await agent_repo.get(id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    session_obj = await session_repo.get(session_id) if session_id else await session_repo.find_by_agent(id)
+    if not session_obj:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session_obj.agent_a_id != id and session_obj.agent_b_id != id:
+        raise HTTPException(status_code=400, detail="Session does not belong to this agent")
+
+    result = await match_result_repo.get_by_session_id(session_obj.id)
+    if not result:
+        raise HTTPException(status_code=400, detail="No match result yet")
+
+    if result.verdict != Verdict.CONSENSUS:
+        raise HTTPException(status_code=400, detail="Contact sharing is only available after CONSENSUS")
+
+    is_agent_a = session_obj.agent_a_id == id
+    if is_agent_a:
+        result.agent_a_contact_shared = True
+        my_contact_shared = result.agent_a_contact_shared
+    else:
+        result.agent_b_contact_shared = True
+        my_contact_shared = result.agent_b_contact_shared
+
+    await match_result_repo.update(result)
+
+    return {
+        "ok": True,
+        "my_contact_shared": my_contact_shared,
     }

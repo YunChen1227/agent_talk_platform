@@ -75,6 +75,10 @@ class SessionRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_all_by_agent(self, agent_id: UUID) -> List[Session]:
+        pass
+
+    @abstractmethod
     async def update(self, session: Session) -> Session:
         pass
 
@@ -90,6 +94,10 @@ class MessageRepository(ABC):
 class MatchResultRepository(ABC):
     @abstractmethod
     async def create(self, result: MatchResult) -> MatchResult:
+        pass
+
+    @abstractmethod
+    async def update(self, result: MatchResult) -> MatchResult:
         pass
 
     @abstractmethod

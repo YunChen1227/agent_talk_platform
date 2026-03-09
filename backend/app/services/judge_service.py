@@ -1,6 +1,5 @@
 from uuid import UUID
 from app.models.session import SessionStatus, MatchResult, Verdict
-from app.models.agent import AgentStatus
 from app.services.llm import judge_conversation
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository, MatchResultRepository
 
@@ -43,13 +42,6 @@ async def audit_session(session_repo: SessionRepository, message_repo: MessageRe
             )
             await match_result_repo.create(match_result)
             
-            # Mark both agents as DONE so they can no longer chat
-            if agent_a:
-                agent_a.status = AgentStatus.DONE
-                await agent_repo.update(agent_a)
-            if agent_b:
-                agent_b.status = AgentStatus.DONE
-                await agent_repo.update(agent_b)
         else:
             # Revert to ACTIVE
             session_obj.status = SessionStatus.ACTIVE

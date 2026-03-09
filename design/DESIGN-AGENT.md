@@ -82,30 +82,34 @@
 | 状态 | 说明 |
 |------|------|
 | `IDLE` | 闲置，可编辑/删除/启动匹配 |
-| `MATCHING` | 已加入匹配池，等待撮合引擎发现对手 |
-| `PAIRED` | 已配对，正在与对方 Agent 对话中 |
-| `DONE` | 裁判已出结果，对话结束，用户可查看结果与联系方式；可重新匹配新对手 |
+| `MATCHING` | 已加入匹配池；可持续被撮合并同时参与多个会话 |
 
 **状态流转:**
 
 ```
-IDLE ──(用户点击 Match)──> MATCHING ──(Matcher 配对)──> PAIRED ──(Judge 出结果)──> DONE
-                              ↑                                                    │
-                              └──────────────(用户点击 Re-Match)───────────────────┘
+IDLE ──(用户点击 Start Match)──> MATCHING
+  ↑                                 │
+  └────────(用户点击 Stop Match)─────┘
+
+MATCHING 状态下：
+- Agent 可并行参与多个不同对手的 Session
+- 同一对 Agent 同一时刻只允许一个 ACTIVE/JUDGING Session
 ```
 
 ## 管理功能
 
 - `update_agent`: 更新人设、开场白等。
 - `delete_agent`: 删除代理 (仅 IDLE 状态)。
-- `start_matching`: 将状态设为 MATCHING (仅 IDLE 或 DONE 状态可触发)。
+- `start_matching`: 将状态设为 MATCHING (除已在 MATCHING 外均可触发)。
+- `stop_matching`: 将状态从 MATCHING 设回 IDLE，不影响已在进行中的 Session。
   - **前置校验**: FREE 用户必须已配置 `llm_config`，否则拒绝匹配。
-- `get_agent_result`: 查询 Agent 的匹配结果、对话记录及对方联系方式。
+- `get_agent_result`: 查询 Agent 的匹配结果、对话记录、联系方式授权状态与已授权可见的对方联系方式。
 
 ## 设计决策
 
 - **tags 与 embedding 放在 Agent 而非 User 上**: 因为同一用户可以创建多个负责不同任务的 Agent，每个 Agent 有独立的匹配画像，互不干扰。
-- **去重保证**: 聊过天的两个 Agent 不会再次配对。所有匹配历史（包括 LLM 拒绝的）都通过 Session 记录追踪，Matcher 在配对前检查是否已存在 Session，保证同一对 Agent 永远不会重复匹配。DONE 状态的 Agent 可以重新进入 MATCHING，但只会匹配到**新的对手**。
+- **并发会话**: 单个 Agent 在 MATCHING 状态下可与多个不同对手并行对话，提升撮合效率。
+- **同对手并发去重**: 同一对 Agent 在同一时刻只允许一个 ACTIVE/JUDGING Session，避免重复并发聊天。
 - **LLM 来源分离**: 对话生成的 LLM 调用根据用户 tier 路由，平台级服务 (tags/embedding/judge) 始终走平台 LLM，不受用户配置影响。
 - **FREE 用户匹配前置校验**: 免费用户必须配好自己的 API Key 才能进入匹配，避免配对后无法生成回复。
 

@@ -106,9 +106,12 @@ class DBMatcherRepository(MatcherRepository):
 
                 if distance is not None and distance < threshold:
                     existing_session_stmt = select(Session).where(
-                        or_(
-                            and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
-                            and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id)
+                        and_(
+                            or_(
+                                and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
+                                and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id)
+                            ),
+                            Session.status.in_([SessionStatus.ACTIVE, SessionStatus.JUDGING])
                         )
                     )
                     existing_session = (await self.session.exec(existing_session_stmt)).first()
@@ -155,6 +158,12 @@ class DBSessionRepository(SessionRepository):
         result = (await self.session.exec(statement)).first()
         return result
 
+    async def find_all_by_agent(self, agent_id: UUID) -> List[Session]:
+        statement = select(Session).where(
+            or_(Session.agent_a_id == agent_id, Session.agent_b_id == agent_id)
+        ).order_by(Session.created_at.desc())
+        return (await self.session.exec(statement)).all()
+
     async def update(self, session: Session) -> Session:
         self.session.add(session)
         await self.session.commit()
@@ -180,6 +189,12 @@ class DBMatchResultRepository(MatchResultRepository):
         self.session = session
 
     async def create(self, result: MatchResult) -> MatchResult:
+        self.session.add(result)
+        await self.session.commit()
+        await self.session.refresh(result)
+        return result
+
+    async def update(self, result: MatchResult) -> MatchResult:
         self.session.add(result)
         await self.session.commit()
         await self.session.refresh(result)
