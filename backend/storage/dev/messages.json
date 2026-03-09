@@ -744,8 +744,99 @@
   {
     "content": "[DEV-MOCK] Turn 92: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
-    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c",
     "timestamp": "2026-03-09T08:56:44.568208",
-    "id": "0cb9aa16-4c4e-41d5-af16-adcf32b73619"
+    "id": "0cb9aa16-4c4e-41d5-af16-adcf32b73619",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 10: continuing negotiation.",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "timestamp": "2026-03-09T08:57:39.985783",
+    "id": "970faf7b-595d-4cd9-a594-a25d77150b73",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 7: continuing negotiation.",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-09T08:57:40.499757",
+    "id": "509cf37a-385d-4059-bd3a-f8bcd6e1bf4c",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 93: continuing negotiation.",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "timestamp": "2026-03-09T08:57:40.546403",
+    "id": "53d10cad-338c-48e7-806a-529598a2c96a",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 11: continuing negotiation.",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-09T08:57:56.384830",
+    "id": "c57dd858-6965-4b9e-9e68-1703a011e670",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 8: continuing negotiation.",
+    "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "timestamp": "2026-03-09T08:57:56.422597",
+    "id": "e40fb137-cfe7-41ee-85c3-88546f895b0b",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 94: continuing negotiation.",
+    "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "timestamp": "2026-03-09T08:57:56.458415",
+    "id": "035b8540-7b21-4c89-bc48-530955bc4873",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 12: continuing negotiation.",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "timestamp": "2026-03-09T08:58:12.337292",
+    "id": "9ae3b567-e703-47e4-9400-3af3feb5cb4c",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 9: continuing negotiation.",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-09T08:58:12.529940",
+    "id": "2b43f2c1-2f56-4850-9952-015333b7746e",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 95: continuing negotiation.",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "timestamp": "2026-03-09T08:58:12.949466",
+    "id": "35072bc9-6bdb-44f4-975a-2244d25d0808",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 13: continuing negotiation.",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-09T08:58:58.825961",
+    "id": "2d658ef6-09bf-46a7-bf75-331cf213d275",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 10: continuing negotiation.",
+    "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "timestamp": "2026-03-09T08:58:58.865608",
+    "id": "83713311-422d-4b7f-95d1-32483e1c8fed",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 96: continuing negotiation.",
+    "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "timestamp": "2026-03-09T08:58:58.902630",
+    "id": "309bb14d-c4ca-4fae-99ec-4e9c97d4d54c",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "content": "[DEV-MOCK] Turn 14: continuing negotiation.",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb",
+    "timestamp": "2026-03-09T08:59:38.004622",
+    "id": "463163c2-b00a-4caa-8b55-d48803f3f516"
   }
 ]

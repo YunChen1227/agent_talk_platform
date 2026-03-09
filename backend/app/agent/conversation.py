@@ -5,12 +5,8 @@ from app.models.message import Message
 from app.models.session import SessionStatus
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository
 from app.services.llm import get_random_client
-from app.core.config import settings
 
 async def generate_response(system_prompt: str, history: List[Dict[str, str]]) -> str:
-    if settings.MODE == "dev":
-        return f"[DEV-MOCK] Turn {len(history) + 1}: continuing negotiation."
-
     client_info = get_random_client()
     if not client_info:
         return f"Mock response based on history length {len(history)}"

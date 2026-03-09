@@ -2,21 +2,21 @@
   {
     "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "agent_b_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
-    "status": "JUDGING",
+    "status": "ACTIVE",
     "created_at": "2026-03-09T08:03:42.035227",
     "id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
   {
     "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "agent_b_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
-    "status": "JUDGING",
+    "status": "ACTIVE",
     "created_at": "2026-03-09T08:25:39.767461",
     "id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
   {
     "agent_a_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "agent_b_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
-    "status": "JUDGING",
+    "status": "ACTIVE",
     "created_at": "2026-03-09T08:25:39.783676",
     "id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   }
