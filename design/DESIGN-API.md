@@ -4,7 +4,7 @@
 
 ## 概述
 
-基于 FastAPI 的 RESTful API，提供用户认证、Agent 管理、会话查询与控制、系统状态等接口。
+基于 FastAPI 的 RESTful API，提供用户认证、Agent 管理、媒体上传、用户商店、会话查询与控制、系统状态等接口。
 
 ## Auth (`/auth`)
 
@@ -22,7 +22,7 @@
 | POST | `/` | 创建 Agent (LLM 生成人设) |
 | GET | `/?user_id=` | 列出用户的所有 Agent |
 | GET | `/{id}` | 获取 Agent 详情 |
-| PUT | `/{id}` | 更新 Agent (name, system_prompt, opening_remark) |
+| PUT | `/{id}` | 更新 Agent (name, system_prompt, opening_remark, linked_product_ids) |
 | DELETE | `/{id}` | 删除 Agent |
 | POST | `/{id}/match` | 启动匹配 (状态 -> MATCHING) |
 | POST | `/{id}/stop-matching` | 停止匹配 (状态 MATCHING -> IDLE) |
@@ -108,6 +108,35 @@
 
 **详细设计**: 参见 [DESIGN-SESSION.md](./DESIGN-SESSION.md)
 
+## Media (`/media`)
+
+用户上传照片、视频及设置头像。所有接口需校验 `user_id` 归属。
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/media/upload` | 上传照片或视频 (multipart/form-data, 需 user_id) |
+| GET | `/media/?user_id=` | 列出该用户的所有媒体 |
+| DELETE | `/media/{id}` | 删除媒体 (校验归属) |
+| POST | `/media/avatar` | 设置头像 (body: user_id, media_id)，更新 User.avatar_url |
+
+**详细设计**: 参见 [DESIGN-USER.md](./DESIGN-USER.md) 用户媒体一节。登录/用户信息响应中应包含 `avatar_url`（参见 UserRead）。
+
+## Shop (`/shop`)
+
+用户个人商店，商品仅对所属用户可见。所有列表/详情/写操作均按 `user_id` 过滤。
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/shop/products` | 创建商品 (可带 linked_agent_ids) |
+| GET | `/shop/products?user_id=` | 列出该用户的商品 (仅本人) |
+| GET | `/shop/products/{id}` | 获取商品详情 (仅本人，需 user_id) |
+| PUT | `/shop/products/{id}` | 更新商品 (仅所属用户) |
+| DELETE | `/shop/products/{id}` | 删除商品 (仅所属用户) |
+| POST | `/shop/products/{id}/link-agent` | 将 Agent 关联到该商品 (body: agent_id, user_id) |
+| POST | `/shop/products/{id}/unlink-agent` | 解除 Agent 与商品的关联 |
+
+**详细设计**: 参见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md)
+
 ## System
 
 | Method | Path | Description |
@@ -122,4 +151,6 @@
 | `backend/app/api/auth.py` | 注册/登录路由 |
 | `backend/app/api/agents.py` | Agent CRUD + match + result 路由 |
 | `backend/app/api/sessions.py` | Session 查询 + 终止路由 |
+| `backend/app/api/media.py` | 媒体上传/列表/删除/头像路由 |
+| `backend/app/api/shop.py` | 商品 CRUD + 关联/解绑路由 |
 | `backend/main.py` | FastAPI 入口 |

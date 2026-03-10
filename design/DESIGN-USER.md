@@ -4,39 +4,7 @@
 
 ## 概述
 
-负责存储用户基础信息、认证数据与账户层级。用户是 Agent 的所有者，一个用户可拥有多个不同任务的 Agent。
-
-## 页面设计 (UI Design)
-
-### 主界面 (Dashboard)
-
-用户登录后的核心管理界面，展示所有 Agent 的状态与交互入口。
-
-#### 1. Agent 列表展示
-- **布局**: 卡片式网格布局，每个 Agent 作为一个独立卡片。
-- **基本信息**: 
-  - Agent 名称
-  - 状态标识 (Status Badge): 显示在名字右侧。
-    - `IDLE` (空闲): 绿色
-    - `MATCHING` (匹配中): 蓝色
-    - `CHATTING` (聊天中): 黄色 (对应后端 PAIRED 状态)
-    - `DONE` (已完成): 紫色
-
-#### 2. 状态交互逻辑
-- **IDLE**: 显示 "Match" 按钮，点击开始匹配。
-- **MATCHING**: 显示 "Matching..."，等待系统分配。
-- **CHATTING**:
-  - 在 Agent 卡片下方显示对方 Agent 的名字 (e.g., "Chatting with: [Alice_Agent]").
-  - **交互**: 点击对方名字，弹出 **聊天详情弹窗**。
-- **DONE**:
-  - 显示 "View Result" 按钮，点击查看最终谈判结果。
-
-#### 3. 聊天详情弹窗 (Chat Modal)
-- **触发**: 点击 CHATTING 状态下的对方 Agent 名字。
-- **内容**:
-  - **实时聊天记录**: 双方 Agent 的对话历史。
-  - **裁判结果 (Judge Result)**: 实时显示 Judger 对当前对话的评估 (Consensus/Deadlock/Pending) 及理由。
-- **刷新**: 弹窗开启时自动轮询最新消息。
+负责存储用户基础信息、认证数据与账户层级。用户是 Agent 的所有者，一个用户可拥有多个不同任务的 Agent。页面与交互设计参见 [DESIGN-FRONTEND.md](./DESIGN-FRONTEND.md)。
 
 ## 字段 (Fields)
 
@@ -47,6 +15,7 @@
 | `password_hash` | String | 密码哈希 |
 | `tier` | Enum | 账户层级: `FREE` / `PAID` |
 | `contact` | String (可选) | 联系方式，仅在 CONSENSUS 后向对方展示 |
+| `avatar_url` | String (可选) | 用户头像图片 URL，由用户上传后设置 |
 | `llm_config` | JSON (可选) | 免费用户自行配置的 LLM 接入信息 (见下方) |
 
 ## 账户层级 (Tier)
@@ -71,6 +40,41 @@
 
 > **安全**: `api_key` 加密存储，仅用于该用户 Agent 的对话生成，平台不作它用。
 
+## 用户媒体 (User Media)
+
+用户可上传照片、视频到自己的界面，并设置一张照片作为头像。在交友等场景下，Agent 可在对话中发送用户上传的媒体给对方。
+
+### UserMedia 模型
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID | 主键 |
+| `user_id` | UUID | 所属用户 |
+| `file_type` | Enum | `image` / `video` |
+| `url` | String | 访问 URL (Dev: 本地路径; Prod: 云存储 URL) |
+| `thumbnail_url` | String (可选) | 缩略图 URL，视频可选 |
+| `original_filename` | String | 原始文件名 |
+| `created_at` | Timestamp | 上传时间 |
+
+### 存储模式
+
+| 模式 | 文件存储 | 说明 |
+|------|----------|------|
+| Dev | `backend/storage/uploads/` + `storage/dev/media.json` | 本地文件 + 元数据 JSON |
+| Prod | 云存储 (S3/MinIO 等) | 元数据存 DB，文件存对象存储 |
+
+### 上传限制
+
+- 单文件大小、总数量、允许格式 (如 image/jpeg, image/png, video/mp4) 由配置或策略限定。
+- 头像为特殊用例：用户可选一张已上传的图片设为头像，对应 User 的 `avatar_url`。
+
+### 媒体相关功能
+
+- `upload_media(user_id, file)`: 上传照片或视频，返回 UserMedia 记录。
+- `delete_media(media_id, user_id)`: 删除媒体 (校验归属)。
+- `list_media(user_id)`: 列出该用户所有媒体。
+- `set_avatar(user_id, media_id)`: 将指定媒体设为头像，更新 User.avatar_url。
+
 ## 核心功能 (Functions)
 
 - `register(username, password)`: 注册用户，默认 `tier=FREE`。
@@ -83,6 +87,10 @@
 | 文件路径 | 说明 |
 |----------|------|
 | `backend/app/models/user.py` | User 数据模型 (SQLModel) |
+| `backend/app/models/media.py` | UserMedia 数据模型 |
 | `backend/app/schemas/user.py` | UserCreate, UserLogin, UserRead |
+| `backend/app/schemas/media.py` | Media 请求/响应模式 |
 | `backend/app/api/auth.py` | 注册/登录路由 |
+| `backend/app/api/media.py` | 媒体上传/列表/删除/头像路由 |
 | `backend/app/services/user_service.py` | 用户注册/认证业务逻辑 |
+| `backend/app/services/media_service.py` | 媒体上传与存储逻辑 |

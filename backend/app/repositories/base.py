@@ -5,6 +5,8 @@ from app.models.user import User
 from app.models.agent import Agent, AgentStatus
 from app.models.session import Session, MatchResult
 from app.models.message import Message
+from app.models.media import Media
+from app.models.product import Product
 
 class UserRepository(ABC):
     @abstractmethod
@@ -17,6 +19,10 @@ class UserRepository(ABC):
 
     @abstractmethod
     async def get_by_username(self, username: str) -> Optional[User]:
+        pass
+
+    @abstractmethod
+    async def update(self, user: User) -> User:
         pass
 
 class AgentRepository(ABC):
@@ -102,4 +108,44 @@ class MatchResultRepository(ABC):
 
     @abstractmethod
     async def get_by_session_id(self, session_id: UUID) -> Optional[MatchResult]:
+        pass
+
+
+class MediaRepository(ABC):
+    @abstractmethod
+    async def create(self, media: Media) -> Media:
+        pass
+
+    @abstractmethod
+    async def get(self, media_id: UUID) -> Optional[Media]:
+        pass
+
+    @abstractmethod
+    async def list_by_user(self, user_id: UUID) -> List[Media]:
+        pass
+
+    @abstractmethod
+    async def delete(self, media_id: UUID) -> bool:
+        pass
+
+
+class ProductRepository(ABC):
+    @abstractmethod
+    async def create(self, product: Product) -> Product:
+        pass
+
+    @abstractmethod
+    async def get(self, product_id: UUID) -> Optional[Product]:
+        pass
+
+    @abstractmethod
+    async def list_by_user(self, user_id: UUID) -> List[Product]:
+        pass
+
+    @abstractmethod
+    async def update(self, product: Product) -> Product:
+        pass
+
+    @abstractmethod
+    async def delete(self, product_id: UUID) -> bool:
         pass

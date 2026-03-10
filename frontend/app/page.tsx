@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { listAgents, startMatching, stopMatching, deleteAgent, getAgentResult, getActiveSessions, getCompletedSessions, getSessionDetails, getLatestJudge, terminateSession, getSystemStatus, toggleLlmMatcher, shareContact } from "@/lib/api";
+import { listAgents, startMatching, stopMatching, deleteAgent, getAgentResult, getActiveSessions, getCompletedSessions, getSessionDetails, getLatestJudge, terminateSession, getSystemStatus, toggleLlmMatcher, shareContact, API_URL } from "@/lib/api";
 import Link from "next/link";
 
 interface AgentResult {
@@ -304,7 +304,12 @@ export default function Home() {
               </button>
             </div>
           )}
-          <span className="text-gray-700">Welcome, {user.username}</span>
+          <Link href="/profile" className="text-gray-700 hover:underline">
+            Welcome, {user.username}
+          </Link>
+          {user.avatar_url && (
+            <img src={API_URL + user.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300" />
+          )}
           <button
             onClick={handleLogout}
             className="text-red-500 hover:underline"

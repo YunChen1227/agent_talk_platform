@@ -7,6 +7,7 @@ class UserBase(SQLModel):
     raw_demand: Optional[str] = Field(default="")
     username: str = Field(unique=True, index=True)
     password_hash: str
+    avatar_url: Optional[str] = Field(default=None)
 
 class User(UserBase, table=True):
     id: Optional[UUID] = Field(default_factory=uuid4, primary_key=True)

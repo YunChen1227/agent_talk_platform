@@ -16,3 +16,11 @@ class Verdict(str, Enum):
     CONSENSUS = "CONSENSUS"
     DEADLOCK = "DEADLOCK"
     PENDING = "PENDING"
+
+class MediaFileType(str, Enum):
+    IMAGE = "image"
+    VIDEO = "video"
+
+class ProductStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"

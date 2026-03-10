@@ -9,7 +9,7 @@
   {
     "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "agent_b_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
-    "status": "ACTIVE",
+    "status": "JUDGING",
     "created_at": "2026-03-09T08:25:39.767461",
     "id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -19,5 +19,12 @@
     "status": "ACTIVE",
     "created_at": "2026-03-09T08:25:39.783676",
     "id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "agent_a_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "agent_b_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "status": "ACTIVE",
+    "created_at": "2026-03-10T09:04:53.644509",
+    "id": "39b16fc7-89f7-4e84-b1da-7fc1dba29873"
   }
 ]

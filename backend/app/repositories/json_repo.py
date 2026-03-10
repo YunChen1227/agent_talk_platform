@@ -10,7 +10,9 @@ from app.models.user import User
 from app.models.agent import Agent, AgentStatus
 from app.models.session import Session, SessionStatus, MatchResult
 from app.models.message import Message
-from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository
+from app.models.media import Media
+from app.models.product import Product
+from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository, MediaRepository, ProductRepository
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -24,7 +26,12 @@ class JSONStore:
             os.makedirs(data_dir, exist_ok=True)
 
     def _get_path(self, model_class: Type[T]) -> str:
-        return os.path.join(self.data_dir, f"{model_class.__name__.lower()}s.json")
+        name = model_class.__name__.lower()
+        if name == "media":
+            return os.path.join(self.data_dir, "media.json")
+        if name == "product":
+            return os.path.join(self.data_dir, "products.json")
+        return os.path.join(self.data_dir, f"{name}s.json")
 
     def load(self, model_class: Type[T]) -> List[T]:
         path = self._get_path(model_class)
@@ -94,6 +101,9 @@ class JSONUserRepository(UserRepository):
             if user.username == username:
                 return user
         return None
+
+    async def update(self, user: User) -> User:
+        return self.store.add(user)
 
 class JSONAgentRepository(AgentRepository):
     def __init__(self, store: JSONStore):
@@ -224,13 +234,11 @@ class JSONMatcherRepository(MatcherRepository):
         agents = self.store.load(Agent)
         sessions = self.store.load(Session)
         
+        # 任何状态下只要聊过天，这一对 Agent 以后都不会再被匹配
         existing_pairs = set()
         for s in sessions:
-            # Only block duplicate pairs while a session is active/judging.
-            # Completed/terminated pairs can match again later.
-            if s.status in (SessionStatus.ACTIVE, SessionStatus.JUDGING):
-                existing_pairs.add((s.agent_a_id, s.agent_b_id))
-                existing_pairs.add((s.agent_b_id, s.agent_a_id))
+            existing_pairs.add((s.agent_a_id, s.agent_b_id))
+            existing_pairs.add((s.agent_b_id, s.agent_a_id))
         
         matching_agents = [a for a in agents if a.status == AgentStatus.MATCHING]
         matched_pairs = []
@@ -244,12 +252,17 @@ class JSONMatcherRepository(MatcherRepository):
             min_dist = float('inf')
 
             for candidate in matching_agents:
+                # 不和自己配对
                 if candidate.id == agent.id:
+                    continue
+                # 同一个用户下的 Agent 不互相聊天
+                if candidate.user_id == agent.user_id:
                     continue
                 
                 if (agent.id, candidate.id) in processed_pairs or (candidate.id, agent.id) in processed_pairs:
                     continue
                     
+                # 之前任何状态下已经有过 Session 的双方，不再匹配
                 if (agent.id, candidate.id) in existing_pairs:
                     continue
                 
@@ -268,3 +281,46 @@ class JSONMatcherRepository(MatcherRepository):
                 processed_pairs.add((agent.id, best_match.id))
                 
         return matched_pairs
+
+
+class JSONMediaRepository(MediaRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def create(self, media: Media) -> Media:
+        if not media.id:
+            media.id = uuid4()
+        return self.store.add(media)
+
+    async def get(self, media_id: UUID) -> Optional[Media]:
+        return self.store.get(Media, media_id)
+
+    async def list_by_user(self, user_id: UUID) -> List[Media]:
+        all_media = self.store.list_all(Media)
+        return [m for m in all_media if m.user_id == user_id]
+
+    async def delete(self, media_id: UUID) -> bool:
+        return self.store.delete(Media, media_id)
+
+
+class JSONProductRepository(ProductRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def create(self, product: Product) -> Product:
+        if not product.id:
+            product.id = uuid4()
+        return self.store.add(product)
+
+    async def get(self, product_id: UUID) -> Optional[Product]:
+        return self.store.get(Product, product_id)
+
+    async def list_by_user(self, user_id: UUID) -> List[Product]:
+        all_products = self.store.list_all(Product)
+        return [p for p in all_products if p.user_id == user_id]
+
+    async def update(self, product: Product) -> Product:
+        return self.store.add(product)
+
+    async def delete(self, product_id: UUID) -> bool:
+        return self.store.delete(Product, product_id)

@@ -17,7 +17,6 @@ async def create_new_agent(
     agent_repo: AgentRepository = Depends(get_agent_repo),
     user_repo: UserRepository = Depends(get_user_repo)
 ):
-    # Pass optional fields to create_agent
     agent = await create_agent(
         agent_repo, 
         user_repo, 
@@ -25,7 +24,8 @@ async def create_new_agent(
         agent_in.name,
         description=agent_in.description,
         system_prompt=agent_in.system_prompt,
-        opening_remark=agent_in.opening_remark
+        opening_remark=agent_in.opening_remark,
+        linked_product_ids=agent_in.linked_product_ids,
     )
     return agent
 
@@ -62,6 +62,8 @@ async def update_agent(
         agent.system_prompt = agent_in.system_prompt
     if agent_in.opening_remark is not None:
         agent.opening_remark = agent_in.opening_remark
+    if agent_in.linked_product_ids is not None:
+        agent.linked_product_ids = agent_in.linked_product_ids
         
     updated_agent = await repo.update(agent)
     return updated_agent

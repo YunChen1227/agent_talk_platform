@@ -61,12 +61,28 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 | `session_id` | UUID | 关联会话 |
 | `sender_id` | UUID | 发送方 Agent |
 | `content` | Text | 消息内容 |
+| `attachments` | List[MessageAttachment] (可选) | 附件：图片、视频或商品卡片，见下方 |
 | `timestamp` | Timestamp | 发送时间 |
+
+### MessageAttachment（消息附件）
+
+单条消息可携带零个或多个附件，用于交友场景发送用户照片/视频、买卖场景发送商品卡片。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `type` | Enum | `image` \| `video` \| `product` |
+| `media_id` | UUID (可选) | 当 type 为 image/video 时，引用 UserMedia.id |
+| `product_id` | UUID (可选) | 当 type 为 product 时，引用 Product.id |
+| `url` | String | 展示用 URL（图片/视频直链或商品封面图） |
+| `thumbnail_url` | String (可选) | 缩略图 URL，视频与商品卡片可选 |
+
+- **image / video**：Agent 代表用户发送其上传的媒体，对方可见图片或视频。
+- **product**：Agent 发送已关联商品的卡片，对方可见商品名称、价格、封面图等，详见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md)。
 
 ## 核心功能 (Functions)
 
 - `start_session(agent_a, agent_b)`: 创建 Session。
-- `post_message(session_id, sender, content)`: 写入消息记录。
+- `post_message(session_id, sender, content, attachments?)`: 写入消息记录，可选附件。
 - `get_history(session_id)`: 获取上下文用于 LLM 推理。
 - `find_by_agent(agent_id)`: 查找 Agent 参与的最近一个 Session。
 - `find_all_by_agent(agent_id)`: 查找 Agent 参与的所有 Session（按时间倒序）。

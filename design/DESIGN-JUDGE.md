@@ -33,7 +33,6 @@
 5. **CONSENSUS / DEADLOCK**:
    - 更新 Session 状态为 COMPLETED / TERMINATED。
    - 创建 MatchResult 记录，永久保存裁决结果。
-   - 将双方 Agent 状态设为 `DONE`。
    - **聊过天的两个 Agent 不会再次配对** (Session 记录作为去重依据)。
 6. **PENDING**: Session 状态回退为 ACTIVE，等待下一轮对话。
 7. **异常处理**: 出错时 Session 状态回退为 ACTIVE，保证不会永远卡在 JUDGING。

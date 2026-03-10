@@ -15,3 +15,4 @@ class UserRead(BaseModel):
     id: UUID
     username: str
     raw_demand: Optional[str] = None
+    avatar_url: Optional[str] = None

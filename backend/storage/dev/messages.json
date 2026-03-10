@@ -3,6 +3,7 @@
     "content": "请问您这里有电脑卖吗？",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:03:42.057911",
+    "attachments": null,
     "id": "16df39e1-86ed-46b3-98de-14d77be5159b",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -10,6 +11,7 @@
     "content": "有需要电脑配件的客户吗？",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:03:42.068908",
+    "attachments": null,
     "id": "8ff6e0b9-efb2-4870-bc0d-71749b86d71d",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -17,6 +19,7 @@
     "content": "有的有的，我就是！老板，我是个学生，想配一台打游戏的电脑。\n\n预算大概两万左右，这是我能拿出的极限了，所以得卡着这个价来，不能超太多。主机、显卡、显示器、键盘鼠标都得算在里面。我想性能尽量高一点，最好能畅玩各种 3A 大作，帧数要高，画质要好。你能给我推荐个方案吗？",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:04:26.972218",
+    "attachments": null,
     "id": "a99c4fc6-bee6-4a6d-933c-da2990bf3853",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -24,6 +27,7 @@
     "content": "哇，同学你这预算相当充足啊！两万能配出一台非常顶级的机器了，说实话，这个预算在学生群体里绝对是“土豪”级别的，看来你是真的懂行，而且对游戏体验要求很高。\n\n既然你要畅玩 3A 大作，还要高帧数、高画质，那咱们的核心原则就是：**把钱花在刀刃上，但也不能让外围配件拖了后腿。** 毕竟好马得配好鞍，要是显卡很强，但显示器或者硬盘跟不上，那体验大打折扣，过两年你还得升级，反而更浪费钱，你说对吧？\n\n我大概给你构思了一套“一步到位”的方案，咱们尽量卡在 2 万以内，但性能必须拉满：\n\n**1. 核心三大件（性能基石）：**\n*   **显卡：** 这个预算必须上 **RTX 4080 Super**。虽然 4090 更强，但那张卡光显卡就一万六七了，会严重挤压其他配件预算，导致整体不平衡。4080 Super 目前在 2K 和 4K 分辨率下通吃所有 3A 大作，性价比和性能平衡得最好。\n*   **CPU：** 推荐 **Intel i7-14700KF**。玩游戏 i7 足够了，i9 发热太大，你还得额外花大价钱在散热上，不如把预算留给显卡。\n*   **主板：** 配个 **Z790  chipset 的主板**，供电要好，这样以后哪怕你想超频或者用个五年十年，主板都不会成为瓶颈。\n\n**2. 存储与内存（流畅度关键）：**\n*   **内存：** 现在 3A 大作越来越吃内存了，我建议直接上 **32GB DDR5 6000MHz 起步**。其实我个人强烈建议直接上 **64GB**，差价也就几百块，但你以后多开程序、或者玩那种特别吃内存的游戏，完全不用操心，这叫“战未来”。\n*   **硬盘：** 现在游戏动不动就 100G 起步，1TB 真的不够装。我推荐直接 **2TB 的 PCIe 4.0 高速固态**，读速快，加载时间短，而且存得多。你要是只装 1TB，过半年又得加硬盘，到时候还得重装系统，麻烦得很。\n\n**3. 散热与机箱（稳定与颜值）：**\n*   **散热：** i7 发热量不低，为了稳定高帧率不降频，必须上 **360 水冷**。风冷虽然便宜点，但压制力不够，而且水冷看起来也更有科技感，放在桌面上也好看。\n*   **机箱：** 既然预算充足，咱得选个**海景房机箱**，再配几个**RGB 风扇**。你想想，晚上在宿舍打游戏，灯光一开，那个氛围感绝对不一样。这也是咱们店里的热销款，散热风道设计得也好。\n\n**4. 显示器与外设（体验直接挂钩）：**\n*   **显示器：** 既然显卡都 4080 Super 了，显示器千万别用普通的 1080P。我建议上 **27 寸 4K 144Hz 的 Fast IPS 屏**。画质细腻度提升巨大，而且高刷新率让你玩 FPS 游戏更丝滑。这块屏幕大概占 3000 左右的预算，但绝对值得。\n*   **键鼠：** 既然是打游戏，机械键盘和高 DPI 鼠标是必须的。我给你推荐一套**无线竞技套装**，延迟低，没有线材束缚，操作更自由。这套外设耐用性好，手感也佳，能用好几年。\n\n**大概算一下账：**\n主机部分大概 1.5 万左右，显示器 3000，外设 1000 多，加上一些线材、组装服务费，总价大概在 **19,800 元** 左右。\n\n你看，这个方案几乎是贴着你的预算上限来的，但每一分钱都花在了提升体验的地方。特别是那个 64GB 内存和 2TB 硬盘，虽然当时感觉有点溢出，但用起来你就知道多爽了，完全不用有存储焦虑。\n\n而且最近咱们店正好有个活动，如果你今天定下来的话，我可以申请送你一套**定制的键帽**，再给你**延长一年的整机保修**。毕竟你是学生，电脑要是出问题很影响学习娱乐，多一年保修也是个保障。\n\n你觉得这个配置怎么样？要是觉得哪里需要调整，咱们再商量，但我真心建议散热和硬盘这块别省，否则后期麻烦。",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:06:15.803157",
+    "attachments": null,
     "id": "d9432dd3-1115-42dc-b164-edbe1b8ed1fa",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -31,6 +35,7 @@
     "content": "老板，你这方案做得真细，听得我都心动了！确实，4080 Super 配 4K 显示器，这画质想想都爽。而且送保修和键帽，挺有诚意的。\n\n不过老板，你也知道我是学生，这兩万块真是我攒了好久的生活费，每一分钱都得掰成两半花。虽然你说总价 19,800 没超预算，但这数字太接近上限了，我心里有点慌，万一有点什么波动或者后续还要买些小配件（比如插排什么的），可能就超了。\n\n我有几个小想法，咱们商量商量：\n\n1.  **内存能不能先降回 32GB？** 我听很多懂行的朋友说，目前玩游戏 32GB  DDR5 已经完全够用了，64GB 对我来说确实有点性能过剩。如果把内存降回 32GB，省下来的钱能不能直接总价里扣掉？这样我心里更有底，毕竟省下来的钱够我吃好几个月的食堂了。\n2.  **电源你没提具体型号。** 这套配置功耗不低，电源可不能省啊。要是电源炸了，整机都危险。你得保证是知名品牌的大功率金牌电源吧？至少 850W 或者 1000W 吧？这块可不能含糊。\n3.  **显示器和外设的品牌。** 显示器 3000 元价位有很多选择，我得确认下是不是大牌子的，毕竟要用好几年，不能有坏点。外设的话，无线竞技套装要是品牌货就行，我不追求特别顶级的品牌，只要耐用、不连飘就行。\n\n如果内存改成 32GB，电源你给我用靠谱的大牌，总价能不能再给我优惠一点？比如凑个整 19,000 或者 19,500 以内？这样我手里还能留点备用金。你要是能帮我把这价格再压一压，我今天就能定下来，顺便还能在宿舍群里帮你宣传宣传！\n\n你看能不能再帮我调整一下？",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:07:37.364026",
+    "attachments": null,
     "id": "b5b602d5-76f2-4158-856b-60ecdf83c3c7",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -38,6 +43,7 @@
     "content": "同学，你这话说得太实在了，听得我都想给你打个折！确实，学生党每一分钱都是辛苦攒下来的，我得替你精打细算。咱们做生意的，讲究的是细水长流，你这要是用得好了，以后宿舍兄弟配电脑肯定都找你推荐，这广告效应可比省那几百块钱值钱多了。\n\n既然你这么有诚意，我也拿出点诚意来，咱们好好调整一下这个方案：\n\n**1. 关于内存（32GB vs 64GB）：**\n你说得对，目前绝大多数 3A 大作，**32GB DDR5 确实是黄金标准**，完全够用。64GB 是我刚才太想让你“一步到位”了，稍微有点过度推荐。咱们改成 32GB（16G×2 双通道），这部分省下来的钱，我直接给你扣掉。\n\n**2. 关于电源（绝对不能省）：**\n这点你非常懂行！电源就是电脑的心脏，要是炸了确实带走一波。我保证，给你配 **知名品牌（比如海韵、 Corsair 或者长城）的 850W 金牌全模组电源**。这个功率带 4080 Super 绰绰有余，留了冗余，以后就算你升级配件也够用。这块我绝不拿杂牌糊弄你，安全第一。\n\n**3. 关于显示器和外设：**\n显示器我给你选 **AOC 或者 LG 的 4K 144Hz**，都是大厂面板，保证无坏点，售后也有保障。外设咱们选 **罗技或者雷蛇的入门竞技款**，无线连接稳定，耐用性没问题，性价比最高，不整那些虚头巴脑的溢价品牌。\n\n**4. 关于价格（最关键）：**\n本来 19,800 已经是压着利润报了，但既然你提到要在宿舍群帮我宣传，我也得支持一下学弟。\n内存降了 32GB，省了一部分成本；我再去跟经理申请个“学生专项补贴”。\n**19,000 确实有点太低了，连硬件成本都快压不住了，毕竟 4080 Super 摆在那。**\n咱们折中一下，**19,500 元**，这是我能动用的最低权限了。\n\n**但是！** 为了让你觉得值，我再送你几个服务：\n1.  **硬盘保留 2TB：** 虽然你想省钱，但我真心建议硬盘别降。现在游戏太大了，1TB 真的很快就红，到时候加硬盘还得花钱买授权系统什么的，更麻烦。2TB 我给你按批发价算，不赚你钱。\n2.  **保修不变：** 刚才说的一年延保依然有效，整机三年上门保修（限本地）。\n3.  **送个 качественная 插排：** 你刚才提到插排，我直接送你一个公牛的防浪涌插排，安全用电，这个不用你买了。\n\n你看，**19,500 元，全包干，含正规发票，送插排，送延保，硬盘还是 2TB 的。** 这价格你去网上配都不一定拿得下来，而且我们这儿是实体店，跑得了和尚跑不了庙，售后随时找我。\n\n要是觉得行，我现在就去库房给你锁单，不然这显卡最近涨价厉害，我怕明天货没了。你微信还是支付宝？咱们先把单子定了，你也能安心回去吃顿好的庆祝一下！",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:24:06.774553",
+    "attachments": null,
     "id": "78ca0bd2-7791-41e8-8d5a-7c23488b9285",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -45,6 +51,7 @@
     "content": "请问您这里有电脑卖吗？",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:25:39.772509",
+    "attachments": null,
     "id": "123a1a1a-e26c-426b-b409-fc4a3feafed7",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -52,6 +59,7 @@
     "content": "老板，现在最好的电脑配件都是什么？",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:25:39.772509",
+    "attachments": null,
     "id": "052c406b-7e1d-4ed3-a116-c2368a0a4df6",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -59,6 +67,7 @@
     "content": "有需要电脑配件的客户吗？",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:25:39.791738",
+    "attachments": null,
     "id": "af40372b-c5b8-447c-af0c-923183fdde9d",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -66,6 +75,7 @@
     "content": "老板，现在最好的电脑配件都是什么？",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:25:39.793683",
+    "attachments": null,
     "id": "ad7c1f58-a240-41a0-844b-0e48b1442895",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -73,6 +83,7 @@
     "content": "老板，你这诚意我真的感受到了！19,500 元，还送公牛插排和延保，硬盘也没给我减，这确实比我心理预期要稳妥不少。毕竟实体店售后方便，这点我最看重，万一宿舍断电啥的导致硬件坏了，能找到人修才是硬道理。\n\n不过老板，你也体谅一下我，这毕竟是我全部的家当了。19,500 虽然没超 2 万预算，但留给我备用买零食什么的钱就几乎没了。咱们都是爽快人，你看这样行不行：\n\n1.  **价格再抹个零头**：19,300 元，图个吉利，我也好跟室友说是“不到一万九千四”配下来的顶级机，听起来更有面子，我在群里帮你吹的时候也更有底气嘛！\n2.  **具体型号落单**：虽然你说都是大牌，但我还是想麻烦你把**电源、主板、固态硬盘、显示器**的具体型号写在配置单上。比如电源是海韵的哪一款？显示器是 LG 的哪一款？我怕到时候货不对板，咱们先把这个确认好，我也放心。\n3.  **付款方式**：你看能不能**先付个定金**，比如 500 块，等你把货都调齐了，我过来验货，确认型号没问题，再付尾款？毕竟现在网上套路多，我这也是第一次配这么贵的电脑，谨慎点哈。\n4.  **额外小礼品**：如果价格实在压不下去，那能不能送个**正版游戏密钥**？比如最近火热的那个 3A 大作，或者送我一套好点的**鼠标垫和耳机支架**？反正这些小配件你们渠道拿货成本低，但对我来说能省不少钱。\n\n要是这几点能行，尤其是型号写清楚、能验货再付尾款，那 19,500 我也认了，毕竟你服务确实到位。但如果能到 19,300，我现在就掏定金！\n\n你看咱们能不能再争取一下？我也不想再去别家比价了，在你这儿配得舒心最重要。",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:26:21.070059",
+    "attachments": null,
     "id": "f842804a-dcb0-40c7-bdb9-e013a3d687f2",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -80,6 +91,7 @@
     "content": "哈哈，老板您别捧我了，我哪是老板啊，我就是个攒了许久零花钱的学生，来您这儿看电脑的顾客。\n\n说到最好的配件，我也稍微做过些功课，听说现在 4090 是卡皇，但那价格肯定超我预算了。我手里的预算大概两万块，而且这钱还得把主机、显示器、键盘鼠标全都包进去。\n\n您看这预算，能给我配个什么方案？最好能畅玩像《黑神话：悟空》那种 3A 大作的，画质得拉满吧。毕竟学生党钱不多，得追求个性价比，您给推荐推荐？",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:29:27.475906",
+    "attachments": null,
     "id": "bc737e76-47c2-4c50-a94a-9f406468a92b",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -87,6 +99,7 @@
     "content": "哎哟，哥/姐，您这问题问得太到位了！一看就是懂行或者想一步到位的行家。\n\n要说“最好”，那肯定得是目前的旗舰款，用起来不仅爽，而且未来三五年都不用升级，算下来其实更划算。\n\n如果您是想配整机或者升级核心部件，现在 **显卡肯定是 RTX 4090 当之无愧的卡皇**，配合 **Intel i9-14900K 或者 AMD 的 7950X3D**，这性能简直是天花板级别的。不过话说回来，好马得配好鞍，上了这个级别的 U 和卡，**电源我建议直接上 1000W 以上的白金认证**，不然供电不稳太可惜这配置了；**散热也得是 360 水冷起步**，不然压不住温度。\n\n除了主机内部，外在体验其实更直接影响心情。比如**显示器**，现在都流行 4K 144Hz 以上的 Mini-LED 屏，色彩和流畅度一旦习惯了就回不去了。还有**键盘和鼠标**，我建议试试那种客制化的机械键盘加上轻量化的无线鼠标，手感提升特别明显。\n\n对了，哥/姐，您平时主要是用来做什么比较多呢？是打 3A 大作、搞专业设计，还是顺便做做直播？因为不同用途，这个“最好”的搭配其实还能再精细调整一下。\n\n而且最近店里正好有几个旗舰套装的优惠活动，要是搭配着一起拿，比单买能省不少，还能给您延保。您要不先坐会儿，我给您详细列个单子看看？",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:31:25.707184",
+    "attachments": null,
     "id": "76cdb55f-d938-4785-b963-4452173be340",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -94,6 +107,7 @@
     "content": "[DEV-MOCK] Turn 8: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:31:50.808838",
+    "attachments": null,
     "id": "8ccc8e41-8fc0-4f86-8504-511d614d1af3",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -101,6 +115,7 @@
     "content": "[DEV-MOCK] Turn 4: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:31:51.307342",
+    "attachments": null,
     "id": "2936aff5-7d9e-457b-82e2-e3e157969280",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -108,6 +123,7 @@
     "content": "[DEV-MOCK] Turn 4: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:31:51.330681",
+    "attachments": null,
     "id": "02f60fa2-6937-4fe6-812a-4d4e5580a393",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -115,6 +131,7 @@
     "content": "[DEV-MOCK] Turn 9: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:32:34.441009",
+    "attachments": null,
     "id": "928b4c38-0724-4ff9-9e2f-00cc3e8686be",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -122,6 +139,7 @@
     "content": "[DEV-MOCK] Turn 5: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:32:34.516647",
+    "attachments": null,
     "id": "9a66dfa8-6291-4fb5-942c-5dd15b362739",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -129,6 +147,7 @@
     "content": "[DEV-MOCK] Turn 5: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:32:34.554193",
+    "attachments": null,
     "id": "decf0cbd-200c-4f95-b50c-19b79256fbdf",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -136,6 +155,7 @@
     "content": "[DEV-MOCK] Turn 6: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:33:24.467367",
+    "attachments": null,
     "id": "5c7ec704-bc30-4d50-85da-61753738dcbc",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -143,6 +163,7 @@
     "content": "[DEV-MOCK] Turn 6: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:33:24.490070",
+    "attachments": null,
     "id": "d351a605-3fe1-4b69-a52b-c4a4805611bc",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -150,6 +171,7 @@
     "content": "[DEV-MOCK] Turn 7: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:34:14.477529",
+    "attachments": null,
     "id": "b075f77f-434c-4056-92fb-619379543a3c",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -157,6 +179,7 @@
     "content": "[DEV-MOCK] Turn 8: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:34:32.692973",
+    "attachments": null,
     "id": "18f22553-4719-4046-8e82-879be8ba1086",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -164,6 +187,7 @@
     "content": "[DEV-MOCK] Turn 9: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:34:47.568352",
+    "attachments": null,
     "id": "5bd021f6-5ea7-4da6-ac8f-89b6f6070dd7",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -171,6 +195,7 @@
     "content": "[DEV-MOCK] Turn 10: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:35:03.132481",
+    "attachments": null,
     "id": "94cb7a5b-3533-43e8-9478-9f119f363d80",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -178,6 +203,7 @@
     "content": "[DEV-MOCK] Turn 11: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:35:20.194464",
+    "attachments": null,
     "id": "2867ea90-af83-4469-ac1b-47a767ca3be8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -185,6 +211,7 @@
     "content": "[DEV-MOCK] Turn 12: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:35:33.678833",
+    "attachments": null,
     "id": "20cbe8e6-6f3d-436a-a508-ad350d4b6d1b",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -192,6 +219,7 @@
     "content": "[DEV-MOCK] Turn 13: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:35:48.728190",
+    "attachments": null,
     "id": "14d15d19-e59a-4443-bb34-2b2994a30b4f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -199,6 +227,7 @@
     "content": "[DEV-MOCK] Turn 14: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:36:04.403350",
+    "attachments": null,
     "id": "204f912d-8dc8-4bd7-9013-d45e53b71974",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -206,6 +235,7 @@
     "content": "[DEV-MOCK] Turn 15: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:36:20.382412",
+    "attachments": null,
     "id": "bdc3ae3b-627f-42a2-8ecd-331ec4a39360",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -213,6 +243,7 @@
     "content": "[DEV-MOCK] Turn 16: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:36:35.644844",
+    "attachments": null,
     "id": "7ae0f66f-d8ac-4e94-a972-317989657281",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -220,6 +251,7 @@
     "content": "[DEV-MOCK] Turn 17: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:36:53.356653",
+    "attachments": null,
     "id": "6706ef03-d5b5-47e0-915c-c6d1ea0da1b1",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -227,6 +259,7 @@
     "content": "[DEV-MOCK] Turn 18: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:37:08.216538",
+    "attachments": null,
     "id": "15c2e12d-4f55-4b70-82f7-2c6812041b67",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -234,6 +267,7 @@
     "content": "[DEV-MOCK] Turn 19: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:37:25.009037",
+    "attachments": null,
     "id": "4ce3cad6-7d84-4265-9073-74ed8a8319eb",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -241,6 +275,7 @@
     "content": "[DEV-MOCK] Turn 20: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:37:38.277683",
+    "attachments": null,
     "id": "efe1ed0e-ee62-4d15-b850-0b4d59ca312a",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -248,6 +283,7 @@
     "content": "[DEV-MOCK] Turn 21: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:37:54.641770",
+    "attachments": null,
     "id": "f250ef6f-f413-497c-9188-62018b7cdb2f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -255,6 +291,7 @@
     "content": "[DEV-MOCK] Turn 22: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:38:11.813754",
+    "attachments": null,
     "id": "c6b55ea3-83c4-4567-9262-7a126e1185b0",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -262,6 +299,7 @@
     "content": "[DEV-MOCK] Turn 23: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:38:29.058299",
+    "attachments": null,
     "id": "b821f406-ec17-4cf7-9515-0d884f801e03",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -269,6 +307,7 @@
     "content": "[DEV-MOCK] Turn 24: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:38:45.592354",
+    "attachments": null,
     "id": "33e70896-cc4d-4db5-8bce-a07be03c07c2",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -276,6 +315,7 @@
     "content": "[DEV-MOCK] Turn 25: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:39:00.144021",
+    "attachments": null,
     "id": "3d1e1eb6-0bca-4ebf-b4c0-a63b3ec3dfd8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -283,6 +323,7 @@
     "content": "[DEV-MOCK] Turn 26: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:39:15.210400",
+    "attachments": null,
     "id": "7999d306-6ef3-4cde-ad5d-924316769456",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -290,6 +331,7 @@
     "content": "[DEV-MOCK] Turn 27: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:39:29.790162",
+    "attachments": null,
     "id": "13e1a42b-1c6f-4773-8d5e-db5e17499897",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -297,6 +339,7 @@
     "content": "[DEV-MOCK] Turn 28: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:39:45.203862",
+    "attachments": null,
     "id": "f451f5d0-94d0-4368-81d5-c48db2852f26",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -304,6 +347,7 @@
     "content": "[DEV-MOCK] Turn 29: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:40:01.467939",
+    "attachments": null,
     "id": "bb3d0ae1-4813-43ac-8f98-a140946aa3a2",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -311,6 +355,7 @@
     "content": "[DEV-MOCK] Turn 30: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:40:18.231313",
+    "attachments": null,
     "id": "829deb5f-72dc-46e6-a646-e1bbdeff32ba",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -318,6 +363,7 @@
     "content": "[DEV-MOCK] Turn 31: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:40:33.510432",
+    "attachments": null,
     "id": "8d6a6e30-0d2e-4583-868b-aa11ed3af47d",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -325,6 +371,7 @@
     "content": "[DEV-MOCK] Turn 32: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:40:49.217425",
+    "attachments": null,
     "id": "80e50e41-5f6b-4d80-a5b1-fc2e5e583894",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -332,6 +379,7 @@
     "content": "[DEV-MOCK] Turn 33: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:41:03.749176",
+    "attachments": null,
     "id": "06562817-f990-426c-8aa4-f4c1f15867eb",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -339,6 +387,7 @@
     "content": "[DEV-MOCK] Turn 34: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:41:18.233026",
+    "attachments": null,
     "id": "b8c179b3-7200-4179-a7a5-5f45b21dc594",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -346,6 +395,7 @@
     "content": "[DEV-MOCK] Turn 35: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:41:33.577555",
+    "attachments": null,
     "id": "ffe6fb43-f984-4b8f-9b29-83a1ad629444",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -353,6 +403,7 @@
     "content": "[DEV-MOCK] Turn 36: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:41:49.849318",
+    "attachments": null,
     "id": "f548b669-1ade-4af1-b103-9531688123b8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -360,6 +411,7 @@
     "content": "[DEV-MOCK] Turn 37: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:42:06.119121",
+    "attachments": null,
     "id": "4a5af516-df48-44b8-90d5-02bbb3679d16",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -367,6 +419,7 @@
     "content": "[DEV-MOCK] Turn 38: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:42:21.320740",
+    "attachments": null,
     "id": "33446516-c55a-45f0-a0cc-19ed483bf0a5",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -374,6 +427,7 @@
     "content": "[DEV-MOCK] Turn 39: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:42:37.703118",
+    "attachments": null,
     "id": "8d9fa0d2-a8e3-454b-8804-5fd20fa482fe",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -381,6 +435,7 @@
     "content": "[DEV-MOCK] Turn 40: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:42:53.639835",
+    "attachments": null,
     "id": "f30dff80-a7c4-4180-9e0f-7c5783928818",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -388,6 +443,7 @@
     "content": "[DEV-MOCK] Turn 41: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:43:09.399566",
+    "attachments": null,
     "id": "404c575f-734b-4d76-a3ca-4d59833484fc",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -395,6 +451,7 @@
     "content": "[DEV-MOCK] Turn 42: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:43:24.701859",
+    "attachments": null,
     "id": "7fc2d278-b860-47cd-8f70-2ecf04b02c94",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -402,6 +459,7 @@
     "content": "[DEV-MOCK] Turn 43: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:43:39.395855",
+    "attachments": null,
     "id": "7e63b009-7b1c-4c06-abaa-d4b9a1f7f14b",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -409,6 +467,7 @@
     "content": "[DEV-MOCK] Turn 44: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:43:58.410253",
+    "attachments": null,
     "id": "6f1be2c8-9995-4e01-a55c-539695306876",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -416,6 +475,7 @@
     "content": "[DEV-MOCK] Turn 45: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:44:13.196695",
+    "attachments": null,
     "id": "ea521628-cecf-4a1c-b26b-482603f119d0",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -423,6 +483,7 @@
     "content": "[DEV-MOCK] Turn 46: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:44:30.475252",
+    "attachments": null,
     "id": "8549854b-6c3b-4211-85c6-32e2fe728de8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -430,6 +491,7 @@
     "content": "[DEV-MOCK] Turn 47: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:44:45.146017",
+    "attachments": null,
     "id": "4ad234df-fbd5-4469-a83e-d0254d53be05",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -437,6 +499,7 @@
     "content": "[DEV-MOCK] Turn 48: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:45:00.509887",
+    "attachments": null,
     "id": "4c5bbe7f-6de0-4e8d-b5ce-3be69d843359",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -444,6 +507,7 @@
     "content": "[DEV-MOCK] Turn 49: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:45:15.914211",
+    "attachments": null,
     "id": "f2ba3d33-6a1a-4b2c-96f4-e6eb377b34f7",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -451,6 +515,7 @@
     "content": "[DEV-MOCK] Turn 50: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:45:33.580167",
+    "attachments": null,
     "id": "cb41034c-24d5-4fa7-87d2-a9ede6cb559f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -458,6 +523,7 @@
     "content": "[DEV-MOCK] Turn 51: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:45:48.967958",
+    "attachments": null,
     "id": "7041da3a-7d80-4d08-a91a-c2d5ea162c1f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -465,6 +531,7 @@
     "content": "[DEV-MOCK] Turn 52: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:46:05.640323",
+    "attachments": null,
     "id": "bf5fb912-424f-4350-b93e-a69453910e8f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -472,6 +539,7 @@
     "content": "[DEV-MOCK] Turn 53: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:46:20.528253",
+    "attachments": null,
     "id": "861a7e7e-7f56-409c-9f63-4064a898ca37",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -479,6 +547,7 @@
     "content": "[DEV-MOCK] Turn 54: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:46:36.216883",
+    "attachments": null,
     "id": "5123f7aa-3173-4ad4-9a19-47e747cd6b21",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -486,6 +555,7 @@
     "content": "[DEV-MOCK] Turn 55: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:46:51.812266",
+    "attachments": null,
     "id": "23fc33fe-6b1e-471c-9f41-e8026e6cc44a",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -493,6 +563,7 @@
     "content": "[DEV-MOCK] Turn 56: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:47:08.650115",
+    "attachments": null,
     "id": "8f64b9a7-a4b1-4b42-b95d-bc4b357d2457",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -500,6 +571,7 @@
     "content": "[DEV-MOCK] Turn 57: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:47:25.484443",
+    "attachments": null,
     "id": "9ba5de98-da78-4046-9346-9c3edb03952a",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -507,6 +579,7 @@
     "content": "[DEV-MOCK] Turn 58: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:47:39.703096",
+    "attachments": null,
     "id": "ece1b95e-b486-4a9c-a1f9-b70e1115fa8d",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -514,6 +587,7 @@
     "content": "[DEV-MOCK] Turn 59: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:47:55.061717",
+    "attachments": null,
     "id": "16b078f3-dcb8-4369-b507-4aae34a2a5fa",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -521,6 +595,7 @@
     "content": "[DEV-MOCK] Turn 60: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:48:09.839874",
+    "attachments": null,
     "id": "d263b2e0-6935-44fc-8376-0f8984ce6734",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -528,6 +603,7 @@
     "content": "[DEV-MOCK] Turn 61: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:48:24.405026",
+    "attachments": null,
     "id": "a2b3d039-6f79-4905-bf8d-5bb347a0a856",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -535,6 +611,7 @@
     "content": "[DEV-MOCK] Turn 62: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:48:38.047143",
+    "attachments": null,
     "id": "07a6cc7f-d7d3-4def-bd7d-f2b0b8f3c1c2",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -542,6 +619,7 @@
     "content": "[DEV-MOCK] Turn 63: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:48:55.791394",
+    "attachments": null,
     "id": "dbe8e4ff-f5c1-4f73-bd5a-8e2e4986eaf4",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -549,6 +627,7 @@
     "content": "[DEV-MOCK] Turn 64: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:49:11.806013",
+    "attachments": null,
     "id": "b732bff4-f021-4bc1-ab68-13d5e7246b56",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -556,6 +635,7 @@
     "content": "[DEV-MOCK] Turn 65: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:49:27.790516",
+    "attachments": null,
     "id": "8f52f687-e4e0-4f15-b41d-a183864bdacf",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -563,6 +643,7 @@
     "content": "[DEV-MOCK] Turn 66: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:49:45.092205",
+    "attachments": null,
     "id": "5fd86ba1-140e-438f-8043-f0568bdb5df0",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -570,6 +651,7 @@
     "content": "[DEV-MOCK] Turn 67: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:50:00.985126",
+    "attachments": null,
     "id": "4ae9e54b-723a-4715-b862-65e44622aaed",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -577,6 +659,7 @@
     "content": "[DEV-MOCK] Turn 68: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:50:15.550151",
+    "attachments": null,
     "id": "b0e6641a-def9-4048-b4e5-2ec31f42f0ea",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -584,6 +667,7 @@
     "content": "[DEV-MOCK] Turn 69: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:50:32.428240",
+    "attachments": null,
     "id": "59e51ec8-6cf8-4f0f-a12a-ba7cabb26628",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -591,6 +675,7 @@
     "content": "[DEV-MOCK] Turn 70: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:50:48.029408",
+    "attachments": null,
     "id": "b4dec0c4-c859-4089-b99b-eb5fd859c515",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -598,6 +683,7 @@
     "content": "[DEV-MOCK] Turn 71: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:51:02.121947",
+    "attachments": null,
     "id": "cff15d9d-d59b-4298-a3bb-31cfcf382fec",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -605,6 +691,7 @@
     "content": "[DEV-MOCK] Turn 72: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:51:17.231064",
+    "attachments": null,
     "id": "c385062e-5955-4a0e-ad18-de3e6e928bbe",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -612,6 +699,7 @@
     "content": "[DEV-MOCK] Turn 73: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:51:31.748955",
+    "attachments": null,
     "id": "eb07a1c8-6134-4d4e-b8fb-d55f3c7517d9",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -619,6 +707,7 @@
     "content": "[DEV-MOCK] Turn 74: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:51:50.150318",
+    "attachments": null,
     "id": "918c301a-131d-4489-af40-1201f101dcbe",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -626,6 +715,7 @@
     "content": "[DEV-MOCK] Turn 75: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:52:06.386296",
+    "attachments": null,
     "id": "e46f0637-f1b7-496a-afc7-b02113f2020c",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -633,6 +723,7 @@
     "content": "[DEV-MOCK] Turn 76: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:52:23.450049",
+    "attachments": null,
     "id": "cc7879ea-bd31-4190-adfb-1cb2d2c88cea",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -640,6 +731,7 @@
     "content": "[DEV-MOCK] Turn 77: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:52:39.146357",
+    "attachments": null,
     "id": "7ef324f1-fe70-43fd-8bfe-a830fe74551b",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -647,6 +739,7 @@
     "content": "[DEV-MOCK] Turn 78: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:52:55.142581",
+    "attachments": null,
     "id": "b5cb683a-ddbb-42d1-9944-4366b9dda08c",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -654,6 +747,7 @@
     "content": "[DEV-MOCK] Turn 79: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:53:12.732171",
+    "attachments": null,
     "id": "d69f9743-aa81-4dbe-9ec5-fd4f78b6d504",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -661,6 +755,7 @@
     "content": "[DEV-MOCK] Turn 80: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:53:29.772449",
+    "attachments": null,
     "id": "99bddf66-74b0-425d-b759-1564d81950ec",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -668,6 +763,7 @@
     "content": "[DEV-MOCK] Turn 81: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:53:46.871186",
+    "attachments": null,
     "id": "25f6c65c-13cc-493e-9955-f5908cabeb6f",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -675,6 +771,7 @@
     "content": "[DEV-MOCK] Turn 82: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:54:01.420593",
+    "attachments": null,
     "id": "178d4b4c-3285-4714-ab51-820d5b708fe8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -682,6 +779,7 @@
     "content": "[DEV-MOCK] Turn 83: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:54:15.706252",
+    "attachments": null,
     "id": "0e7fda57-f0b8-43f3-80a9-d8acdceb39b0",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -689,6 +787,7 @@
     "content": "[DEV-MOCK] Turn 84: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:54:32.319961",
+    "attachments": null,
     "id": "6cf24c09-2df1-427b-8fe1-eaff6f362942",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -696,6 +795,7 @@
     "content": "[DEV-MOCK] Turn 85: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:54:51.441066",
+    "attachments": null,
     "id": "8609527f-58eb-4d03-b49b-fb96cd598f6e",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -703,6 +803,7 @@
     "content": "[DEV-MOCK] Turn 86: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:55:06.606079",
+    "attachments": null,
     "id": "ef5a0c5c-d8a5-47ce-a364-9c46eb1a04bc",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -710,6 +811,7 @@
     "content": "[DEV-MOCK] Turn 87: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:55:24.084538",
+    "attachments": null,
     "id": "c6f70992-b1e4-455c-9dae-c248ecbeeef8",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -717,6 +819,7 @@
     "content": "[DEV-MOCK] Turn 88: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:55:39.992228",
+    "attachments": null,
     "id": "8490be27-dd43-457d-a5a6-5ed8d9951dd6",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -724,6 +827,7 @@
     "content": "[DEV-MOCK] Turn 89: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:55:54.541210",
+    "attachments": null,
     "id": "750107de-20f9-48c3-afea-ba6848801403",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -731,6 +835,7 @@
     "content": "[DEV-MOCK] Turn 90: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:56:10.027433",
+    "attachments": null,
     "id": "09ec1793-6c06-423f-9a03-107172bde4c0",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -738,6 +843,7 @@
     "content": "[DEV-MOCK] Turn 91: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:56:26.895622",
+    "attachments": null,
     "id": "130eae76-f667-41cc-802b-6d34672277f7",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -745,6 +851,7 @@
     "content": "[DEV-MOCK] Turn 92: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:56:44.568208",
+    "attachments": null,
     "id": "0cb9aa16-4c4e-41d5-af16-adcf32b73619",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -752,6 +859,7 @@
     "content": "[DEV-MOCK] Turn 10: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:57:39.985783",
+    "attachments": null,
     "id": "970faf7b-595d-4cd9-a594-a25d77150b73",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -759,6 +867,7 @@
     "content": "[DEV-MOCK] Turn 7: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:57:40.499757",
+    "attachments": null,
     "id": "509cf37a-385d-4059-bd3a-f8bcd6e1bf4c",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -766,6 +875,7 @@
     "content": "[DEV-MOCK] Turn 93: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:57:40.546403",
+    "attachments": null,
     "id": "53d10cad-338c-48e7-806a-529598a2c96a",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -773,6 +883,7 @@
     "content": "[DEV-MOCK] Turn 11: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:57:56.384830",
+    "attachments": null,
     "id": "c57dd858-6965-4b9e-9e68-1703a011e670",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -780,6 +891,7 @@
     "content": "[DEV-MOCK] Turn 8: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:57:56.422597",
+    "attachments": null,
     "id": "e40fb137-cfe7-41ee-85c3-88546f895b0b",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -787,6 +899,7 @@
     "content": "[DEV-MOCK] Turn 94: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:57:56.458415",
+    "attachments": null,
     "id": "035b8540-7b21-4c89-bc48-530955bc4873",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -794,6 +907,7 @@
     "content": "[DEV-MOCK] Turn 12: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:58:12.337292",
+    "attachments": null,
     "id": "9ae3b567-e703-47e4-9400-3af3feb5cb4c",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -801,6 +915,7 @@
     "content": "[DEV-MOCK] Turn 9: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:58:12.529940",
+    "attachments": null,
     "id": "2b43f2c1-2f56-4850-9952-015333b7746e",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -808,6 +923,7 @@
     "content": "[DEV-MOCK] Turn 95: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:58:12.949466",
+    "attachments": null,
     "id": "35072bc9-6bdb-44f4-975a-2244d25d0808",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -815,6 +931,7 @@
     "content": "[DEV-MOCK] Turn 13: continuing negotiation.",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
     "timestamp": "2026-03-09T08:58:58.825961",
+    "attachments": null,
     "id": "2d658ef6-09bf-46a7-bf75-331cf213d275",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
@@ -822,6 +939,7 @@
     "content": "[DEV-MOCK] Turn 10: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:58:58.865608",
+    "attachments": null,
     "id": "83713311-422d-4b7f-95d1-32483e1c8fed",
     "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
   },
@@ -829,6 +947,7 @@
     "content": "[DEV-MOCK] Turn 96: continuing negotiation.",
     "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "timestamp": "2026-03-09T08:58:58.902630",
+    "attachments": null,
     "id": "309bb14d-c4ca-4fae-99ec-4e9c97d4d54c",
     "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
   },
@@ -836,14 +955,48 @@
     "content": "[DEV-MOCK] Turn 14: continuing negotiation.",
     "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "timestamp": "2026-03-09T08:59:38.004622",
+    "attachments": null,
     "id": "463163c2-b00a-4caa-8b55-d48803f3f516",
     "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
   },
   {
     "content": "老板，咱们来回商量了这么久，你也挺耐心的，我也挺不好意思的。毕竟这对我来说是一笔巨款，谨慎点也是应该的，希望你能理解。\n\n既然你都把话说到这份上了，19,500 就 19,500 吧！我也知道 4080 Super 现在的行情，再低确实让你为难。只要你能保证刚才承诺的那些条件都兑现，这钱花得也值。\n\n那咱们就这么定了，我再最后确认一遍，免得后面有误会：\n1.  **总价 19,500 元**，全包干，不再有任何隐形消费。\n2.  **配置单上必须写明具体型号**，特别是电源（海韵/长城等大牌 850W 金牌）、主板、固态和显示器的具体型号，不能只写“高性能”或者“同级别”，这个要写进收据里。\n3.  **赠品到位**：公牛插排、一年延保、鼠标垫，还有刚才提过的游戏密钥或者耳机支架，麻烦也给我备上。\n4.  **付款方式**：我先微信转你 500 定金，等你货齐了通知我，我过来当面验货，确认型号无误再付尾款，这个流程没问题吧？\n\n要是没问题，我现在就转定金。以后宿舍里谁要配电脑，我肯定首推你家，毕竟这服务确实没得说。咱们也别再磨了，早点定下来我也能早点玩上游戏，你也早点开张生意，双赢！\n\n你看行不行？行的话我就扫码了。",
     "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
-    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb",
     "timestamp": "2026-03-09T09:00:58.559251",
-    "id": "d13b653c-f281-4da3-9a3d-96da986dc47b"
+    "attachments": null,
+    "id": "d13b653c-f281-4da3-9a3d-96da986dc47b",
+    "session_id": "7954d3f5-28d9-4bf0-9a8a-76e63b5875eb"
+  },
+  {
+    "content": "请问您这里有电脑卖吗？",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-10T09:04:53.653786",
+    "attachments": null,
+    "id": "8666cdb7-9e0c-4531-aecf-45c01defe484",
+    "session_id": "39b16fc7-89f7-4e84-b1da-7fc1dba29873"
+  },
+  {
+    "content": "有需要电脑配件的客户吗？",
+    "sender_id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
+    "timestamp": "2026-03-10T09:04:53.660586",
+    "attachments": null,
+    "id": "510ed369-d6c3-428e-802a-414182b32e2c",
+    "session_id": "39b16fc7-89f7-4e84-b1da-7fc1dba29873"
+  },
+  {
+    "content": "老板，您刚才给的这个方案，显卡确实是够劲，但我刚拿计算器按了一下。主机加显示器，再加套好点的键鼠，这总价好像奔着两万二去了……这可真超我预算了。\n\n我也知道现在硬件贵，但我这两万块真的是死预算，多一分都得去吃泡面。您看这样行不行，主机配置稍微调整一下，或者您在外设上给我包个圆？要是能两万落地，我今天就直接刷卡了，省得我再跑别家对比。学生党攒钱不容易，老板您多照顾照顾？",
+    "sender_id": "8f6cad31-de5c-4979-bb58-183070936107",
+    "timestamp": "2026-03-10T09:06:01.467353",
+    "attachments": null,
+    "id": "c2aecf7a-88f6-432e-8b12-1ed47ec9dd17",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a"
+  },
+  {
+    "content": "哈哈，兄弟，这儿有个大误会，我得赶紧跟你澄清一下！\n\n我不是老板，我就是个打职业电竞的。刚才跟你聊得热火朝天，是因为我自己最近也在琢磨升级训练用的设备——你也知道，我们战队配置都是公司全额报销，所以我这才敢盯着那些最顶格的硬件研究，结果聊太嗨，让你误以为我是卖电脑的了。\n\n虽然我不能直接卖给你电脑，但既然咱俩聊了这么久，作为同行（玩家），我给你透个实底。两万块预算想要 4090 主机加显示器外设，还要畅玩《黑神话：悟空》，确实有点极限。4090 单卡现在就要一万四五了，剩下五千块配整机加显示器，画质虽好但其他部件可能会成短板。\n\n依我的职业经验，建议你这样调整：\n1.  **显卡**：考虑 **RTX 4080 Super**，性能足够 2K 高刷全开，省下的钱能提升整体均衡性。\n2.  **显示器**：别省，选个 **2K 240Hz** 或者 **4K 144Hz** 的 Fast IPS 屏，这对游戏体验提升比显卡再高一级更明显。\n3.  **外设**：键盘鼠标选个中等偏上的职业款就行，不用追求最贵的限量版。\n\n这样配下来，两万以内能落地，而且稳定性更好。我这边队伍刚订了一批顶配机，你要是信得过，我把我们采购单里的配置表发你参考参考，绝对没虚标。学生党攒钱不易，咱们得把每一分钱都花在帧数上，你说呢？",
+    "sender_id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
+    "session_id": "df047d43-d8d5-4671-be43-a8fd003a186a",
+    "timestamp": "2026-03-10T09:27:07.074846",
+    "attachments": null,
+    "id": "161e82ae-adcc-454b-9fad-efb59ae530f1"
   }
 ]

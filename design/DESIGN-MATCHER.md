@@ -12,19 +12,19 @@
 
 执行完整的匹配流程:
 
-1. **遍历候选**: 获取状态为 `MATCHING` 的 Agent (PAIRED/DONE/IDLE 不参与)。
+1. **遍历候选**: 获取状态为 `MATCHING` 的 Agent (IDLE 不参与)。
+   - **同一用户下的 Agent 不互相匹配**，即 `agent.user_id == candidate.user_id` 的组合会被直接排除。
 2. **向量匹配**: 计算 Agent `embedding` 的 Cosine Distance，筛选低于阈值的候选对。
-3. **去重检查**: 查询所有已有 Session，跳过已配对过的 Agent 对 (无论 Session 状态)。
+3. **去重检查**: 查询所有已有 Session，跳过已配对过的 Agent 对 (无论 Session 状态，只要有过 Session 记录就视为聊过天)。
 4. **LLM 验证** (可选，dev 模式默认开启): 调用 `check_match_with_llm()` 对 system_prompt 进行语义兼容性判定。
    - 验证通过 → 继续创建 Session。
    - **验证拒绝 → 创建 TERMINATED Session 作为标记**，防止下次循环重复尝试同一对。
 5. **会话初始化**: 创建 Session (状态 ACTIVE)。
-6. **标记 Agent**: 双方 Agent 状态从 `MATCHING` 更新为 `PAIRED`。
-7. **注入开场白**: 将双方 `opening_remark` 作为初始消息写入会话。
+6. **注入开场白**: 将双方 `opening_remark` 作为初始消息写入会话。
 
 ## 去重机制
 
-所有匹配尝试（成功、进行中、失败、LLM 拒绝）都会留下 Session 记录。Matcher 在每轮扫描时检查 Session 表，确保任意两个 Agent 之间最多只有一次匹配尝试。
+所有匹配尝试（成功、进行中、失败、LLM 拒绝）都会留下 Session 记录。Matcher 在每轮扫描时检查 Session 表，确保任意两个 Agent 之间最多只有一次匹配尝试——**只要这两个 Agent 在历史上有过任意状态的 Session，以后就不会再次被匹配**。
 
 ## Dev 模式适配
 

@@ -11,9 +11,11 @@
 | 路由 | 页面 | 功能 |
 |------|------|------|
 | `/login` | 登录/注册页 | 用户名密码认证 |
-| `/` | 仪表盘 (Dashboard) | Agent 列表 + 活跃会话面板 + 结果弹窗 |
-| `/agent/new` | Agent 创建页 | 创建新 Agent，成功后跳回主界面 |
-| `/agent/[id]` | Agent 编辑页 | 修改 name, system_prompt, opening_remark |
+| `/` | 仪表盘 (Dashboard) | Agent 列表 + 活跃会话面板 + 结果弹窗，展示用户头像 |
+| `/agent/new` | Agent 创建页 | 创建新 Agent，可关联商品 (linked_product_ids) |
+| `/agent/[id]` | Agent 编辑页 | 修改 name, system_prompt, opening_remark, 关联商品 |
+| `/shop` | 用户商店页 | 商品列表（仅本人）、创建/编辑/删除商品、选择图片（来自媒体库）、关联 Agent |
+| `/profile` 或 Dashboard 内入口 | 用户资料/媒体 | 头像上传、媒体库（上传/删除照片与视频），供交友与商品图使用 |
 
 ## Dashboard 布局
 
@@ -60,6 +62,11 @@
 | `MATCHING` | 蓝色 | Looking for matches... | Edit, Delete, **Stop Match** |
 
 > 一个 Agent 在 `MATCHING` 状态下可同时参与多个 Session；Agent 卡片不再承载单一会话结果展示。
+
+## 用户资料与媒体管理
+
+- **头像**: 在 Dashboard 顶栏或独立资料页展示当前用户头像；支持「设置头像」从已上传的媒体中选择一张图片作为头像，调用 `POST /media/avatar`。
+- **媒体库**: 提供上传照片、视频的入口（如 `/profile` 或 Dashboard 内「我的媒体」），展示当前用户所有媒体列表（`GET /media/?user_id=`），支持删除。上传使用 `POST /media/upload`（multipart）。媒体库中的图片可用于头像、也可在创建商品时选作商品图。
 
 ## Active Sessions 面板
 
@@ -121,7 +128,7 @@
 | 区域 | 说明 |
 |------|------|
 | **顶栏** | 双方 Agent 名称 + 当前状态 + Terminate 按钮 |
-| **对话区域** | 聊天气泡样式，区分"我方 Agent"(右侧) 与"对方 Agent"(左侧)，自动滚动到底部 |
+| **对话区域** | 聊天气泡样式，区分"我方 Agent"(右侧) 与"对方 Agent"(左侧)，自动滚动到底部；支持展示**附件**：图片/视频直接展示，**商品卡片**以卡片形式展示（名称、价格、封面图） |
 | **Judge 信息区** | 最近一次 Judge 审议结果 (verdict / summary / reason)。若尚未审议过则显示 "Awaiting first review..." |
 
 ### 自动刷新
@@ -164,8 +171,19 @@
   - 若我方未授权: 显示 **Share My Contact** 按钮，由用户主动确认是否展示自己的联系方式给对方
   - 若我方已授权: 显示 "You have shared your contact" 状态提示
   - 对方联系方式仅在对方已授权后展示；未授权时显示 "Waiting for opponent to share..."
-- **完整对话记录**: 聊天气泡样式，区分"我方 Agent"与"对方 Agent"
+- **完整对话记录**: 聊天气泡样式，区分"我方 Agent"与"对方 Agent"；若消息带附件（图片/视频/商品卡片），在气泡内或下方渲染附件。
 - **会话粒度查看**: 同一 Agent 若有多场会话，每次弹窗只展示一个 `session_id` 对应的结果
+
+## 用户商店页 (`/shop`)
+
+- **商品列表**: 仅展示当前用户的商品（`GET /shop/products?user_id=`），卡片展示名称、价格、封面图、状态 (ACTIVE/INACTIVE)、关联 Agent 数量。
+- **创建/编辑商品**: 表单含 name、description、price、currency；图片从**用户媒体库**多选，并指定封面图；可选关联已有 Agent（多选）。调用 `POST /shop/products` 或 `PUT /shop/products/{id}`。
+- **删除商品**: 确认后调用 `DELETE /shop/products/{id}`。
+- **关联 Agent**: 在商品详情或编辑中可增加/移除与 Agent 的关联，调用 link-agent / unlink-agent。
+
+## Agent 创建/编辑与商品关联
+
+- 在 `/agent/new` 和 `/agent/[id]` 的表单中增加**关联商品**多选（从当前用户商店商品列表中选择），提交时写入 `linked_product_ids`。
 
 ## 相关文件
 
@@ -173,7 +191,9 @@
 |----------|------|
 | `frontend/app/layout.tsx` | 根布局 |
 | `frontend/app/globals.css` | Tailwind 全局样式 |
-| `frontend/app/page.tsx` | Dashboard (Agent 列表 + Active Sessions + 弹窗) |
+| `frontend/app/page.tsx` | Dashboard (Agent 列表 + Active Sessions + 弹窗，展示头像) |
 | `frontend/app/login/page.tsx` | 登录/注册页 |
-| `frontend/app/agent/[id]/page.tsx` | Agent 编辑页 |
-| `frontend/lib/api.ts` | 后端 API 调用封装 |
+| `frontend/app/agent/[id]/page.tsx` | Agent 编辑页（含关联商品） |
+| `frontend/app/shop/page.tsx` | 用户商店页（商品列表与 CRUD） |
+| `frontend/app/profile/page.tsx` | 用户资料/媒体库页（头像与媒体上传，可选） |
+| `frontend/lib/api.ts` | 后端 API 调用封装（含 media、shop 接口） |

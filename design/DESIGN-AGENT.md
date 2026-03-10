@@ -59,6 +59,11 @@
   - **PAID**: 调用平台 LLM。
   - **FREE**: 调用用户自配的 LLM (从 `user.llm_config` 读取)。
 
+**媒体与商品在对话中的使用:**
+- Agent 在生成回复时，可访问**所属用户**的媒体库 (UserMedia) 与**已关联商品** (`linked_product_ids`)。
+- **交友等场景**：用户可在人设或 system_prompt 中约定「可分享我的照片」。对话模块在需要时可将用户上传的照片/视频作为消息附件 (类型 `image`/`video`) 发送给对方，详见 [DESIGN-SESSION.md](./DESIGN-SESSION.md) 的 Message.attachments。
+- **买卖场景**：Agent 可将 `linked_product_ids` 中的商品以「商品卡片」形式作为消息附件 (类型 `product`) 发送给对方，包含商品名称、价格、封面图等，供前端渲染。创建/编辑 Agent 时可绑定一个或多个商品；创建/编辑商品时也可关联到已有 Agent，参见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md)。
+
 ### 3. Skills (`app/agent/skills/`)
 
 仅限 **PAID** 用户的 Agent 使用。负责 Agent 的扩展能力，如搜索、工具调用等。
@@ -75,6 +80,7 @@
 | `tags` | List[String] | 平台 LLM 从 system_prompt 中提取的关键标签 |
 | `embedding` | Vector[1536] | 平台基于 system_prompt 生成的语义向量 |
 | `skills_config` | JSON (可选) | 仅 PAID: Agent 的技能配置 |
+| `linked_product_ids` | List[UUID] (可选) | 已关联的商品 ID，买卖场景下 Agent 可发送这些商品卡片给对方，参见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md) |
 | `status` | Enum | 生命周期状态 (见下方状态机) |
 
 ## 状态机 (Status)
@@ -98,7 +104,7 @@ MATCHING 状态下：
 
 ## 管理功能
 
-- `update_agent`: 更新人设、开场白等。
+- `update_agent`: 更新人设、开场白、关联商品等。
 - `delete_agent`: 删除代理 (仅 IDLE 状态)。
 - `start_matching`: 将状态设为 MATCHING (除已在 MATCHING 外均可触发)。
 - `stop_matching`: 将状态从 MATCHING 设回 IDLE，不影响已在进行中的 Session。
@@ -108,8 +114,9 @@ MATCHING 状态下：
 ## 设计决策
 
 - **tags 与 embedding 放在 Agent 而非 User 上**: 因为同一用户可以创建多个负责不同任务的 Agent，每个 Agent 有独立的匹配画像，互不干扰。
+- **同一用户下的 Agent 不互相聊天**: 匹配阶段会排除 `agent.user_id == candidate.user_id` 的组合，保证一个用户只会与其他用户的 Agent 进行会话。
 - **并发会话**: 单个 Agent 在 MATCHING 状态下可与多个不同对手并行对话，提升撮合效率。
-- **同对手并发去重**: 同一对 Agent 在同一时刻只允许一个 ACTIVE/JUDGING Session，避免重复并发聊天。
+- **同对手并发去重**: 同一对 Agent 在同一时刻只允许一个 ACTIVE/JUDGING Session，避免重复并发聊天；同时，**一对 Agent 只要历史上有过任意 Session 记录，以后都不会再次被匹配**。
 - **LLM 来源分离**: 对话生成的 LLM 调用根据用户 tier 路由，平台级服务 (tags/embedding/judge) 始终走平台 LLM，不受用户配置影响。
 - **FREE 用户匹配前置校验**: 免费用户必须配好自己的 API Key 才能进入匹配，避免配对后无法生成回复。
 

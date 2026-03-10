@@ -34,7 +34,9 @@ class Settings(BaseSettings):
     def STORAGE_DEV_DIR(self) -> Path:
         return STORAGE_DIR / "dev"
 
-    class Config:
+    @property
+    def UPLOADS_DIR(self) -> Path:
+        return STORAGE_DIR / "uploads"
         env_file = str(CONFIG_DIR / ".env")
 
     def load_secrets(self):

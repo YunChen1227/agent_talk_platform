@@ -3,9 +3,9 @@ from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.db import get_session
 from app.core.config import settings
-from app.repositories.base import UserRepository, AgentRepository, SessionRepository, MessageRepository, MatcherRepository, MatchResultRepository
+from app.repositories.base import UserRepository, AgentRepository, SessionRepository, MessageRepository, MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository
 from app.repositories.db_repo import DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository, DBMatcherRepository, DBMatchResultRepository
-from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONStore
+from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONMediaRepository, JSONProductRepository, JSONStore
 
 # Global JSON Store instance (uses storage/dev/ via config)
 json_store = JSONStore()
@@ -46,3 +46,9 @@ async def get_match_result_repo(session: Optional[AsyncSession] = Depends(get_db
     if settings.MODE == "dev":
         return JSONMatchResultRepository(json_store)
     return DBMatchResultRepository(session)
+
+async def get_media_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> MediaRepository:
+    return JSONMediaRepository(json_store)
+
+async def get_product_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> ProductRepository:
+    return JSONProductRepository(json_store)

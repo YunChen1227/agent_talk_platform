@@ -26,6 +26,12 @@ class DBUserRepository(UserRepository):
         result = await self.session.exec(statement)
         return result.first()
 
+    async def update(self, user: User) -> User:
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
 class DBAgentRepository(AgentRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -93,6 +99,8 @@ class DBMatcherRepository(MatcherRepository):
             stmt = select(Agent, Agent.embedding.cosine_distance(agent.embedding)).where(
                 Agent.status == AgentStatus.MATCHING,
                 Agent.id != agent.id,
+                # 同一个用户下的 Agent 不互相聊天
+                Agent.user_id != agent.user_id,
                 Agent.embedding.isnot(None),
             ).order_by(Agent.embedding.cosine_distance(agent.embedding))
             
@@ -105,13 +113,11 @@ class DBMatcherRepository(MatcherRepository):
                     continue
 
                 if distance is not None and distance < threshold:
+                    # 之前无论什么状态，只要有过 Session 记录，就不再配对
                     existing_session_stmt = select(Session).where(
-                        and_(
-                            or_(
-                                and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
-                                and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id)
-                            ),
-                            Session.status.in_([SessionStatus.ACTIVE, SessionStatus.JUDGING])
+                        or_(
+                            and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
+                            and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id)
                         )
                     )
                     existing_session = (await self.session.exec(existing_session_stmt)).first()
