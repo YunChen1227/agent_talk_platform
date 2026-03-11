@@ -64,7 +64,7 @@
 | **描述** | 若有则展示 |
 | **价格 + 货币** | 如 "99.00 CNY" |
 | **状态** | ACTIVE / INACTIVE |
-| **Edit 按钮** | 待实现 |
+| **Edit 按钮** | 点击后将该商品信息填入顶部表单进入编辑模式，卡片高亮；提交后调用 `PUT /shop/products/{id}` |
 | **Delete 按钮** | 二次确认后调用 `DELETE /shop/products/{id}` |
 
 ### 空状态
@@ -73,7 +73,6 @@
 
 ## 待扩展
 
-- 商品编辑表单 (目前 Edit 按钮为占位)
 - 从用户媒体库选择商品图片 (`images` 字段)
 - 关联 Agent (link-agent / unlink-agent)
 - 封面图指定 (`cover_image_id`)

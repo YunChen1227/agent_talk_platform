@@ -31,6 +31,9 @@
 │  │ [PAID] Agent Description:              │   │
 │  │ (AI 自动生成 system_prompt)            │   │
 │  │                                        │   │
+│  │ Linked Products: [multi-select ▼] [+]  │   │
+│  │ Linked Skills:   [multi-select ▼] [+]  │   │
+│  │                                        │   │
 │  │ [Create Agent]  [Cancel]               │   │
 │  └────────────────────────────────────────┘   │
 └──────────────────────────────────────────────┘
@@ -87,6 +90,10 @@
 │  │ [________________________]             │   │
 │  │ [________________________]             │   │
 │  │                                        │   │
+│  │                                        │   │
+│  │ Linked Products: [multi-select ▼] [+]  │   │
+│  │ Linked Skills:   [multi-select ▼] [+]  │   │
+│  │                                        │   │
 │  │                    [Save Changes]      │   │
 │  └────────────────────────────────────────┘   │
 └──────────────────────────────────────────────┘
@@ -114,9 +121,14 @@
 
 ---
 
-## 待扩展: 关联商品
+## 关联商品 & 关联技能 (Multi-select with inline create)
 
-创建页和编辑页计划增加**关联商品**多选（从当前用户商店商品列表中选择），提交时写入 `linked_product_ids`。
+创建页和编辑页均包含 **Linked Products** 和 **Linked Skills** 两个多选组件：
+
+- **下拉多选**: 列出当前用户已有的 Product / Skill 条目，勾选即关联。
+- **"+" 新建**: 下拉底部有 `+ Create new` 按钮，点击后显示行内输入框，输入名称后即刻创建并自动勾选。
+- **Tag 展示**: 已选项以蓝色标签（pill）显示在选择框内，可单个移除。
+- **提交**: 创建/保存时将选中 ID 列表写入 `linked_product_ids` / `linked_skill_ids`。
 
 ## API 依赖
 
@@ -125,7 +137,10 @@
 | POST | `/agents/` | 创建 Agent |
 | GET | `/agents/{id}` | 获取 Agent 详情 |
 | PUT | `/agents/{id}` | 更新 Agent |
-| GET | `/shop/products?user_id=` | 获取商品列表（用于关联商品选择，待实现） |
+| GET | `/shop/products?user_id=` | 获取商品列表 |
+| GET | `/skills/?user_id=` | 获取技能列表 |
+| POST | `/shop/products` | 行内新建商品 |
+| POST | `/skills/` | 行内新建技能 |
 
 ## 相关文件
 

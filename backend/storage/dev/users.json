@@ -4,6 +4,7 @@
     "raw_demand": "",
     "username": "XYY",
     "password_hash": "e0bc60c82713f64ef8a57c0c40d02ce24fd0141d5cc3086259c19b1e62a62bea",
+    "avatar_url": null,
     "id": "ee0ed360-af43-4114-acbc-c90e4180ff10"
   },
   {
@@ -11,6 +12,15 @@
     "raw_demand": "",
     "username": "SELLL",
     "password_hash": "e0bc60c82713f64ef8a57c0c40d02ce24fd0141d5cc3086259c19b1e62a62bea",
+    "avatar_url": null,
     "id": "c3c422d7-8d9f-4baa-8d19-4ac263a09fa4"
+  },
+  {
+    "contact": null,
+    "raw_demand": "",
+    "username": "SELLL2",
+    "password_hash": "e0bc60c82713f64ef8a57c0c40d02ce24fd0141d5cc3086259c19b1e62a62bea",
+    "avatar_url": null,
+    "id": "a78e1510-f63d-4ed7-875f-ec198df61409"
   }
 ]

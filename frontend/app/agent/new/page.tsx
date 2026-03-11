@@ -1,8 +1,167 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createAgent } from "@/lib/api";
+import { createAgent, listProducts, listSkills, createProduct, createSkill } from "@/lib/api";
+
+interface Item {
+  id: string;
+  name: string;
+}
+
+function MultiSelectWithCreate({
+  label,
+  items,
+  selectedIds,
+  onToggle,
+  onCreate,
+  createPlaceholder,
+}: {
+  label: string;
+  items: Item[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  onCreate: (name: string) => Promise<void>;
+  createPlaceholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setCreating(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleCreate = async () => {
+    if (!newName.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      await onCreate(newName.trim());
+      setNewName("");
+      setCreating(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const selected = items.filter((i) => selectedIds.includes(i.id));
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="block font-bold mb-2 text-gray-800">{label}</label>
+      <div
+        className="w-full min-h-[44px] p-2 border border-gray-300 rounded-lg cursor-pointer flex flex-wrap gap-1.5 items-center focus-within:ring-2 focus-within:ring-blue-500"
+        onClick={() => setOpen(!open)}
+      >
+        {selected.length === 0 && (
+          <span className="text-gray-400 text-sm">Click to select…</span>
+        )}
+        {selected.map((item) => (
+          <span
+            key={item.id}
+            className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1"
+          >
+            {item.name}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle(item.id);
+              }}
+              className="hover:text-blue-600"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {items.map((item) => {
+            const isSelected = selectedIds.includes(item.id);
+            return (
+              <div
+                key={item.id}
+                className={`px-3 py-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 text-sm ${
+                  isSelected ? "bg-blue-50" : ""
+                }`}
+                onClick={() => onToggle(item.id)}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  readOnly
+                  className="rounded text-blue-600"
+                />
+                <span className="text-gray-800">{item.name}</span>
+              </div>
+            );
+          })}
+
+          {items.length === 0 && !creating && (
+            <div className="px-3 py-2 text-sm text-gray-400">
+              No items yet.
+            </div>
+          )}
+
+          <div className="border-t border-gray-100">
+            {creating ? (
+              <div className="p-2 flex gap-2">
+                <input
+                  autoFocus
+                  className="flex-1 p-1.5 border border-gray-300 rounded text-sm text-black"
+                  placeholder={createPlaceholder}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreate();
+                    }
+                    if (e.key === "Escape") setCreating(false);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  type="button"
+                  disabled={submitting || !newName.trim()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCreate();
+                  }}
+                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {submitting ? "…" : "Add"}
+                </button>
+              </div>
+            ) : (
+              <div
+                className="px-3 py-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 text-sm text-blue-600 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCreating(true);
+                }}
+              >
+                <span className="text-lg leading-none">+</span>
+                <span>Create new</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CreateAgentPage() {
   const [user, setUser] = useState<any>(null);
@@ -13,9 +172,12 @@ export default function CreateAgentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // In dev mode, default to FREE tier behavior for now
-  // Ideally this comes from user.tier
-  const isPaidUser = false; 
+  const [products, setProducts] = useState<Item[]>([]);
+  const [skills, setSkills] = useState<Item[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+
+  const isPaidUser = false;
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -23,19 +185,64 @@ export default function CreateAgentPage() {
       router.push("/login");
       return;
     }
-    setUser(JSON.parse(storedUser));
+    const u = JSON.parse(storedUser);
+    setUser(u);
+    loadItems(u.id);
   }, [router]);
+
+  const loadItems = async (userId: string) => {
+    try {
+      const [prods, sklls] = await Promise.all([
+        listProducts(userId),
+        listSkills(userId),
+      ]);
+      setProducts(prods.map((p: any) => ({ id: p.id, name: p.name })));
+      setSkills(sklls.map((s: any) => ({ id: s.id, name: s.name })));
+    } catch {
+      /* ignore load errors */
+    }
+  };
+
+  const toggleId = (
+    id: string,
+    selected: string[],
+    setSelected: (ids: string[]) => void
+  ) => {
+    setSelected(
+      selected.includes(id)
+        ? selected.filter((x) => x !== id)
+        : [...selected, id]
+    );
+  };
+
+  const handleCreateProduct = async (name: string) => {
+    if (!user) return;
+    const prod = await createProduct({ user_id: user.id, name, price: 0 });
+    const newItem = { id: prod.id, name: prod.name };
+    setProducts((prev) => [...prev, newItem]);
+    setSelectedProductIds((prev) => [...prev, prod.id]);
+  };
+
+  const handleCreateSkill = async (name: string) => {
+    if (!user) return;
+    const sk = await createSkill({ user_id: user.id, name });
+    const newItem = { id: sk.id, name: sk.name };
+    setSkills((prev) => [...prev, newItem]);
+    setSelectedSkillIds((prev) => [...prev, sk.id]);
+  };
 
   const handleCreate = async () => {
     if (!user || !agentName.trim()) return;
     setIsSubmitting(true);
     try {
       await createAgent(
-        user.id, 
+        user.id,
         agentName.trim(),
         isPaidUser ? description : undefined,
         !isPaidUser ? systemPrompt : undefined,
-        !isPaidUser ? openingRemark : undefined
+        !isPaidUser ? openingRemark : undefined,
+        selectedProductIds.length > 0 ? selectedProductIds : undefined,
+        selectedSkillIds.length > 0 ? selectedSkillIds : undefined
       );
       router.push("/");
     } catch (e) {
@@ -57,13 +264,17 @@ export default function CreateAgentPage() {
         </Link>
         <h1 className="text-4xl font-bold text-black mt-2">Create New Agent</h1>
         <p className="text-gray-600 mt-2">
-          {isPaidUser ? "Paid Tier: AI Auto-Generation" : "Free Tier: Manual Configuration"}
+          {isPaidUser
+            ? "Paid Tier: AI Auto-Generation"
+            : "Free Tier: Manual Configuration"}
         </p>
       </div>
 
       <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md space-y-6">
         <div>
-          <label className="block font-bold mb-2 text-gray-800">Agent Name</label>
+          <label className="block font-bold mb-2 text-gray-800">
+            Agent Name
+          </label>
           <input
             className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="e.g., Alice the Buyer"
@@ -77,7 +288,8 @@ export default function CreateAgentPage() {
             <label className="block font-bold mb-2 text-gray-800">
               Agent Description
               <span className="block text-sm font-normal text-gray-500">
-                Describe personality, preferences, needs, and speaking style. Our AI will generate the rest.
+                Describe personality, preferences, needs, and speaking style.
+                Our AI will generate the rest.
               </span>
             </label>
             <textarea
@@ -107,7 +319,8 @@ export default function CreateAgentPage() {
               <label className="block font-bold mb-2 text-gray-800">
                 Opening Remark
                 <span className="block text-sm font-normal text-gray-500">
-                  The first message your agent will send to start the conversation.
+                  The first message your agent will send to start the
+                  conversation.
                 </span>
               </label>
               <input
@@ -120,14 +333,37 @@ export default function CreateAgentPage() {
           </>
         )}
 
+        <MultiSelectWithCreate
+          label="Linked Products"
+          items={products}
+          selectedIds={selectedProductIds}
+          onToggle={(id) =>
+            toggleId(id, selectedProductIds, setSelectedProductIds)
+          }
+          onCreate={handleCreateProduct}
+          createPlaceholder="New product name"
+        />
+
+        <MultiSelectWithCreate
+          label="Linked Skills"
+          items={skills}
+          selectedIds={selectedSkillIds}
+          onToggle={(id) =>
+            toggleId(id, selectedSkillIds, setSelectedSkillIds)
+          }
+          onCreate={handleCreateSkill}
+          createPlaceholder="New skill name"
+        />
+
         <div className="flex gap-3 pt-4 border-t border-gray-100">
           <button
             className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             onClick={handleCreate}
             disabled={
-              !agentName.trim() || 
+              !agentName.trim() ||
               (isPaidUser && !description.trim()) ||
-              (!isPaidUser && (!systemPrompt.trim() || !openingRemark.trim())) ||
+              (!isPaidUser &&
+                (!systemPrompt.trim() || !openingRemark.trim())) ||
               isSubmitting
             }
           >

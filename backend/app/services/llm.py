@@ -141,20 +141,29 @@ async def judge_conversation(history: List[Dict[str, str]]) -> Dict[str, Any]:
         }
 
     transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
-    prompt = f"""
-    Analyze the following conversation between two agents.
-    Determine if they have reached a CONSENSUS (agreement to connect users), a DEADLOCK (no match possible), or if the conversation is still PENDING (ongoing).
-    
-    Transcript:
-    {transcript}
-    
-    Output JSON format:
-    {{
-        "verdict": "CONSENSUS" | "DEADLOCK" | "PENDING",
-        "summary": "Brief summary of the negotiation",
-        "reason": "Reason for the verdict"
-    }}
-    """
+    prompt = f"""You are a strict judge evaluating a negotiation between two AI agents.
+
+RULES FOR VERDICT:
+- CONSENSUS: ONLY when BOTH agents have EXPLICITLY agreed on a concrete, specific outcome. 
+  You must be able to point to exact quotes from BOTH sides confirming the deal.
+  Vague pleasantries, "sounds good", or one-sided proposals do NOT count.
+  Both agents must clearly state their acceptance of the SAME specific terms.
+- DEADLOCK: The agents have fundamentally incompatible goals, have gone back and forth without progress, or one side has explicitly refused to continue.
+- PENDING: The conversation is still ongoing — agents are still negotiating, exploring options, or have not yet both explicitly committed.
+
+When in doubt, choose PENDING. Do NOT rush to CONSENSUS.
+
+Transcript:
+{transcript}
+
+Output JSON:
+{{
+    "verdict": "CONSENSUS" | "DEADLOCK" | "PENDING",
+    "summary": "Brief summary of the negotiation so far",
+    "reason": "Specific evidence from the transcript supporting your verdict. For CONSENSUS, quote both agents' explicit agreement.",
+    "final_outcome": "If CONSENSUS: a clear, concise description of what the two agents agreed on (e.g. price, terms, product, action items). If not CONSENSUS: null"
+}}
+"""
     
     try:
         client = client_info["client"]

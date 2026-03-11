@@ -26,6 +26,7 @@ async def create_new_agent(
         system_prompt=agent_in.system_prompt,
         opening_remark=agent_in.opening_remark,
         linked_product_ids=agent_in.linked_product_ids,
+        linked_skill_ids=agent_in.linked_skill_ids,
     )
     return agent
 
@@ -86,6 +87,8 @@ async def update_agent(
         agent.opening_remark = agent_in.opening_remark
     if agent_in.linked_product_ids is not None:
         agent.linked_product_ids = agent_in.linked_product_ids
+    if agent_in.linked_skill_ids is not None:
+        agent.linked_skill_ids = agent_in.linked_skill_ids
         
     updated_agent = await repo.update(agent)
     return updated_agent
@@ -203,6 +206,7 @@ async def get_agent_result(
             "verdict": result.verdict,
             "summary": result.summary,
             "reason": result.reason,
+            "final_outcome": result.final_outcome,
         } if result else None,
         "contact": contact,
         "my_contact_shared": my_contact_shared,

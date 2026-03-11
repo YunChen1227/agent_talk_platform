@@ -79,8 +79,8 @@
 | `opening_remark` | Text | PAID: LLM 生成; FREE: 用户手动编写 |
 | `tags` | List[String] | 平台 LLM 从 system_prompt 中提取的关键标签 |
 | `embedding` | Vector[1536] | 平台基于 system_prompt 生成的语义向量 |
-| `skills_config` | JSON (可选) | 仅 PAID: Agent 的技能配置 |
 | `linked_product_ids` | List[UUID] (可选) | 已关联的商品 ID，买卖场景下 Agent 可发送这些商品卡片给对方，参见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md) |
+| `linked_skill_ids` | List[UUID] (可选) | 已关联的技能 ID，用户创建的 Skill 实体，Agent 可在对话中使用对应技能 |
 | `status` | Enum | 生命周期状态 (见下方状态机) |
 
 ## 状态机 (Status)

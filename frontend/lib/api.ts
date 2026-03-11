@@ -22,7 +22,8 @@ export const createAgent = async (
   description?: string, 
   systemPrompt?: string, 
   openingRemark?: string,
-  linkedProductIds?: string[]
+  linkedProductIds?: string[],
+  linkedSkillIds?: string[]
 ) => {
   const res = await api.post("/agents/", { 
     user_id: userId, 
@@ -31,6 +32,7 @@ export const createAgent = async (
     system_prompt: systemPrompt,
     opening_remark: openingRemark,
     linked_product_ids: linkedProductIds,
+    linked_skill_ids: linkedSkillIds,
   });
   return res.data;
 };
@@ -228,4 +230,32 @@ export const unlinkProductFromAgent = async (
     agent_id: agentId,
   });
   return res.data;
+};
+
+// Skills
+export const listSkills = async (userId: string) => {
+  const res = await api.get(`/skills/?user_id=${userId}`);
+  return res.data;
+};
+
+export const createSkill = async (data: {
+  user_id: string;
+  name: string;
+  description?: string;
+}) => {
+  const res = await api.post("/skills/", data);
+  return res.data;
+};
+
+export const updateSkill = async (
+  skillId: string,
+  userId: string,
+  data: Partial<{ name: string; description: string }>
+) => {
+  const res = await api.put(`/skills/${skillId}?user_id=${userId}`, data);
+  return res.data;
+};
+
+export const deleteSkill = async (skillId: string, userId: string) => {
+  await api.delete(`/skills/${skillId}?user_id=${userId}`);
 };

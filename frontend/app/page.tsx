@@ -597,6 +597,16 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Final Outcome */}
+                {selectedResult.result?.verdict === "CONSENSUS" && selectedResult.result.final_outcome && (
+                  <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-4">
+                    <h3 className="text-sm font-bold text-emerald-800 mb-2">Final Agreed Outcome</h3>
+                    <p className="text-emerald-900 text-sm whitespace-pre-wrap">
+                      {selectedResult.result.final_outcome}
+                    </p>
+                  </div>
+                )}
+
                 {/* Contact Consent & Info */}
                 {selectedResult.result?.verdict === "CONSENSUS" && (
                   <div className="space-y-3">
@@ -636,13 +646,27 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Session Status (when still ongoing) */}
+                {/* Session Status */}
                 {!selectedResult.result && selectedResult.session && (
-                  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-                    <p className="text-yellow-800 font-medium">
-                      Session is still in progress ({selectedResult.session.status})
-                    </p>
-                  </div>
+                  selectedResult.session.status === "ACTIVE" || selectedResult.session.status === "JUDGING" ? (
+                    <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                      <p className="text-yellow-800 font-medium">
+                        Session is still in progress ({selectedResult.session.status})
+                      </p>
+                    </div>
+                  ) : selectedResult.session.status === "TERMINATED" ? (
+                    <div className="bg-red-50 border border-red-300 rounded-lg p-4">
+                      <p className="text-red-800 font-medium">
+                        Session ended — no agreement was reached (DEADLOCK).
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                      <p className="text-gray-700 font-medium">
+                        Session ended ({selectedResult.session.status}).
+                      </p>
+                    </div>
+                  )
                 )}
 
                 {/* Conversation History */}

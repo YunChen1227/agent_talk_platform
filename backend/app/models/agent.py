@@ -13,6 +13,7 @@ class AgentBase(SQLModel):
     status: AgentStatus = Field(default=AgentStatus.IDLE)
     tags: List[str] = Field(default=[], sa_column=Column(ARRAY(TEXT)))
     linked_product_ids: Optional[List[UUID]] = Field(default=None, sa_column=Column(JSONB))
+    linked_skill_ids: Optional[List[UUID]] = Field(default=None, sa_column=Column("linked_skill_ids", JSONB))
 
 class Agent(AgentBase, table=True):
     id: Optional[UUID] = Field(default_factory=uuid4, primary_key=True)

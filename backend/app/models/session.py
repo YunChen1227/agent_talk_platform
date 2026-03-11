@@ -20,6 +20,7 @@ class MatchResultBase(SQLModel):
     verdict: Verdict
     summary: Optional[str] = None
     reason: Optional[str] = None
+    final_outcome: Optional[str] = None
     agent_a_contact_shared: bool = Field(default=False)
     agent_b_contact_shared: bool = Field(default=False)
 

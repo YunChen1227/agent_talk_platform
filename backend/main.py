@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.db import init_db, get_session
 from app.core.config import settings
-from app.api import agents, sessions, auth, media, shop
+from app.api import agents, sessions, auth, media, shop, skill
 from app.services.orchestrator import run_orchestrator
 from app.core.deps import get_session_repo, get_agent_repo, get_matcher_repo, get_message_repo, get_match_result_repo
 from app.services.llm import validate_api_keys, valid_clients
@@ -77,6 +77,7 @@ app.include_router(agents.router, prefix="/agents", tags=["agents"])
 app.include_router(sessions.router, prefix="/sessions", tags=["sessions"])
 app.include_router(media.router, prefix="/media", tags=["media"])
 app.include_router(shop.router, prefix="/shop", tags=["shop"])
+app.include_router(skill.router, prefix="/skills", tags=["skills"])
 
 @app.get("/")
 async def root():

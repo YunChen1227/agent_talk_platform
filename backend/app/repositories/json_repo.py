@@ -12,7 +12,8 @@ from app.models.session import Session, SessionStatus, MatchResult
 from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
-from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository, MediaRepository, ProductRepository
+from app.models.skill import Skill
+from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -31,6 +32,8 @@ class JSONStore:
             return os.path.join(self.data_dir, "media.json")
         if name == "product":
             return os.path.join(self.data_dir, "products.json")
+        if name == "skill":
+            return os.path.join(self.data_dir, "skills.json")
         return os.path.join(self.data_dir, f"{name}s.json")
 
     def load(self, model_class: Type[T]) -> List[T]:
@@ -327,3 +330,26 @@ class JSONProductRepository(ProductRepository):
 
     async def delete(self, product_id: UUID) -> bool:
         return self.store.delete(Product, product_id)
+
+
+class JSONSkillRepository(SkillRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def create(self, skill: Skill) -> Skill:
+        if not skill.id:
+            skill.id = uuid4()
+        return self.store.add(skill)
+
+    async def get(self, skill_id: UUID) -> Optional[Skill]:
+        return self.store.get(Skill, skill_id)
+
+    async def list_by_user(self, user_id: UUID) -> List[Skill]:
+        all_skills = self.store.list_all(Skill)
+        return [s for s in all_skills if s.user_id == user_id]
+
+    async def update(self, skill: Skill) -> Skill:
+        return self.store.add(skill)
+
+    async def delete(self, skill_id: UUID) -> bool:
+        return self.store.delete(Skill, skill_id)

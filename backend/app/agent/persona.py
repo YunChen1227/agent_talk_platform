@@ -72,6 +72,7 @@ async def create_agent(
     system_prompt: Optional[str] = None,
     opening_remark: Optional[str] = None,
     linked_product_ids: Optional[List[UUID]] = None,
+    linked_skill_ids: Optional[List[UUID]] = None,
 ) -> Agent:
     if isinstance(user_id, str):
         user_id = UUID(user_id)
@@ -111,5 +112,6 @@ async def create_agent(
         tags=tags,
         embedding=embedding,
         linked_product_ids=linked_product_ids or [],
+        linked_skill_ids=linked_skill_ids or [],
     )
     return await agent_repo.create(agent)

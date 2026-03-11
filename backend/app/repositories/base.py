@@ -7,6 +7,7 @@ from app.models.session import Session, MatchResult
 from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
+from app.models.skill import Skill
 
 class UserRepository(ABC):
     @abstractmethod
@@ -152,4 +153,26 @@ class ProductRepository(ABC):
 
     @abstractmethod
     async def delete(self, product_id: UUID) -> bool:
+        pass
+
+
+class SkillRepository(ABC):
+    @abstractmethod
+    async def create(self, skill: Skill) -> Skill:
+        pass
+
+    @abstractmethod
+    async def get(self, skill_id: UUID) -> Optional[Skill]:
+        pass
+
+    @abstractmethod
+    async def list_by_user(self, user_id: UUID) -> List[Skill]:
+        pass
+
+    @abstractmethod
+    async def update(self, skill: Skill) -> Skill:
+        pass
+
+    @abstractmethod
+    async def delete(self, skill_id: UUID) -> bool:
         pass

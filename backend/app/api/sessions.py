@@ -151,6 +151,7 @@ async def get_latest_judge(
         "verdict": result.verdict,
         "summary": result.summary,
         "reason": result.reason,
+        "final_outcome": result.final_outcome,
     }
 
 

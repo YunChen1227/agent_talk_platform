@@ -8,12 +8,14 @@ class AgentCreate(BaseModel):
     system_prompt: Optional[str] = None # For FREE users
     opening_remark: Optional[str] = None # For FREE users
     linked_product_ids: Optional[List[UUID]] = None
+    linked_skill_ids: Optional[List[UUID]] = None
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     system_prompt: Optional[str] = None
     opening_remark: Optional[str] = None
     linked_product_ids: Optional[List[UUID]] = None
+    linked_skill_ids: Optional[List[UUID]] = None
 
 class AgentRead(BaseModel):
     id: UUID
@@ -22,3 +24,4 @@ class AgentRead(BaseModel):
     system_prompt: str
     opening_remark: Optional[str] = None
     linked_product_ids: Optional[List[UUID]] = None
+    linked_skill_ids: Optional[List[UUID]] = None

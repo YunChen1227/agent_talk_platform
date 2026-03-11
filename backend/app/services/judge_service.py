@@ -9,7 +9,7 @@ async def audit_session(session_repo: SessionRepository, message_repo: MessageRe
         return
 
     history = await message_repo.get_history(session_id)
-    if len(history) < 2: # Need at least some conversation
+    if len(history) < 6:
         return
 
     # Set status to JUDGING to prevent agents from talking
@@ -38,7 +38,8 @@ async def audit_session(session_repo: SessionRepository, message_repo: MessageRe
                 session_id=session_id,
                 verdict=Verdict(verdict),
                 summary=result.get("summary"),
-                reason=result.get("reason")
+                reason=result.get("reason"),
+                final_outcome=result.get("final_outcome"),
             )
             await match_result_repo.create(match_result)
             
