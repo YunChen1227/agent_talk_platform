@@ -39,6 +39,10 @@ class AgentRepository(ABC):
         pass
 
     @abstractmethod
+    async def list_all(self) -> List[Agent]:
+        pass
+
+    @abstractmethod
     async def update_status(self, agent_id: UUID, status: AgentStatus) -> Optional[Agent]:
         pass
         

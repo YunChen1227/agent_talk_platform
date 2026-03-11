@@ -2,9 +2,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.deps import get_session_repo, get_message_repo, get_agent_repo, get_match_result_repo
 from app.repositories.base import SessionRepository, MessageRepository, AgentRepository, MatchResultRepository
-from app.models.session import SessionStatus, MatchResult
+from app.models.session import Session, SessionStatus, MatchResult
+from app.models.message import Message
 from app.models.enums import Verdict
 from app.models.agent import Agent
+from app.schemas.session import DirectSessionCreate
 
 router = APIRouter()
 
@@ -93,6 +95,47 @@ async def get_completed_sessions(
             })
 
     return result
+
+
+@router.post("/direct")
+async def create_direct_session(
+    body: DirectSessionCreate,
+    session_repo: SessionRepository = Depends(get_session_repo),
+    message_repo: MessageRepository = Depends(get_message_repo),
+    agent_repo: AgentRepository = Depends(get_agent_repo),
+):
+    """Create a direct session between two agents (e.g. from Agent Plaza). Validates both exist, different users, no prior session."""
+    my_agent = await agent_repo.get(body.my_agent_id)
+    target_agent = await agent_repo.get(body.target_agent_id)
+    if not my_agent:
+        raise HTTPException(status_code=404, detail="My agent not found")
+    if not target_agent:
+        raise HTTPException(status_code=404, detail="Target agent not found")
+    if my_agent.user_id == target_agent.user_id:
+        raise HTTPException(status_code=400, detail="Cannot start chat with your own agent")
+    # Dedup: any prior session between this pair
+    my_sessions = await session_repo.find_all_by_agent(body.my_agent_id)
+    for s in my_sessions:
+        if s.agent_a_id == body.target_agent_id or s.agent_b_id == body.target_agent_id:
+            raise HTTPException(status_code=400, detail="You have already had a conversation with this agent")
+    session = Session(
+        agent_a_id=body.my_agent_id,
+        agent_b_id=body.target_agent_id,
+        status=SessionStatus.ACTIVE,
+    )
+    session = await session_repo.create(session)
+    if my_agent.opening_remark:
+        msg_a = Message(session_id=session.id, sender_id=my_agent.id, content=my_agent.opening_remark)
+        await message_repo.create(msg_a)
+    if target_agent.opening_remark:
+        msg_b = Message(session_id=session.id, sender_id=target_agent.id, content=target_agent.opening_remark)
+        await message_repo.create(msg_b)
+    return {
+        "session_id": str(session.id),
+        "my_agent_name": my_agent.name,
+        "opponent_agent_name": target_agent.name,
+        "status": session.status,
+    }
 
 
 @router.get("/{id}/latest-judge")

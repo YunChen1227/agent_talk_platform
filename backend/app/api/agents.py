@@ -36,6 +36,28 @@ async def list_agents(
 ):
     return await repo.list_by_user(user_id)
 
+
+@router.get("/plaza", response_model=List[AgentRead])
+async def list_plaza_agents(
+    user_id: UUID,
+    tags: Optional[str] = None,
+    search: Optional[str] = None,
+    repo: AgentRepository = Depends(get_agent_repo),
+):
+    """List all agents except the current user's; optional filter by tags (comma-separated) and name search (substring)."""
+    all_agents = await repo.list_all()
+    # Exclude current user's agents
+    candidates = [a for a in all_agents if a.user_id != user_id]
+    if tags:
+        tag_set = {t.strip().lower() for t in tags.split(",") if t.strip()}
+        if tag_set:
+            candidates = [a for a in candidates if a.tags and any(t.lower() in tag_set for t in a.tags)]
+    if search and search.strip():
+        q = search.strip().lower()
+        candidates = [a for a in candidates if q in (a.name or "").lower()]
+    return candidates
+
+
 @router.get("/{id}", response_model=AgentRead)
 async def get_agent(
     id: UUID, 

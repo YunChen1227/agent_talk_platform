@@ -67,11 +67,20 @@ export default function ProfilePage() {
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-100">
       <div className="w-full max-w-4xl flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-black">Profile & Media</h1>
-        <div className="flex items-center gap-4">
-          <Link href="/shop" className="text-blue-600 hover:underline">My Shop</Link>
-          <Link href="/" className="text-blue-600 hover:underline">Back to Dashboard</Link>
-        </div>
+        <Link href="/" className="text-blue-600 hover:underline">Back to Dashboard</Link>
       </div>
+      <Link href="/shop" className="block w-full max-w-4xl mb-6 bg-white rounded-lg shadow p-6 border-2 border-transparent hover:border-purple-400 hover:shadow-md transition-all group">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🛍</span>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 group-hover:text-purple-700 transition-colors">My Shop</h2>
+              <p className="text-sm text-gray-500">Manage your products, set prices, and link them to agents</p>
+            </div>
+          </div>
+          <span className="text-gray-400 group-hover:text-purple-600 text-xl transition-colors">→</span>
+        </div>
+      </Link>
       <div className="w-full max-w-4xl bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Avatar</h2>
         {user.avatar_url && (

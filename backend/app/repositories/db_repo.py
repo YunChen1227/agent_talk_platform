@@ -49,6 +49,10 @@ class DBAgentRepository(AgentRepository):
         statement = select(Agent).where(Agent.user_id == user_id)
         return (await self.session.exec(statement)).all()
 
+    async def list_all(self) -> List[Agent]:
+        statement = select(Agent)
+        return (await self.session.exec(statement)).all()
+
     async def update_status(self, agent_id: UUID, status: AgentStatus) -> Optional[Agent]:
         agent = await self.get(agent_id)
         if agent:

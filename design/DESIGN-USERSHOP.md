@@ -8,18 +8,29 @@
 
 ## 字段 (Product)
 
+### 用户填写字段
+
+创建/编辑商品时，用户需要填写以下 4 个核心字段：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | String | 是 | 商品名称 |
+| `images` | List[UUID] | 是 | 商品图片，从用户媒体库中选取，引用 UserMedia.id；第一张默认作为封面 |
+| `description` | Text | 否 | 商品介绍，描述商品详情、卖点等 |
+| `price` | Decimal | 是 | 商品价格 (默认货币 CNY) |
+
+### 系统与关联字段
+
+以下字段由系统自动管理或在特定操作时写入，用户无需手动填写：
+
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `id` | UUID | 主键 |
-| `user_id` | UUID | 所属用户 |
-| `name` | String | 商品名称 |
-| `description` | Text (可选) | 商品描述 |
-| `price` | Decimal | 价格 |
+| `id` | UUID | 主键，系统自动生成 |
+| `user_id` | UUID | 所属用户，创建时由系统写入 |
 | `currency` | String | 货币，默认 `CNY` |
-| `images` | List[UUID] | 商品图片，引用 UserMedia.id |
-| `cover_image_id` | UUID (可选) | 封面图，为 images 中之一 |
-| `status` | Enum | `ACTIVE` / `INACTIVE`，仅 ACTIVE 可被 Agent 发送 |
-| `linked_agent_ids` | List[UUID] | 已关联的 Agent，这些 Agent 可推广/发送该商品 |
+| `cover_image_id` | UUID (可选) | 封面图，默认为 `images` 的第一张，用户可手动指定 |
+| `status` | Enum | `ACTIVE` / `INACTIVE`，仅 ACTIVE 可被 Agent 发送；默认 ACTIVE |
+| `linked_agent_ids` | List[UUID] | 已关联的 Agent，通过关联操作维护 |
 | `created_at` | Timestamp | 创建时间 |
 | `updated_at` | Timestamp | 更新时间 |
 

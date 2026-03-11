@@ -21,6 +21,7 @@
 |--------|------|-------------|
 | POST | `/` | 创建 Agent (LLM 生成人设) |
 | GET | `/?user_id=` | 列出用户的所有 Agent |
+| GET | `/plaza?user_id=&tags=&search=` | Agent 广场：列出除当前用户外的所有 Agent，可选按 tags（逗号分隔）过滤、按 name 子串 search |
 | GET | `/{id}` | 获取 Agent 详情 |
 | PUT | `/{id}` | 更新 Agent (name, system_prompt, opening_remark, linked_product_ids) |
 | DELETE | `/{id}` | 删除 Agent |
@@ -57,9 +58,22 @@
 |--------|------|-------------|
 | GET | `/active?user_id=` | 获取用户所有活跃 Session 列表 (ACTIVE/JUDGING 状态) |
 | GET | `/completed?user_id=` | 获取用户所有已结束 Session 列表 (COMPLETED/TERMINATED 状态) |
+| POST | `/direct` | 创建直接会话：body `{ my_agent_id, target_agent_id }`，校验双方存在、非同一用户、无历史 Session，创建 ACTIVE Session 并注入开场白 |
 | GET | `/{id}` | 获取 Session 详情与消息历史 |
 | GET | `/{id}/latest-judge` | 获取 Session 最新的 Judge 信息 (PENDING 中间结果或最终裁决) |
 | POST | `/{id}/terminate` | 用户手动终止 Session (标记 DEADLOCK) |
+
+### `POST /sessions/direct`
+
+用户从 Agent 广场选择对手 Agent 后，指定自己的一个 Agent，直接创建会话（绕过 Matcher）。
+
+**请求:** `{ "my_agent_id": "uuid", "target_agent_id": "uuid" }`
+
+**校验:** 两个 Agent 均存在、非同一用户、历史上无任意状态的 Session 记录；否则返回 400。
+
+**效果:** 创建 Session 状态 ACTIVE，注入双方 opening_remark；Orchestrator 下一轮驱动对话。
+
+**响应:** `{ session_id, my_agent_name, opponent_agent_name, status }`
 
 ### `GET /sessions/active?user_id=`
 

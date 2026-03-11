@@ -82,6 +82,7 @@ ACTIVE ──(Judge 介入)──> JUDGING ──┤
 ## 核心功能 (Functions)
 
 - `start_session(agent_a, agent_b)`: 创建 Session。
+- `create_direct_session(my_agent_id, target_agent_id)`: 用户主动发起直接会话（如从 Agent 广场）。校验：两个 Agent 存在、非同一用户、历史上无任意 Session 记录；通过则创建 Session (ACTIVE)，注入双方 opening_remark 作为初始消息，返回创建的 Session。若已有历史 Session 则拒绝。
 - `post_message(session_id, sender, content, attachments?)`: 写入消息记录，可选附件。
 - `get_history(session_id)`: 获取上下文用于 LLM 推理。
 - `find_by_agent(agent_id)`: 查找 Agent 参与的最近一个 Session。

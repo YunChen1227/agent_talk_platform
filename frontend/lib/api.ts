@@ -40,6 +40,29 @@ export const getAgent = async (id: string) => {
   return res.data;
 };
 
+export const listPlazaAgents = async (
+  userId: string,
+  tags?: string,
+  search?: string
+) => {
+  const params = new URLSearchParams({ user_id: userId });
+  if (tags) params.set("tags", tags);
+  if (search) params.set("search", search);
+  const res = await api.get(`/agents/plaza?${params.toString()}`);
+  return res.data;
+};
+
+export const createDirectSession = async (
+  myAgentId: string,
+  targetAgentId: string
+) => {
+  const res = await api.post("/sessions/direct", {
+    my_agent_id: myAgentId,
+    target_agent_id: targetAgentId,
+  });
+  return res.data;
+};
+
 export const updateAgent = async (id: string, data: any) => {
   const res = await api.put(`/agents/${id}`, data);
   return res.data;

@@ -121,6 +121,9 @@ class JSONAgentRepository(AgentRepository):
         agents = self.store.list_all(Agent)
         return [a for a in agents if a.user_id == user_id]
 
+    async def list_all(self) -> List[Agent]:
+        return self.store.list_all(Agent)
+
     async def update_status(self, agent_id: UUID, status: AgentStatus) -> Optional[Agent]:
         agent = await self.get(agent_id)
         if agent:

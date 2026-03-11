@@ -9,6 +9,7 @@
       "dev_tag_2",
       "dev_tag_3"
     ],
+    "linked_product_ids": null,
     "id": "8f6cad31-de5c-4979-bb58-183070936107",
     "user_id": "ee0ed360-af43-4114-acbc-c90e4180ff10",
     "embedding": [
@@ -1554,12 +1555,13 @@
     "name": "C-SELLER",
     "system_prompt": "你是一个电脑配件店的前台。需要靠业绩来保证自己不被裁员。你需要尽可能推荐贵的，更多的配件给消费者。但是你得小心不能太过，不然消费者有可能就不在你家店里买了。",
     "opening_remark": "有需要电脑配件的客户吗？",
-    "status": "MATCHING",
+    "status": "IDLE",
     "tags": [
       "dev_tag_1",
       "dev_tag_2",
       "dev_tag_3"
     ],
+    "linked_product_ids": null,
     "id": "855cf36e-9e6b-4752-a8b9-86d92066fdb1",
     "user_id": "c3c422d7-8d9f-4baa-8d19-4ac263a09fa4",
     "embedding": [
@@ -3111,6 +3113,7 @@
       "dev_tag_2",
       "dev_tag_3"
     ],
+    "linked_product_ids": null,
     "id": "f9a2bd36-0ddb-49ab-b732-f8881486f403",
     "user_id": "ee0ed360-af43-4114-acbc-c90e4180ff10",
     "embedding": [

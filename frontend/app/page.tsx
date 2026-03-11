@@ -307,6 +307,9 @@ export default function Home() {
           <Link href="/profile" className="text-gray-700 hover:underline">
             Welcome, {user.username}
           </Link>
+          <Link href="/plaza" className="text-purple-600 font-medium hover:underline">
+            Agent Plaza
+          </Link>
           {user.avatar_url && (
             <img src={API_URL + user.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300" />
           )}
