@@ -6,32 +6,32 @@ from app.core.db import init_db, get_session
 from app.core.config import settings
 from app.api import agents, sessions, auth, media, shop, skill
 from app.services.orchestrator import run_orchestrator
-from app.core.deps import get_session_repo, get_agent_repo, get_matcher_repo, get_message_repo, get_match_result_repo
+from app.core.deps import get_session_repo, get_agent_repo, get_matcher_repo, get_message_repo, get_match_result_repo, get_product_repo
 from app.services.llm import validate_api_keys, valid_clients
 
 async def background_task():
     while True:
         try:
             if settings.MODE == "dev":
-                # In dev mode, we use JSON repos which are global/singleton-like
                 session_repo = await get_session_repo(None)
                 agent_repo = await get_agent_repo(None)
                 matcher_repo = await get_matcher_repo(None)
                 message_repo = await get_message_repo(None)
                 match_result_repo = await get_match_result_repo(None)
+                product_repo = await get_product_repo(None)
                 
-                await run_orchestrator(session_repo, agent_repo, matcher_repo, message_repo, match_result_repo)
+                await run_orchestrator(session_repo, agent_repo, matcher_repo, message_repo, match_result_repo, product_repo=product_repo)
             else:
-                # In prod mode, we need a DB session
                 async for session in get_session():
                     session_repo = await get_session_repo(session)
                     agent_repo = await get_agent_repo(session)
                     matcher_repo = await get_matcher_repo(session)
                     message_repo = await get_message_repo(session)
                     match_result_repo = await get_match_result_repo(session)
+                    product_repo = await get_product_repo(session)
                     
-                    await run_orchestrator(session_repo, agent_repo, matcher_repo, message_repo, match_result_repo)
-                    break # get_session yields once
+                    await run_orchestrator(session_repo, agent_repo, matcher_repo, message_repo, match_result_repo, product_repo=product_repo)
+                    break
         except Exception as e:
             print(f"Error in background task: {e}")
         await asyncio.sleep(5)

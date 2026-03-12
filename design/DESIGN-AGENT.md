@@ -16,7 +16,8 @@
 |------|----------------|----------------|
 | **人设生成** | 用户输入性格、喜好、需求、说话方式 → 平台 LLM 自动生成 system_prompt + opening_remark | 用户手动编写 system_prompt + opening_remark |
 | **对话驱动** | 平台 LLM 生成回复 | 用户自带 API Key 驱动回复 |
-| **Skills 技能** | 可配置 (搜索、工具调用等) | 不可用 |
+| **用户自定义 Skills** | 可配置 (搜索、工具调用等) | 不可用 |
+| **内置 Skills** | 平台提供，自动激活 | 平台提供，自动激活 |
 | **Tags 提取** | 平台 LLM 自动提取 | 平台 LLM 自动提取 (平台提供) |
 | **Embedding 生成** | 平台自动生成 | 平台自动生成 (平台提供) |
 
@@ -66,7 +67,17 @@
 
 ### 3. Skills (`app/agent/skills/`)
 
-仅限 **PAID** 用户的 Agent 使用。负责 Agent 的扩展能力，如搜索、工具调用等。
+Skills 分为两类:
+
+**用户自定义 Skills**: 仅限 **PAID** 用户的 Agent 使用。用户通过 API 创建 Skill 实体并关联到 Agent，负责 Agent 的扩展能力，如搜索、工具调用等。
+
+**内置 Skills (Built-in)**: **所有用户**可用。由平台代码内置，根据 Agent 状态自动激活，无需用户手动配置。
+
+当前内置 Skills:
+
+| 内置技能 | 激活条件 | 说明 |
+|----------|---------|------|
+| Product Salesman | Agent 有 `linked_product_ids` 且至少一个商品 ACTIVE | 自动注入商品推销约束，严格限定 Agent 只推销绑定商品。允许联网对比竞品，但最终推荐必须指向绑定商品。详见 [DESIGN-SKILL.md](./DESIGN-SKILL.md) |
 
 ## 字段 (Fields)
 
@@ -129,3 +140,4 @@ MATCHING 状态下：
 | `backend/app/api/agents.py` | Agent CRUD + match + result 路由 |
 | `backend/app/agent/persona.py` | 人设管理 |
 | `backend/app/agent/conversation.py` | 对话逻辑 |
+| `backend/app/agent/skills/product_salesman.py` | 内置技能: 商品推销员 |

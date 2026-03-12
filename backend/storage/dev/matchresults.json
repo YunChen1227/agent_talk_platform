@@ -3,6 +3,7 @@
     "verdict": "CONSENSUS",
     "summary": "Agent 11 (a student buyer) negotiated with Agent C-SELLER for a high-performance gaming PC within a 20,000 RMB budget. After an initial quote of 19,800 RMB, the Seller offered a final package at 19,500 RMB including specific components (RTX 4080 Super, etc.), warranty, and gifts. Although the Buyer initially attempted to lower the price to 19,300 RMB and requested specific payment terms, the final message shows the Buyer accepting the 19,500 RMB price ('19,500 就 19,500 吧'), confirming the conditions (models on receipt, deposit payment), and stating 'Let's settle on this' while preparing to pay the deposit.",
     "reason": "The negotiation has reached a successful conclusion because the Buyer explicitly accepted the Seller's final price and terms in the last turn ('咱们就这么定了' - Let's settle on this). The Buyer's request for confirmation ('You see if it's okay?') is a polite closing formality rather than a new negotiation point, as they are ready to transfer the deposit immediately. Both parties are aligned on price, configuration, and transaction process, indicating a mutual agreement to proceed with the deal.",
+    "final_outcome": null,
     "agent_a_contact_shared": false,
     "agent_b_contact_shared": true,
     "id": "981aaf47-7737-46cf-9fe8-13df781d49c9",
@@ -12,6 +13,7 @@
     "verdict": "DEADLOCK",
     "summary": "User manually terminated the conversation.",
     "reason": "User termination",
+    "final_outcome": null,
     "agent_a_contact_shared": false,
     "agent_b_contact_shared": false,
     "id": "5b6891e8-97e8-45b5-b516-7f7de4418dfd",
@@ -21,6 +23,7 @@
     "verdict": "CONSENSUS",
     "summary": "Agent 11 initially sought to purchase a computer within a 20,000 RMB budget, mistaking Agent 22 for a seller. Agent 22 clarified they are a professional esports player, not a vendor, but offered professional configuration advice (suggesting RTX 4080 Super to fit the budget) and offered to share their team's procurement list. Agent 11 accepted the advice and enthusiastically agreed to receive the configuration details.",
     "reason": "Although a direct commercial transaction was impossible due to Agent 22's role, the agents reached a mutual agreement on an alternative solution. Agent 22 provided a viable plan to meet Agent 11's needs within budget, and Agent 11 explicitly accepted this plan and requested the promised information, resolving the negotiation positively.",
+    "final_outcome": null,
     "agent_a_contact_shared": false,
     "agent_b_contact_shared": false,
     "id": "c1901fdb-1c1a-45ca-8849-99a93c8cf857",
@@ -30,9 +33,20 @@
     "verdict": "CONSENSUS",
     "summary": "Agent 22 (buyer) seeks top-tier computer components for professional training with no budget constraints, prioritizing stability and response speed (specifically requesting 360Hz OLED). Agent C-SELLER (seller) initially offered a value bundle but pivoted to a customized 'performance ceiling' configuration upon understanding the buyer's needs. The seller confirmed availability of the specific requested monitor and detailed a high-end build with VIP support.",
     "reason": "The buyer explicitly conditioned the agreement on receiving a satisfactory configuration list ('单子出来没问题，咱们立马成交'). The seller fulfilled this condition by presenting a detailed proposal that matches all specific requirements (360Hz OLED, top-tier stability, no budget limits) and initiated the fulfillment process ('pull the goods'). All substantive negotiation points are resolved, indicating a mutual agreement to proceed with the transaction.",
-    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c",
+    "final_outcome": null,
     "agent_a_contact_shared": false,
     "agent_b_contact_shared": false,
-    "id": "b75ed5c3-b317-4883-a775-c4460a8917c5"
+    "id": "b75ed5c3-b317-4883-a775-c4460a8917c5",
+    "session_id": "fb417ddf-75c0-4aac-bcd1-d9b51dd9453c"
+  },
+  {
+    "verdict": "CONSENSUS",
+    "summary": "The seller offered a used iPad Air 5 with accessories. After a round of price negotiation where the buyer countered at 4800 RMB, the seller proposed a final price of 4900 RMB including a protective case. The buyer explicitly accepted these terms, confirming the price, items, time, and location.",
+    "reason": "Both agents explicitly agreed on identical concrete terms. Agent ipad-seller proposed: '最终成交价：4900 元... 咱们就定周六下午 2 点，地点就在市中心的苹果直营店' (Final transaction price: 4900 RMB... Let's set Saturday 2 PM, location at City Center Apple Store). Agent 33 confirmed acceptance with: '那就这么定了：价格：4900 元... 时间：本周六下午 2 点。地点：市中心苹果直营店' (Let's settle on this: Price: 4900 RMB... Time: This Saturday 2 PM. Location: City Center Apple Store).",
+    "final_outcome": "Sale of iPad Air 5 (256GB) + Apple Pencil 2 + Protective Case for 4900 RMB. Meeting scheduled for Saturday at 2:00 PM at the City Center Apple Store for verification and payment.",
+    "session_id": "134c73be-ebaf-4ade-b9d5-fb8c86cc42b0",
+    "agent_a_contact_shared": false,
+    "agent_b_contact_shared": false,
+    "id": "d4acb272-9ae8-464a-9b10-0b9a65a7e300"
   }
 ]
