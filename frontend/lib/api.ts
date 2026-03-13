@@ -16,6 +16,14 @@ export const listAgents = async (userId: string) => {
   return res.data;
 };
 
+export interface CatalogTag {
+  id: string;
+  name: string;
+  slug: string;
+  category_id: string;
+  parent_id?: string | null;
+}
+
 export const createAgent = async (
   userId: string, 
   name: string, 
@@ -23,7 +31,8 @@ export const createAgent = async (
   systemPrompt?: string, 
   openingRemark?: string,
   linkedProductIds?: string[],
-  linkedSkillIds?: string[]
+  linkedSkillIds?: string[],
+  tagIds?: string[]
 ) => {
   const res = await api.post("/agents/", { 
     user_id: userId, 
@@ -33,6 +42,7 @@ export const createAgent = async (
     opening_remark: openingRemark,
     linked_product_ids: linkedProductIds,
     linked_skill_ids: linkedSkillIds,
+    tag_ids: tagIds,
   });
   return res.data;
 };
@@ -51,6 +61,79 @@ export const listPlazaAgents = async (
   if (tags) params.set("tags", tags);
   if (search) params.set("search", search);
   const res = await api.get(`/agents/plaza?${params.toString()}`);
+  return res.data;
+};
+
+// Plaza (new structured search)
+export interface PlazaTag {
+  id: string;
+  name: string;
+  slug: string;
+  children: PlazaTag[];
+}
+
+export interface PlazaTagCategory {
+  id: string;
+  name: string;
+  slug: string;
+  tags: PlazaTag[];
+}
+
+export interface PlazaAgentTag {
+  id: string;
+  name: string;
+  slug: string;
+  category_id: string;
+  parent_id?: string | null;
+}
+
+export interface PlazaMatchDetail {
+  my_agent_id: string;
+  my_agent_name: string;
+  session_id: string;
+  status: string;
+  created_at: string;
+}
+
+export interface PlazaAgent {
+  id: string;
+  name: string;
+  tags: PlazaAgentTag[];
+  opening_remark?: string;
+  match_status: string;
+  match_details: PlazaMatchDetail[];
+  search_score?: number;
+}
+
+export interface PlazaSearchResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: PlazaAgent[];
+}
+
+export const getPlazaTags = async (): Promise<PlazaTagCategory[]> => {
+  const res = await api.get("/plaza/tags");
+  return res.data;
+};
+
+export const searchPlazaAgents = async (
+  userId: string,
+  options?: {
+    tagIds?: string[];
+    q?: string;
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<PlazaSearchResponse> => {
+  const params = new URLSearchParams({ user_id: userId });
+  if (options?.tagIds && options.tagIds.length > 0) {
+    params.set("tag_ids", options.tagIds.join(","));
+  }
+  if (options?.q) params.set("q", options.q);
+  if (options?.page) params.set("page", String(options.page));
+  if (options?.pageSize) params.set("page_size", String(options.pageSize));
+  const res = await api.get(`/plaza/search?${params.toString()}`);
   return res.data;
 };
 

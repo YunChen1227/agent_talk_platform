@@ -8,6 +8,7 @@ from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
 from app.models.skill import Skill
+from app.models.tag import TagCategory, Tag, AgentTag
 
 class UserRepository(ABC):
     @abstractmethod
@@ -175,4 +176,70 @@ class SkillRepository(ABC):
 
     @abstractmethod
     async def delete(self, skill_id: UUID) -> bool:
+        pass
+
+
+class TagCategoryRepository(ABC):
+    @abstractmethod
+    async def list_active(self) -> List[TagCategory]:
+        pass
+
+    @abstractmethod
+    async def get_by_slug(self, slug: str) -> Optional[TagCategory]:
+        pass
+
+    @abstractmethod
+    async def create(self, category: TagCategory) -> TagCategory:
+        pass
+
+
+class TagRepository(ABC):
+    @abstractmethod
+    async def list_active(self) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def list_by_category(self, category_id: UUID) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def list_roots_by_category(self, category_id: UUID) -> List[Tag]:
+        """Return only top-level tags (parent_id is None) in a category."""
+        pass
+
+    @abstractmethod
+    async def list_children(self, parent_id: UUID) -> List[Tag]:
+        """Return direct children of a tag."""
+        pass
+
+    @abstractmethod
+    async def get_by_slug(self, slug: str) -> Optional[Tag]:
+        pass
+
+    @abstractmethod
+    async def get_by_slugs(self, slugs: List[str]) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def create(self, tag: Tag) -> Tag:
+        pass
+
+
+class AgentTagRepository(ABC):
+    @abstractmethod
+    async def set_tags(self, agent_id: UUID, tag_ids: List[UUID]) -> None:
+        """Replace all tags for an agent."""
+        pass
+
+    @abstractmethod
+    async def get_tags_for_agent(self, agent_id: UUID) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def get_agent_ids_by_tag_ids(self, tag_ids: List[UUID]) -> List[UUID]:
+        """Return agent IDs that have at least one of the given tags."""
+        pass
+
+    @abstractmethod
+    async def list_all(self) -> List[AgentTag]:
         pass

@@ -18,10 +18,10 @@
 | **对话驱动** | 平台 LLM 生成回复 | 用户自带 API Key 驱动回复 |
 | **用户自定义 Skills** | 可配置 (搜索、工具调用等) | 不可用 |
 | **内置 Skills** | 平台提供，自动激活 | 平台提供，自动激活 |
-| **Tags 提取** | 平台 LLM 自动提取 | 平台 LLM 自动提取 (平台提供) |
+| **Tags 选择** | 平台 LLM 自动从预置目录提取（用户可手动微调） | 用户从预置标签目录手动选择 |
 | **Embedding 生成** | 平台自动生成 | 平台自动生成 (平台提供) |
 
-> **核心原则**: 无论付费还是免费，平台始终负责 **tags 提取**、**embedding 生成**和 **Judge 裁判**，这些是平台撮合与裁决能力的基础，不依赖用户配置。
+> **核心原则**: 无论付费还是免费，平台始终负责 **embedding 生成**和 **Judge 裁判**，这些是平台撮合与裁决能力的基础，不依赖用户配置。Tags 方面，PAID 用户由平台 LLM 自动提取后可手动微调；FREE 用户从预置标签目录手动选择。
 
 ## 核心组件
 
@@ -39,13 +39,13 @@
 [PAID 用户]
   用户输入 Agent Name + 详细描述 (性格/喜好/需求/说话方式)
   → 平台 LLM 生成 system_prompt + opening_remark
-  → 平台 LLM 提取 tags
+  → 平台 LLM 从预置标签目录自动提取 tags (用户可手动微调)
   → 平台生成 embedding
   → Agent 创建完成
 
 [FREE 用户]
   用户手动填写 Agent Name + system_prompt + opening_remark
-  → 平台 LLM 基于 system_prompt 提取 tags
+  → 用户从预置标签目录手动选择 tags (必选至少 1 个)
   → 平台基于 system_prompt 生成 embedding
   → Agent 创建完成
 ```

@@ -6,36 +6,73 @@ from app.models.session import SessionStatus, MatchResult
 from app.models.enums import Verdict
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.agent.persona import create_agent
-from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository
-from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo
+from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository, TagRepository, AgentTagRepository
+from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo, get_tag_repo, get_agent_tag_repo
 
 router = APIRouter()
 
+
+async def _enrich_with_catalog_tags(
+    agent: Agent,
+    agent_tag_repo: AgentTagRepository,
+) -> dict:
+    """Convert Agent model to dict with structured catalog_tags."""
+    data = {
+        "id": agent.id,
+        "name": agent.name,
+        "status": agent.status,
+        "system_prompt": agent.system_prompt,
+        "opening_remark": agent.opening_remark,
+        "tags": agent.tags,
+        "linked_product_ids": agent.linked_product_ids,
+        "linked_skill_ids": agent.linked_skill_ids,
+    }
+    tags = await agent_tag_repo.get_tags_for_agent(agent.id)
+    data["catalog_tags"] = [
+        {
+            "id": str(t.id),
+            "name": t.name,
+            "slug": t.slug,
+            "category_id": str(t.category_id),
+            "parent_id": str(t.parent_id) if t.parent_id else None,
+        }
+        for t in tags
+    ]
+    return data
+
+
 @router.post("/", response_model=AgentRead)
 async def create_new_agent(
-    agent_in: AgentCreate, 
+    agent_in: AgentCreate,
     agent_repo: AgentRepository = Depends(get_agent_repo),
-    user_repo: UserRepository = Depends(get_user_repo)
+    user_repo: UserRepository = Depends(get_user_repo),
+    tag_repo: TagRepository = Depends(get_tag_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
 ):
     agent = await create_agent(
-        agent_repo, 
-        user_repo, 
-        agent_in.user_id, 
+        agent_repo,
+        user_repo,
+        agent_in.user_id,
         agent_in.name,
         description=agent_in.description,
         system_prompt=agent_in.system_prompt,
         opening_remark=agent_in.opening_remark,
         linked_product_ids=agent_in.linked_product_ids,
         linked_skill_ids=agent_in.linked_skill_ids,
+        tag_repo=tag_repo,
+        agent_tag_repo=agent_tag_repo,
+        tag_ids=agent_in.tag_ids,
     )
-    return agent
+    return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
 @router.get("/", response_model=List[AgentRead])
 async def list_agents(
-    user_id: UUID, 
-    repo: AgentRepository = Depends(get_agent_repo)
+    user_id: UUID,
+    repo: AgentRepository = Depends(get_agent_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
 ):
-    return await repo.list_by_user(user_id)
+    agents = await repo.list_by_user(user_id)
+    return [await _enrich_with_catalog_tags(a, agent_tag_repo) for a in agents]
 
 
 @router.get("/plaza", response_model=List[AgentRead])
@@ -47,7 +84,6 @@ async def list_plaza_agents(
 ):
     """List all agents except the current user's; optional filter by tags (comma-separated) and name search (substring)."""
     all_agents = await repo.list_all()
-    # Exclude current user's agents
     candidates = [a for a in all_agents if a.user_id != user_id]
     if tags:
         tag_set = {t.strip().lower() for t in tags.split(",") if t.strip()}
@@ -61,19 +97,22 @@ async def list_plaza_agents(
 
 @router.get("/{id}", response_model=AgentRead)
 async def get_agent(
-    id: UUID, 
-    repo: AgentRepository = Depends(get_agent_repo)
+    id: UUID,
+    repo: AgentRepository = Depends(get_agent_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
 ):
     agent = await repo.get(id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    return agent
+    return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
 @router.put("/{id}", response_model=AgentRead)
 async def update_agent(
     id: UUID,
     agent_in: AgentUpdate,
-    repo: AgentRepository = Depends(get_agent_repo)
+    repo: AgentRepository = Depends(get_agent_repo),
+    tag_repo: TagRepository = Depends(get_tag_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
 ):
     agent = await repo.get(id)
     if not agent:
@@ -89,9 +128,17 @@ async def update_agent(
         agent.linked_product_ids = agent_in.linked_product_ids
     if agent_in.linked_skill_ids is not None:
         agent.linked_skill_ids = agent_in.linked_skill_ids
-        
+
+    if agent_in.tag_ids is not None:
+        all_tags = await tag_repo.list_active()
+        valid_ids = {t.id for t in all_tags}
+        filtered_ids = [tid for tid in agent_in.tag_ids if tid in valid_ids]
+        await agent_tag_repo.set_tags(id, filtered_ids)
+        tag_map = {t.id: t for t in all_tags}
+        agent.tags = [tag_map[tid].name for tid in filtered_ids if tid in tag_map]
+
     updated_agent = await repo.update(agent)
-    return updated_agent
+    return await _enrich_with_catalog_tags(updated_agent, agent_tag_repo)
 
 @router.delete("/{id}", status_code=204)
 async def delete_agent(
@@ -130,25 +177,33 @@ async def delete_agent(
     return
 
 @router.post("/{id}/match", response_model=AgentRead)
-async def start_matching(id: UUID, repo: AgentRepository = Depends(get_agent_repo)):
+async def start_matching(
+    id: UUID,
+    repo: AgentRepository = Depends(get_agent_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+):
     agent = await repo.get(id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     if agent.status == AgentStatus.MATCHING:
         raise HTTPException(status_code=400, detail=f"Agent is currently {agent.status}, cannot start matching")
     agent = await repo.update_status(id, AgentStatus.MATCHING)
-    return agent
+    return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
 
 @router.post("/{id}/stop-matching", response_model=AgentRead)
-async def stop_matching(id: UUID, repo: AgentRepository = Depends(get_agent_repo)):
+async def stop_matching(
+    id: UUID,
+    repo: AgentRepository = Depends(get_agent_repo),
+    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+):
     agent = await repo.get(id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     if agent.status != AgentStatus.MATCHING:
         raise HTTPException(status_code=400, detail=f"Agent is currently {agent.status}, cannot stop matching")
     agent = await repo.update_status(id, AgentStatus.IDLE)
-    return agent
+    return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
 @router.get("/{id}/result")
 async def get_agent_result(

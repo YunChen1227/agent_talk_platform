@@ -103,6 +103,43 @@ async def extract_tags(text: str) -> List[str]:
         return ["mock_tag_1", "mock_tag_2"]
 
 
+async def extract_tags_from_catalog(text: str, available_slugs: List[str]) -> List[str]:
+    """Select matching tag slugs from a predefined catalog."""
+    if settings.MODE == "dev":
+        import random as _rand
+        sample_size = min(4, len(available_slugs))
+        return _rand.sample(available_slugs, sample_size) if available_slugs else []
+
+    client_info = get_random_client()
+    if not client_info:
+        return []
+
+    slug_list = ", ".join(available_slugs)
+    prompt = (
+        f"From the following tag slugs, select ALL that apply to the text below. "
+        f"Return ONLY the selected slugs as a JSON array of strings. "
+        f"If none apply, return an empty array.\n\n"
+        f"Available slugs: [{slug_list}]\n\n"
+        f"Text: {text}\n\n"
+        f"Selected slugs (JSON array):"
+    )
+
+    try:
+        client = client_info["client"]
+        response = await client.chat.completions.create(
+            model=client_info["model"],
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+        )
+        content = response.choices[0].message.content.strip()
+        if content.startswith("["):
+            return json.loads(content)
+        return [s.strip().strip('"').strip("'") for s in content.split(",") if s.strip()]
+    except Exception as e:
+        print(f"Error extracting catalog tags: {e}")
+        return []
+
+
 async def check_match_with_llm(user_a_demand: str, user_b_demand: str) -> bool:
     client_info = get_random_client()
     if not client_info:

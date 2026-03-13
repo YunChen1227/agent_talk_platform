@@ -2,8 +2,8 @@ from uuid import UUID
 from typing import Tuple, List, Union, Optional
 from app.models.agent import Agent, AgentStatus
 from app.models.user import User
-from app.repositories.base import AgentRepository, UserRepository
-from app.services.llm import get_random_client, extract_tags, get_embedding
+from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository
+from app.services.llm import get_random_client, extract_tags, get_embedding, extract_tags_from_catalog
 import google.generativeai as genai
 
 async def generate_system_prompt(user_demand: str, user_tags: List[str]) -> Tuple[str, str]:
@@ -50,7 +50,6 @@ async def generate_system_prompt(user_demand: str, user_tags: List[str]) -> Tupl
             )
             content = response.choices[0].message.content.strip()
             
-        # Parse output
         parts = content.split("---OPENING_REMARK---")
         if len(parts) == 2:
             sys_prompt = parts[0].replace("---SYSTEM_PROMPT---", "").strip()
@@ -73,6 +72,9 @@ async def create_agent(
     opening_remark: Optional[str] = None,
     linked_product_ids: Optional[List[UUID]] = None,
     linked_skill_ids: Optional[List[UUID]] = None,
+    tag_repo: Optional[TagRepository] = None,
+    agent_tag_repo: Optional[AgentTagRepository] = None,
+    tag_ids: Optional[List[UUID]] = None,
 ) -> Agent:
     if isinstance(user_id, str):
         user_id = UUID(user_id)
@@ -81,8 +83,6 @@ async def create_agent(
     if not user:
         raise ValueError("User not found")
 
-    # Determine if PAID or FREE logic (mock logic for now, assuming FREE if system_prompt provided)
-    # In real impl, check user.tier
     is_paid_flow = (description is not None) and (system_prompt is None)
 
     final_system_prompt = ""
@@ -91,15 +91,12 @@ async def create_agent(
     embedding = None
 
     if is_paid_flow:
-        # PAID: Generate from description
         tags = await extract_tags(description)
         embedding = await get_embedding(description)
         final_system_prompt, final_opening_remark = await generate_system_prompt(description, tags)
     else:
-        # FREE: Use provided prompt
         final_system_prompt = system_prompt or ""
         final_opening_remark = opening_remark or ""
-        # Platform still generates tags/embedding for matching
         tags = await extract_tags(final_system_prompt)
         embedding = await get_embedding(final_system_prompt)
     
@@ -114,4 +111,59 @@ async def create_agent(
         linked_product_ids=linked_product_ids or [],
         linked_skill_ids=linked_skill_ids or [],
     )
-    return await agent_repo.create(agent)
+    created = await agent_repo.create(agent)
+
+    if tag_repo and agent_tag_repo:
+        if tag_ids:
+            await _assign_manual_tags(created, tag_ids, tag_repo, agent_tag_repo)
+        elif is_paid_flow:
+            await _assign_catalog_tags(created, final_system_prompt, tag_repo, agent_tag_repo)
+
+    return created
+
+
+async def _assign_manual_tags(
+    agent: Agent,
+    tag_ids: List[UUID],
+    tag_repo: TagRepository,
+    agent_tag_repo: AgentTagRepository,
+) -> None:
+    """Assign user-selected tags from the catalog."""
+    all_tags = await tag_repo.list_active()
+    valid_ids = {t.id for t in all_tags}
+    filtered_ids = [tid for tid in tag_ids if tid in valid_ids]
+
+    if filtered_ids:
+        await agent_tag_repo.set_tags(agent.id, filtered_ids)
+
+    tag_map = {t.id: t for t in all_tags}
+    agent.tags = [tag_map[tid].name for tid in filtered_ids if tid in tag_map]
+
+
+async def _assign_catalog_tags(
+    agent: Agent,
+    text: str,
+    tag_repo: TagRepository,
+    agent_tag_repo: AgentTagRepository,
+) -> None:
+    """Extract tags from predefined catalog via LLM and write to agent_tag relation."""
+    all_tags = await tag_repo.list_active()
+    if not all_tags:
+        return
+
+    catalog = {t.slug: t for t in all_tags}
+    slugs = await extract_tags_from_catalog(text, list(catalog.keys()))
+
+    matched_tag_ids = []
+    matched_tag_names = []
+    for slug in slugs:
+        tag = catalog.get(slug)
+        if tag:
+            matched_tag_ids.append(tag.id)
+            matched_tag_names.append(tag.name)
+
+    if matched_tag_ids:
+        await agent_tag_repo.set_tags(agent.id, matched_tag_ids)
+
+    if matched_tag_names:
+        agent.tags = matched_tag_names

@@ -2,7 +2,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createAgent, listProducts, listSkills, createProduct, createSkill } from "@/lib/api";
+import {
+  createAgent,
+  listProducts,
+  listSkills,
+  createProduct,
+  createSkill,
+  getPlazaTags,
+  PlazaTagCategory,
+  PlazaTag,
+} from "@/lib/api";
 
 interface Item {
   id: string;
@@ -163,6 +172,118 @@ function MultiSelectWithCreate({
   );
 }
 
+function TagPicker({
+  categories,
+  selectedTagIds,
+  onToggle,
+  required,
+}: {
+  categories: PlazaTagCategory[];
+  selectedTagIds: Set<string>;
+  onToggle: (tagId: string) => void;
+  required?: boolean;
+}) {
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(
+    new Set()
+  );
+
+  const toggleExpand = (parentId: string) => {
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId);
+      else next.add(parentId);
+      return next;
+    });
+  };
+
+  return (
+    <div>
+      <label className="block font-bold mb-2 text-gray-800">
+        Tags (标签)
+        {required && (
+          <span className="text-red-500 ml-1">*</span>
+        )}
+        <span className="block text-sm font-normal text-gray-500">
+          {required
+            ? "请至少选择 1 个标签，用于在 Plaza 中被搜索和分类展示"
+            : "可选标签，不选则由 AI 自动提取"}
+        </span>
+      </label>
+      <div className="border border-gray-300 rounded-lg p-3 space-y-2.5 bg-gray-50">
+        {categories.map((cat) => (
+          <div key={cat.id} className="space-y-1.5">
+            <div className="flex items-start gap-2">
+              <span className="text-sm font-medium text-gray-500 min-w-[3.5rem] pt-0.5 text-right shrink-0">
+                {cat.name}:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {cat.tags.map((tag) => {
+                  const hasKids = tag.children.length > 0;
+                  const isSelected = selectedTagIds.has(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => {
+                        onToggle(tag.id);
+                        if (hasKids) toggleExpand(tag.id);
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        isSelected
+                          ? "bg-purple-600 text-white shadow-sm"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
+                      }`}
+                    >
+                      {tag.name}
+                      {hasKids && !isSelected && (
+                        <span className="ml-0.5 text-gray-400">+</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {cat.tags
+              .filter(
+                (tag) =>
+                  tag.children.length > 0 && expandedParents.has(tag.id)
+              )
+              .map((parent) => (
+                <div
+                  key={`children-${parent.id}`}
+                  className="flex items-start gap-2 ml-2"
+                >
+                  <span className="text-xs text-gray-400 min-w-[3.5rem] pt-1 text-right shrink-0">
+                    {parent.name}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {parent.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => onToggle(child.id)}
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                          selectedTagIds.has(child.id)
+                            ? "bg-purple-500 text-white shadow-sm"
+                            : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300"
+                        }`}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        ))}
+      </div>
+      {required && selectedTagIds.size === 0 && (
+        <p className="text-xs text-red-500 mt-1">请至少选择一个标签</p>
+      )}
+    </div>
+  );
+}
+
 export default function CreateAgentPage() {
   const [user, setUser] = useState<any>(null);
   const [agentName, setAgentName] = useState("");
@@ -177,6 +298,9 @@ export default function CreateAgentPage() {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
 
+  const [tagCategories, setTagCategories] = useState<PlazaTagCategory[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+
   const isPaidUser = false;
 
   useEffect(() => {
@@ -189,6 +313,12 @@ export default function CreateAgentPage() {
     setUser(u);
     loadItems(u.id);
   }, [router]);
+
+  useEffect(() => {
+    getPlazaTags()
+      .then(setTagCategories)
+      .catch(() => setTagCategories([]));
+  }, []);
 
   const loadItems = async (userId: string) => {
     try {
@@ -215,6 +345,15 @@ export default function CreateAgentPage() {
     );
   };
 
+  const toggleTagId = (tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  };
+
   const handleCreateProduct = async (name: string) => {
     if (!user) return;
     const prod = await createProduct({ user_id: user.id, name, price: 0 });
@@ -233,8 +372,11 @@ export default function CreateAgentPage() {
 
   const handleCreate = async () => {
     if (!user || !agentName.trim()) return;
+    if (!isPaidUser && selectedTagIds.size === 0) return;
     setIsSubmitting(true);
     try {
+      const tagIdArr =
+        selectedTagIds.size > 0 ? Array.from(selectedTagIds) : undefined;
       await createAgent(
         user.id,
         agentName.trim(),
@@ -242,7 +384,8 @@ export default function CreateAgentPage() {
         !isPaidUser ? systemPrompt : undefined,
         !isPaidUser ? openingRemark : undefined,
         selectedProductIds.length > 0 ? selectedProductIds : undefined,
-        selectedSkillIds.length > 0 ? selectedSkillIds : undefined
+        selectedSkillIds.length > 0 ? selectedSkillIds : undefined,
+        tagIdArr
       );
       router.push("/");
     } catch (e) {
@@ -250,6 +393,13 @@ export default function CreateAgentPage() {
       setIsSubmitting(false);
     }
   };
+
+  const isFormValid = isPaidUser
+    ? agentName.trim() && description.trim()
+    : agentName.trim() &&
+      systemPrompt.trim() &&
+      openingRemark.trim() &&
+      selectedTagIds.size > 0;
 
   if (!user) return null;
 
@@ -333,6 +483,15 @@ export default function CreateAgentPage() {
           </>
         )}
 
+        {tagCategories.length > 0 && (
+          <TagPicker
+            categories={tagCategories}
+            selectedTagIds={selectedTagIds}
+            onToggle={toggleTagId}
+            required={!isPaidUser}
+          />
+        )}
+
         <MultiSelectWithCreate
           label="Linked Products"
           items={products}
@@ -359,13 +518,7 @@ export default function CreateAgentPage() {
           <button
             className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             onClick={handleCreate}
-            disabled={
-              !agentName.trim() ||
-              (isPaidUser && !description.trim()) ||
-              (!isPaidUser &&
-                (!systemPrompt.trim() || !openingRemark.trim())) ||
-              isSubmitting
-            }
+            disabled={!isFormValid || isSubmitting}
           >
             {isSubmitting ? "Creating..." : "Create Agent"}
           </button>

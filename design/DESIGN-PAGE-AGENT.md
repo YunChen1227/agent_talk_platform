@@ -13,30 +13,37 @@
 ### 页面布局
 
 ```
-┌──────────────────────────────────────────────┐
-│  ← Back to Dashboard                         │
-│  Create New Agent                             │
-│  Free Tier: Manual Configuration              │
-│                                               │
-│  ┌────────────────────────────────────────┐   │
-│  │ Agent Name: [___________________]      │   │
-│  │                                        │   │
-│  │ [FREE] System Prompt:                  │   │
-│  │ [________________________]             │   │
-│  │ [________________________]             │   │
-│  │                                        │   │
-│  │ [FREE] Opening Remark:                 │   │
-│  │ [___________________]                  │   │
-│  │                                        │   │
-│  │ [PAID] Agent Description:              │   │
-│  │ (AI 自动生成 system_prompt)            │   │
-│  │                                        │   │
-│  │ Linked Products: [multi-select ▼] [+]  │   │
-│  │ Linked Skills:   [multi-select ▼] [+]  │   │
-│  │                                        │   │
-│  │ [Create Agent]  [Cancel]               │   │
-│  └────────────────────────────────────────┘   │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  ← Back to Dashboard                             │
+│  Create New Agent                                 │
+│  Free Tier: Manual Configuration                  │
+│                                                   │
+│  ┌────────────────────────────────────────────┐   │
+│  │ Agent Name: [___________________]          │   │
+│  │                                            │   │
+│  │ [FREE] System Prompt:                      │   │
+│  │ [________________________]                 │   │
+│  │ [________________________]                 │   │
+│  │                                            │   │
+│  │ [FREE] Opening Remark:                     │   │
+│  │ [___________________]                      │   │
+│  │                                            │   │
+│  │ [PAID] Agent Description:                  │   │
+│  │ (AI 自动生成 system_prompt)                │   │
+│  │                                            │   │
+│  │ Tags (标签):                               │   │
+│  │ 意图: [交友] [买卖] [技术交流] ...         │   │
+│  │ 领域: [科技+] [时尚+] [美食+] ...         │   │
+│  │        科技  [数码产品] [软件开发] [AI]    │   │
+│  │ 角色: [买家] [卖家] [顾问] ...             │   │
+│  │ 风格: [专业] [友好] [幽默] ...             │   │
+│  │                                            │   │
+│  │ Linked Products: [multi-select ▼] [+]      │   │
+│  │ Linked Skills:   [multi-select ▼] [+]      │   │
+│  │                                            │   │
+│  │ [Create Agent]  [Cancel]                   │   │
+│  └────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────┘
 ```
 
 ### 表单字段
@@ -48,6 +55,7 @@
 | Agent Name | input | 是 | Agent 对外名称 |
 | System Prompt | textarea | 是 | 手动编写的 Agent 人设指令 |
 | Opening Remark | input | 是 | Agent 匹配成功后的开场白 |
+| Tags | tag-picker | 是 (至少1个) | 从预置标签目录手动选择，两级层级展示 |
 
 #### PAID 用户
 
@@ -55,18 +63,29 @@
 |------|------|------|------|
 | Agent Name | input | 是 | Agent 对外名称 |
 | Agent Description | textarea | 是 | 描述性格/喜好/需求/说话方式，平台 LLM 自动生成 system_prompt + opening_remark |
+| Tags | tag-picker | 否 (LLM自动提取) | LLM 自动从目录提取并预选，用户可手动微调 |
+
+### Tags 标签选择器
+
+- 页面加载时调用 `GET /plaza/tags` 获取两级标签目录
+- 按 Category 分行展示一级标签，有子标签的显示 "+" 可展开
+- 点击标签切换选中/取消；有子标签的一级标签点击后展开子标签行
+- **FREE 用户**: 必须手动选择至少 1 个标签，表单校验
+- **PAID 用户**: 提交后后端 LLM 自动提取标签并预填；用户也可以在提交前手动预选标签
+- 选中的 tag ID 列表随表单一起提交到 `POST /agents/`
 
 ### 提交按钮状态
 
-- **禁用条件**: Agent Name 为空，或 FREE 时 system_prompt / opening_remark 为空，或 PAID 时 description 为空，或正在提交中。
+- **禁用条件**: Agent Name 为空，或 FREE 时 system_prompt / opening_remark / tags 为空，或 PAID 时 description 为空，或正在提交中。
 - **提交中**: 按钮文字变为 "Creating..."。
 
 ### 交互流程
 
-1. 填写表单。
+1. 填写表单 + 选择标签。
 2. 点击 "Create Agent" → 调用 `POST /agents/`。
-3. 成功 → 跳转 `/` (Dashboard)。
-4. 失败 → alert 错误信息。
+3. 后端处理: PAID 时若用户未选标签，LLM 自动提取；若用户已选，使用用户选择。FREE 时使用用户手选标签。
+4. 成功 → 跳转 `/` (Dashboard)。
+5. 失败 → alert 错误信息。
 
 ---
 
@@ -75,28 +94,33 @@
 ### 页面布局
 
 ```
-┌──────────────────────────────────────────────┐
-│  ← Back to Dashboard                         │
-│  Edit Agent Persona                           │
-│                                               │
-│  ┌────────────────────────────────────────┐   │
-│  │ Agent Name: [___________________]      │   │
-│  │                                        │   │
-│  │ Opening Remark:                        │   │
-│  │ [___________________]                  │   │
-│  │                                        │   │
-│  │ System Prompt (Persona):               │   │
-│  │ [________________________]             │   │
-│  │ [________________________]             │   │
-│  │ [________________________]             │   │
-│  │                                        │   │
-│  │                                        │   │
-│  │ Linked Products: [multi-select ▼] [+]  │   │
-│  │ Linked Skills:   [multi-select ▼] [+]  │   │
-│  │                                        │   │
-│  │                    [Save Changes]      │   │
-│  └────────────────────────────────────────┘   │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  ← Back to Dashboard                             │
+│  Edit Agent Persona                               │
+│                                                   │
+│  ┌────────────────────────────────────────────┐   │
+│  │ Agent Name: [___________________]          │   │
+│  │                                            │   │
+│  │ Opening Remark:                            │   │
+│  │ [___________________]                      │   │
+│  │                                            │   │
+│  │ System Prompt (Persona):                   │   │
+│  │ [________________________]                 │   │
+│  │ [________________________]                 │   │
+│  │ [________________________]                 │   │
+│  │                                            │   │
+│  │ Tags (标签):                               │   │
+│  │ 意图: [交友] [买卖] [技术交流] ...         │   │
+│  │ 领域: [科技+] [时尚+] [美食+] ...         │   │
+│  │ 角色: [买家] [卖家] [顾问] ...             │   │
+│  │ 风格: [专业] [友好] [幽默] ...             │   │
+│  │                                            │   │
+│  │ Linked Products: [multi-select ▼] [+]      │   │
+│  │ Linked Skills:   [multi-select ▼] [+]      │   │
+│  │                                            │   │
+│  │                    [Save Changes]          │   │
+│  └────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────┘
 ```
 
 ### 表单字段
@@ -106,13 +130,15 @@
 | Agent Name | input | 可修改名称 |
 | Opening Remark | textarea | 修改开场白 |
 | System Prompt | textarea (大) | 修改核心人设指令 |
+| Tags | tag-picker | 修改标签，加载时回显当前已关联标签 |
 
 ### 交互流程
 
-1. 页面加载 → 调用 `GET /agents/{id}` 填充表单。
-2. 修改字段后点击 "Save Changes" → 调用 `PUT /agents/{id}`。
-3. 成功 → alert "Agent updated successfully!"。
-4. 失败 → alert 错误信息。
+1. 页面加载 → 调用 `GET /agents/{id}` 填充表单 + 调用 `GET /plaza/tags` 获取标签目录。
+2. 标签选择器自动回显 Agent 当前已关联的标签（通过 `AgentRead.catalog_tags` 中的 ID 匹配）。
+3. 修改字段 / 标签后点击 "Save Changes" → 调用 `PUT /agents/{id}`（含 `tag_ids`）。
+4. 成功 → alert "Agent updated successfully!"。
+5. 失败 → alert 错误信息。
 
 ### 加载与错误状态
 

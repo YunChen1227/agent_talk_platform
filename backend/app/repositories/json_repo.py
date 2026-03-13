@@ -13,7 +13,8 @@ from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
 from app.models.skill import Skill
-from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository
+from app.models.tag import TagCategory, Tag, AgentTag
+from app.repositories.base import UserRepository, AgentRepository, MatcherRepository, SessionRepository, MessageRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -34,6 +35,12 @@ class JSONStore:
             return os.path.join(self.data_dir, "products.json")
         if name == "skill":
             return os.path.join(self.data_dir, "skills.json")
+        if name == "tagcategory":
+            return os.path.join(self.data_dir, "tag_categories.json")
+        if name == "tag":
+            return os.path.join(self.data_dir, "tags.json")
+        if name == "agenttag":
+            return os.path.join(self.data_dir, "agent_tags.json")
         return os.path.join(self.data_dir, f"{name}s.json")
 
     def load(self, model_class: Type[T]) -> List[T]:
@@ -353,3 +360,100 @@ class JSONSkillRepository(SkillRepository):
 
     async def delete(self, skill_id: UUID) -> bool:
         return self.store.delete(Skill, skill_id)
+
+
+class JSONTagCategoryRepository(TagCategoryRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def list_active(self) -> List[TagCategory]:
+        cats = self.store.list_all(TagCategory)
+        return sorted(
+            [c for c in cats if c.is_active],
+            key=lambda c: c.sort_order,
+        )
+
+    async def get_by_slug(self, slug: str) -> Optional[TagCategory]:
+        for c in self.store.list_all(TagCategory):
+            if c.slug == slug:
+                return c
+        return None
+
+    async def create(self, category: TagCategory) -> TagCategory:
+        if not category.id:
+            category.id = uuid4()
+        return self.store.add(category)
+
+
+class JSONTagRepository(TagRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def list_active(self) -> List[Tag]:
+        tags = self.store.list_all(Tag)
+        return sorted(
+            [t for t in tags if t.is_active],
+            key=lambda t: t.sort_order,
+        )
+
+    async def list_by_category(self, category_id: UUID) -> List[Tag]:
+        tags = self.store.list_all(Tag)
+        return sorted(
+            [t for t in tags if t.category_id == category_id and t.is_active],
+            key=lambda t: t.sort_order,
+        )
+
+    async def list_roots_by_category(self, category_id: UUID) -> List[Tag]:
+        tags = self.store.list_all(Tag)
+        return sorted(
+            [t for t in tags if t.category_id == category_id and t.is_active and t.parent_id is None],
+            key=lambda t: t.sort_order,
+        )
+
+    async def list_children(self, parent_id: UUID) -> List[Tag]:
+        tags = self.store.list_all(Tag)
+        return sorted(
+            [t for t in tags if t.parent_id == parent_id and t.is_active],
+            key=lambda t: t.sort_order,
+        )
+
+    async def get_by_slug(self, slug: str) -> Optional[Tag]:
+        for t in self.store.list_all(Tag):
+            if t.slug == slug:
+                return t
+        return None
+
+    async def get_by_slugs(self, slugs: List[str]) -> List[Tag]:
+        slug_set = set(slugs)
+        return [t for t in self.store.list_all(Tag) if t.slug in slug_set]
+
+    async def create(self, tag: Tag) -> Tag:
+        if not tag.id:
+            tag.id = uuid4()
+        return self.store.add(tag)
+
+
+class JSONAgentTagRepository(AgentTagRepository):
+    def __init__(self, store: JSONStore):
+        self.store = store
+
+    async def set_tags(self, agent_id: UUID, tag_ids: List[UUID]) -> None:
+        all_links = self.store.list_all(AgentTag)
+        remaining = [link for link in all_links if link.agent_id != agent_id]
+        for tid in tag_ids:
+            remaining.append(AgentTag(agent_id=agent_id, tag_id=tid))
+        self.store.save(AgentTag, remaining)
+
+    async def get_tags_for_agent(self, agent_id: UUID) -> List[Tag]:
+        links = self.store.list_all(AgentTag)
+        tag_ids = {link.tag_id for link in links if link.agent_id == agent_id}
+        all_tags = self.store.list_all(Tag)
+        return [t for t in all_tags if t.id in tag_ids]
+
+    async def get_agent_ids_by_tag_ids(self, tag_ids: List[UUID]) -> List[UUID]:
+        tid_set = set(tag_ids)
+        links = self.store.list_all(AgentTag)
+        return list({link.agent_id for link in links if link.tag_id in tid_set})
+
+    async def list_all(self) -> List[AgentTag]:
+        return self.store.list_all(AgentTag)

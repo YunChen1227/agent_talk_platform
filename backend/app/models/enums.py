@@ -24,3 +24,10 @@ class MediaFileType(str, Enum):
 class ProductStatus(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
+
+
+class MatchStatus(str, Enum):
+    CONSENSUS = "CONSENSUS"
+    CHATTING = "CHATTING"
+    DEADLOCK = "DEADLOCK"
+    NOT_MATCHED = "NOT_MATCHED"

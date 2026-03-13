@@ -3,9 +3,9 @@ from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.db import get_session
 from app.core.config import settings
-from app.repositories.base import UserRepository, AgentRepository, SessionRepository, MessageRepository, MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository
+from app.repositories.base import UserRepository, AgentRepository, SessionRepository, MessageRepository, MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository
 from app.repositories.db_repo import DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository, DBMatcherRepository, DBMatchResultRepository
-from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONMediaRepository, JSONProductRepository, JSONSkillRepository, JSONStore
+from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONMediaRepository, JSONProductRepository, JSONSkillRepository, JSONTagCategoryRepository, JSONTagRepository, JSONAgentTagRepository, JSONStore
 
 # Global JSON Store instance (uses storage/dev/ via config)
 json_store = JSONStore()
@@ -55,3 +55,12 @@ async def get_product_repo(session: Optional[AsyncSession] = Depends(get_db_sess
 
 async def get_skill_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> SkillRepository:
     return JSONSkillRepository(json_store)
+
+async def get_tag_category_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> TagCategoryRepository:
+    return JSONTagCategoryRepository(json_store)
+
+async def get_tag_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> TagRepository:
+    return JSONTagRepository(json_store)
+
+async def get_agent_tag_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> AgentTagRepository:
+    return JSONAgentTagRepository(json_store)

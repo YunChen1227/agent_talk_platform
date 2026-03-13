@@ -8,6 +8,8 @@ import {
   listSkills,
   createProduct,
   createSkill,
+  getPlazaTags,
+  PlazaTagCategory,
 } from "@/lib/api";
 
 interface Item {
@@ -169,6 +171,108 @@ function MultiSelectWithCreate({
   );
 }
 
+function TagPicker({
+  categories,
+  selectedTagIds,
+  onToggle,
+}: {
+  categories: PlazaTagCategory[];
+  selectedTagIds: Set<string>;
+  onToggle: (tagId: string) => void;
+}) {
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(
+    new Set()
+  );
+
+  const toggleExpand = (parentId: string) => {
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId);
+      else next.add(parentId);
+      return next;
+    });
+  };
+
+  return (
+    <div>
+      <label className="block font-bold mb-2">
+        Tags (标签)
+        <span className="block text-sm font-normal text-gray-500">
+          修改标签以调整 Agent 在 Plaza 中的分类和搜索可见性
+        </span>
+      </label>
+      <div className="border border-gray-300 rounded-lg p-3 space-y-2.5 bg-gray-50">
+        {categories.map((cat) => (
+          <div key={cat.id} className="space-y-1.5">
+            <div className="flex items-start gap-2">
+              <span className="text-sm font-medium text-gray-500 min-w-[3.5rem] pt-0.5 text-right shrink-0">
+                {cat.name}:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {cat.tags.map((tag) => {
+                  const hasKids = tag.children.length > 0;
+                  const isSelected = selectedTagIds.has(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => {
+                        onToggle(tag.id);
+                        if (hasKids) toggleExpand(tag.id);
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        isSelected
+                          ? "bg-purple-600 text-white shadow-sm"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
+                      }`}
+                    >
+                      {tag.name}
+                      {hasKids && !isSelected && (
+                        <span className="ml-0.5 text-gray-400">+</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {cat.tags
+              .filter(
+                (tag) =>
+                  tag.children.length > 0 && expandedParents.has(tag.id)
+              )
+              .map((parent) => (
+                <div
+                  key={`children-${parent.id}`}
+                  className="flex items-start gap-2 ml-2"
+                >
+                  <span className="text-xs text-gray-400 min-w-[3.5rem] pt-1 text-right shrink-0">
+                    {parent.name}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {parent.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => onToggle(child.id)}
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                          selectedTagIds.has(child.id)
+                            ? "bg-purple-500 text-white shadow-sm"
+                            : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300"
+                        }`}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AgentDetail({ params }: { params: { id: string } }) {
   const [agent, setAgent] = useState<any>(null);
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -183,11 +287,20 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
 
+  const [tagCategories, setTagCategories] = useState<PlazaTagCategory[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  useEffect(() => {
+    getPlazaTags()
+      .then(setTagCategories)
+      .catch(() => setTagCategories([]));
   }, []);
 
   useEffect(() => {
@@ -199,6 +312,11 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         setName(data.name);
         setSelectedProductIds(data.linked_product_ids || []);
         setSelectedSkillIds(data.linked_skill_ids || []);
+        if (data.catalog_tags && Array.isArray(data.catalog_tags)) {
+          setSelectedTagIds(
+            new Set(data.catalog_tags.map((t: any) => t.id))
+          );
+        }
       }
       setLoading(false);
     });
@@ -234,6 +352,15 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
     );
   };
 
+  const toggleTagId = (tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  };
+
   const handleCreateProduct = async (name: string) => {
     if (!user) return;
     const prod = await createProduct({ user_id: user.id, name, price: 0 });
@@ -258,6 +385,7 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         opening_remark: openingRemark,
         linked_product_ids: selectedProductIds,
         linked_skill_ids: selectedSkillIds,
+        tag_ids: Array.from(selectedTagIds),
       });
       alert("Agent updated successfully!");
     } catch (e) {
@@ -316,6 +444,14 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
             onChange={(e) => setSystemPrompt(e.target.value)}
           />
         </div>
+
+        {tagCategories.length > 0 && (
+          <TagPicker
+            categories={tagCategories}
+            selectedTagIds={selectedTagIds}
+            onToggle={toggleTagId}
+          />
+        )}
 
         <MultiSelectWithCreate
           label="Linked Products"
