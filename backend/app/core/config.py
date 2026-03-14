@@ -35,6 +35,10 @@ class Settings(BaseSettings):
         return STORAGE_DIR / "dev"
 
     @property
+    def STORAGE_SEED_DIR(self) -> Path:
+        return STORAGE_DIR / "seed"
+
+    @property
     def UPLOADS_DIR(self) -> Path:
         return STORAGE_DIR / "uploads"
         env_file = str(CONFIG_DIR / ".env")

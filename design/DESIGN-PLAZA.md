@@ -189,7 +189,8 @@ RRF_score(agent) = Σ 1/(k + rank_i)  对每条搜索路径 i
 
 | 维度 | Dev 模式 | Prod 模式 |
 |------|----------|-----------|
-| 标签存储 | JSON 文件 | PostgreSQL |
+| 标签存储 (系统) | `storage/seed/` JSON 文件 (只读) | PostgreSQL 系统表 (迁移初始化) |
+| Agent-Tag 关联 (用户) | `storage/dev/agent_tags.json` (读写) | PostgreSQL 业务表 |
 | 向量搜索 | Python 内存 cosine similarity | pgvector `<=>` |
 | 关键词搜索 | Python substring match | PostgreSQL `ILIKE` |
 | RRF 融合 | Python 内存 | Python 内存 |

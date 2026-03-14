@@ -18,30 +18,44 @@ from app.repositories.base import UserRepository, AgentRepository, MatcherReposi
 
 T = TypeVar("T", bound=BaseModel)
 
+SYSTEM_MODELS = {"tagcategory", "tag"}
+
+
 class JSONStore:
-    def __init__(self, data_dir: str = None):
+    def __init__(self, data_dir: str = None, seed_dir: str = None):
+        from app.core.config import STORAGE_DIR
         if data_dir is None:
-            from app.core.config import STORAGE_DIR
             data_dir = str(STORAGE_DIR / "dev")
+        if seed_dir is None:
+            seed_dir = str(STORAGE_DIR / "seed")
         self.data_dir = data_dir
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir, exist_ok=True)
+        self.seed_dir = seed_dir
+        for d in (data_dir, seed_dir):
+            if not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+
+    def _base_dir_for(self, model_class: Type[T]) -> str:
+        """System seed data lives in seed_dir; user data lives in data_dir."""
+        if model_class.__name__.lower() in SYSTEM_MODELS:
+            return self.seed_dir
+        return self.data_dir
 
     def _get_path(self, model_class: Type[T]) -> str:
+        base = self._base_dir_for(model_class)
         name = model_class.__name__.lower()
         if name == "media":
-            return os.path.join(self.data_dir, "media.json")
+            return os.path.join(base, "media.json")
         if name == "product":
-            return os.path.join(self.data_dir, "products.json")
+            return os.path.join(base, "products.json")
         if name == "skill":
-            return os.path.join(self.data_dir, "skills.json")
+            return os.path.join(base, "skills.json")
         if name == "tagcategory":
-            return os.path.join(self.data_dir, "tag_categories.json")
+            return os.path.join(base, "tag_categories.json")
         if name == "tag":
-            return os.path.join(self.data_dir, "tags.json")
+            return os.path.join(base, "tags.json")
         if name == "agenttag":
-            return os.path.join(self.data_dir, "agent_tags.json")
-        return os.path.join(self.data_dir, f"{name}s.json")
+            return os.path.join(base, "agent_tags.json")
+        return os.path.join(base, f"{name}s.json")
 
     def load(self, model_class: Type[T]) -> List[T]:
         path = self._get_path(model_class)

@@ -211,14 +211,19 @@ agent_talk_platform/
 │   │   ├── secrets.json           # 平台 API Keys (不入库)
 │   │   └── secrets.example.json   # API Keys 模板 (入库)
 │   ├── storage/                   # ── 持久化存储 ──
-│   │   ├── dev/                   # Dev 模式 JSON 数据
+│   │   ├── seed/                  # 系统预置种子数据 (只读，平台维护)
+│   │   │   ├── tag_categories.json  # 标签分类
+│   │   │   └── tags.json            # 预置标签目录
+│   │   ├── dev/                   # Dev 模式用户运行时数据 (读写)
 │   │   │   ├── users.json
 │   │   │   ├── agents.json
 │   │   │   ├── sessions.json
 │   │   │   ├── messages.json
 │   │   │   ├── matchresults.json
+│   │   │   ├── agent_tags.json    # Agent-Tag 关联
 │   │   │   ├── media.json         # 用户媒体元数据
-│   │   │   └── products.json     # 用户商品
+│   │   │   ├── products.json      # 用户商品
+│   │   │   └── skills.json        # 用户技能
 │   │   └── uploads/               # Dev 模式上传文件 (照片/视频)
 │   ├── app/
 │   │   ├── agent/                 # Agent 核心模块
@@ -240,7 +245,8 @@ agent_talk_platform/
 
 | 维度 | Dev 模式 | Prod 模式 |
 |------|----------|-----------|
-| 数据存储 | JSON 文件 (`storage/dev/*.json`) | PostgreSQL + pgvector |
+| 系统数据 | JSON 文件 (`storage/seed/*.json`，只读) | PostgreSQL 系统表 (迁移脚本初始化) |
+| 用户数据 | JSON 文件 (`storage/dev/*.json`，读写) | PostgreSQL 业务表 + pgvector |
 | 配置管理 | `config/.env` + `config/secrets.json` | 同左 |
 | Embedding | Mock 随机向量 | OpenAI `text-embedding-ada-002` |
 | 匹配阈值 | 2.0 (放宽) + LLM 验证 | 0.2 (严格 Cosine Distance) |
@@ -256,17 +262,23 @@ backend/config/                    # 所有配置统一在此管理
 └── secrets.example.json           # API Keys 模板 (入库，仅含空值字段名)
 
 backend/storage/                   # 所有持久化数据统一在此管理
-└── dev/                           # Dev 模式 JSON 文件存储
-    ├── users.json
-    ├── agents.json
-    ├── sessions.json
-    ├── messages.json
-    ├── matchresults.json
-    ├── media.json
-    └── products.json
-storage/uploads/                   # Dev 模式上传文件 (照片/视频) 存放目录
+├── seed/                          # 系统预置种子数据 (平台维护，只读)
+│   ├── tag_categories.json        #   标签分类 (意图/领域/角色/风格)
+│   └── tags.json                  #   预置标签目录 (两级层级)
+├── dev/                           # Dev 模式用户运行时数据 (读写)
+│   ├── users.json
+│   ├── agents.json
+│   ├── sessions.json
+│   ├── messages.json
+│   ├── matchresults.json
+│   ├── agent_tags.json            #   Agent-Tag 多对多关联
+│   ├── media.json
+│   ├── products.json
+│   └── skills.json
+└── uploads/                       # Dev 模式上传文件 (照片/视频)
 ```
 
+- **系统数据与用户数据分离**: `seed/` 存放平台预置的种子数据 (标签分类、标签目录)，仅由平台维护，运行时只读；`dev/` 存放用户运行时产生的数据。Prod 模式下 seed 数据通过数据库迁移/初始化脚本写入系统表，用户数据写入独立的业务表。
 - **配置与代码分离**: 所有配置集中在 `config/`，不散落在项目根目录。
 - **敏感信息隔离**: `secrets.json` 存储 API Keys，通过 `.gitignore` 防止泄露；`secrets.example.json` 入库作为模板。
 - **存储路径可寻址**: `config.py` 通过 `BASE_DIR / "config"` 和 `BASE_DIR / "storage"` 构建绝对路径，不依赖工作目录。
