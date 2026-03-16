@@ -12,6 +12,7 @@ class AgentCreate(BaseModel):
     linked_product_ids: Optional[List[UUID]] = None
     linked_skill_ids: Optional[List[UUID]] = None
     tag_ids: Optional[List[UUID]] = None  # FREE: required manual pick; PAID: optional override
+    match_intent_tag_ids: Optional[List[UUID]] = None
 
 
 class AgentUpdate(BaseModel):
@@ -21,6 +22,7 @@ class AgentUpdate(BaseModel):
     linked_product_ids: Optional[List[UUID]] = None
     linked_skill_ids: Optional[List[UUID]] = None
     tag_ids: Optional[List[UUID]] = None
+    match_intent_tag_ids: Optional[List[UUID]] = None
 
 
 class CatalogTagRead(BaseModel):
@@ -41,3 +43,4 @@ class AgentRead(BaseModel):
     catalog_tags: Optional[List[CatalogTagRead]] = None
     linked_product_ids: Optional[List[UUID]] = None
     linked_skill_ids: Optional[List[UUID]] = None
+    match_intent_tag_ids: Optional[List[UUID]] = None

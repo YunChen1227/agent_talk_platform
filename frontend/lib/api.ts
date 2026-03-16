@@ -25,17 +25,18 @@ export interface CatalogTag {
 }
 
 export const createAgent = async (
-  userId: string, 
-  name: string, 
-  description?: string, 
-  systemPrompt?: string, 
+  userId: string,
+  name: string,
+  description?: string,
+  systemPrompt?: string,
   openingRemark?: string,
   linkedProductIds?: string[],
   linkedSkillIds?: string[],
-  tagIds?: string[]
+  tagIds?: string[],
+  matchIntentTagIds?: string[]
 ) => {
-  const res = await api.post("/agents/", { 
-    user_id: userId, 
+  const res = await api.post("/agents/", {
+    user_id: userId,
     name,
     description,
     system_prompt: systemPrompt,
@@ -43,6 +44,7 @@ export const createAgent = async (
     linked_product_ids: linkedProductIds,
     linked_skill_ids: linkedSkillIds,
     tag_ids: tagIds,
+    match_intent_tag_ids: matchIntentTagIds,
   });
   return res.data;
 };
@@ -114,6 +116,17 @@ export interface PlazaSearchResponse {
 
 export const getPlazaTags = async (): Promise<PlazaTagCategory[]> => {
   const res = await api.get("/plaza/tags");
+  return res.data;
+};
+
+export const createPlazaTag = async (
+  name: string,
+  categoryId: string
+): Promise<PlazaTag> => {
+  const res = await api.post("/plaza/tags", {
+    name,
+    category_id: categoryId,
+  });
   return res.data;
 };
 
@@ -259,6 +272,7 @@ export const createProduct = async (data: {
   image_ids?: string[];
   cover_image_id?: string;
   linked_agent_ids?: string[];
+  tag_ids?: string[];
 }) => {
   const res = await api.post("/shop/products", data);
   return res.data;
@@ -281,6 +295,7 @@ export const updateProduct = async (
     cover_image_id: string;
     status: string;
     linked_agent_ids: string[];
+    tag_ids: string[];
   }>
 ) => {
   const res = await api.put(`/shop/products/${productId}?user_id=${userId}`, data);

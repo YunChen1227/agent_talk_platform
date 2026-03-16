@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { listProducts, createProduct, updateProduct, deleteProduct } from "@/lib/api";
+import { listProducts, createProduct, updateProduct, deleteProduct, getPlazaTags, createPlazaTag, PlazaTagCategory } from "@/lib/api";
+import TagDropdownSelect from "@/components/TagDropdownSelect";
 
 export default function ShopPage() {
   const [user, setUser] = useState<any>(null);
@@ -13,6 +14,8 @@ export default function ShopPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [tagCategories, setTagCategories] = useState<PlazaTagCategory[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -29,10 +32,15 @@ export default function ShopPage() {
     listProducts(user.id).then(setProducts).catch(console.error);
   }, [user?.id]);
 
+  useEffect(() => {
+    getPlazaTags().then(setTagCategories).catch(() => setTagCategories([]));
+  }, []);
+
   const resetForm = () => {
     setName("");
     setDescription("");
     setPrice("");
+    setSelectedTagIds(new Set());
     setEditingId(null);
     setShowForm(false);
   };
@@ -48,6 +56,7 @@ export default function ShopPage() {
         description: description || undefined,
         price: parseFloat(price) || 0,
         currency: "CNY",
+        tag_ids: selectedTagIds.size > 0 ? Array.from(selectedTagIds) : undefined,
       });
       resetForm();
       const list = await listProducts(user.id);
@@ -64,6 +73,7 @@ export default function ShopPage() {
     setName(p.name || "");
     setDescription(p.description || "");
     setPrice(String(p.price ?? ""));
+    setSelectedTagIds(new Set(p.tag_ids || []));
     setShowForm(true);
   };
 
@@ -76,6 +86,7 @@ export default function ShopPage() {
         name,
         description: description || undefined,
         price: parseFloat(price) || 0,
+        tag_ids: Array.from(selectedTagIds),
       });
       resetForm();
       const list = await listProducts(user.id);
@@ -98,6 +109,26 @@ export default function ShopPage() {
     }
   };
 
+  const toggleTagId = (tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  };
+
+  const handleCreateTag = async (name: string, categoryId: string) => {
+    try {
+      const newTag = await createPlazaTag(name, categoryId);
+      const cats = await getPlazaTags();
+      setTagCategories(cats);
+      setSelectedTagIds((prev) => new Set([...prev, newTag.id]));
+    } catch {
+      alert("Failed to create tag");
+    }
+  };
+
   const handleCancelForm = () => {
     resetForm();
   };
@@ -116,7 +147,16 @@ export default function ShopPage() {
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-100">
       <div className="w-full max-w-4xl flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-black">My Shop</h1>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
+          {showForm ? (
+            <button
+              type="button"
+              onClick={handleCancelForm}
+              className="text-blue-600 hover:underline"
+            >← My Shop</button>
+          ) : (
+            <Link href="/profile" className="text-blue-600 hover:underline">← Profile</Link>
+          )}
           <Link href="/" className="text-blue-600 hover:underline">Dashboard</Link>
           <button
             type="button"
@@ -163,6 +203,17 @@ export default function ShopPage() {
                 required
               />
             </div>
+            {tagCategories.length > 0 && (
+              <TagDropdownSelect
+                categories={tagCategories}
+                selectedTagIds={selectedTagIds}
+                onToggle={toggleTagId}
+                label="Tags (标签)"
+                placeholder="搜索商品标签..."
+                filterCategorySlugs={["category", "condition", "product_type", "target"]}
+                onCreateTag={handleCreateTag}
+              />
+            )}
             <div className="flex gap-3">
               <button
                 type="submit"

@@ -6,8 +6,8 @@ from app.models.session import SessionStatus, MatchResult
 from app.models.enums import Verdict
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.agent.persona import create_agent
-from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository, TagRepository, AgentTagRepository
-from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo, get_tag_repo, get_agent_tag_repo
+from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository, TagRepository, AgentTagRepository, ProductRepository
+from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo, get_tag_repo, get_agent_tag_repo, get_product_repo
 
 router = APIRouter()
 
@@ -48,6 +48,7 @@ async def create_new_agent(
     user_repo: UserRepository = Depends(get_user_repo),
     tag_repo: TagRepository = Depends(get_tag_repo),
     agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
 ):
     agent = await create_agent(
         agent_repo,
@@ -62,6 +63,7 @@ async def create_new_agent(
         tag_repo=tag_repo,
         agent_tag_repo=agent_tag_repo,
         tag_ids=agent_in.tag_ids,
+        product_repo=product_repo,
     )
     return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
@@ -113,6 +115,7 @@ async def update_agent(
     repo: AgentRepository = Depends(get_agent_repo),
     tag_repo: TagRepository = Depends(get_tag_repo),
     agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
 ):
     agent = await repo.get(id)
     if not agent:
@@ -138,6 +141,11 @@ async def update_agent(
         agent.tags = [tag_map[tid].name for tid in filtered_ids if tid in tag_map]
 
     updated_agent = await repo.update(agent)
+
+    if agent_in.linked_product_ids is not None:
+        from app.agent.persona import _inherit_product_tags
+        await _inherit_product_tags(updated_agent, agent_in.linked_product_ids, product_repo, agent_tag_repo)
+
     return await _enrich_with_catalog_tags(updated_agent, agent_tag_repo)
 
 @router.delete("/{id}", status_code=204)

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { listMedia, uploadMedia, deleteMedia, setAvatar, API_URL } from "@/lib/api";
+import { listMedia, uploadMedia, deleteMedia, API_URL } from "@/lib/api";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
@@ -39,18 +39,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSetAvatar = async (mediaId: string) => {
-    if (!user) return;
-    try {
-      await setAvatar(user.id, mediaId);
-      const u = { ...user, avatar_url: `/media/${mediaId}/file` };
-      localStorage.setItem("user", JSON.stringify(u));
-      setUser(u);
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Failed to set avatar");
-    }
-  };
-
   const handleDelete = async (mediaId: string) => {
     if (!user || !confirm("Delete this file?")) return;
     try {
@@ -81,13 +69,6 @@ export default function ProfilePage() {
           <span className="text-gray-400 group-hover:text-purple-600 text-xl transition-colors">→</span>
         </div>
       </Link>
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Avatar</h2>
-        {user.avatar_url && (
-          <img src={API_URL + user.avatar_url} alt="Avatar" className="w-20 h-20 rounded-full object-cover border mb-2" />
-        )}
-        <p className="text-sm text-gray-600 mb-4">Set avatar by clicking &quot;Set as avatar&quot; on an image below.</p>
-      </div>
       <div className="w-full max-w-4xl bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4">My Media</h2>
         <label className="inline-block bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700 mb-4">
@@ -104,9 +85,6 @@ export default function ProfilePage() {
               )}
               <p className="text-xs truncate mt-1">{m.original_filename}</p>
               <div className="flex gap-1 mt-2">
-                {m.file_type === "image" && (
-                  <button type="button" onClick={() => handleSetAvatar(m.id)} className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Set as avatar</button>
-                )}
                 <button type="button" onClick={() => handleDelete(m.id)} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Delete</button>
               </div>
             </div>

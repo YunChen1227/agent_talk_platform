@@ -38,15 +38,19 @@
 ```
 [PAID 用户]
   用户输入 Agent Name + 详细描述 (性格/喜好/需求/说话方式)
+  → 用户选择匹配意图偏好 (可选，从"意图"分类一级标签中多选)
   → 平台 LLM 生成 system_prompt + opening_remark
   → 平台 LLM 从预置标签目录自动提取 tags (用户可手动微调)
   → 平台生成 embedding
+  → 若关联了商品 (linked_product_ids)，自动继承商品的 tag_ids
   → Agent 创建完成
 
 [FREE 用户]
   用户手动填写 Agent Name + system_prompt + opening_remark
+  → 用户选择匹配意图偏好 (可选，从"意图"分类一级标签中多选)
   → 用户从预置标签目录手动选择 tags (必选至少 1 个)
   → 平台基于 system_prompt 生成 embedding
+  → 若关联了商品 (linked_product_ids)，自动继承商品的 tag_ids
   → Agent 创建完成
 ```
 
@@ -92,6 +96,7 @@ Skills 分为两类:
 | `embedding` | Vector[1536] | 平台基于 system_prompt 生成的语义向量 |
 | `linked_product_ids` | List[UUID] (可选) | 已关联的商品 ID，买卖场景下 Agent 可发送这些商品卡片给对方，参见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md) |
 | `linked_skill_ids` | List[UUID] (可选) | 已关联的技能 ID，用户创建的 Skill 实体，Agent 可在对话中使用对应技能 |
+| `match_intent_tag_ids` | List[UUID] (可选) | 用户选择的匹配意图偏好，限定从"意图"分类下的一级标签中选择（交友/买卖/技术交流/求职招聘/咨询服务/闲聊）。Matcher 据此做双向意图兼容过滤，仅匹配双方意图兼容的 Agent 对。为空时不限制意图。详见 [DESIGN-MATCHER.md](./DESIGN-MATCHER.md) Step 2 |
 | `status` | Enum | 生命周期状态 (见下方状态机) |
 
 ## 状态机 (Status)
@@ -122,12 +127,25 @@ MATCHING 状态下：
   - **前置校验**: FREE 用户必须已配置 `llm_config`，否则拒绝匹配。
 - `get_agent_result`: 查询 Agent 的匹配结果、对话记录、联系方式授权状态与已授权可见的对方联系方式。
 
+## 商品标签自动继承
+
+Agent 与商品共用预置标签目录。当 Agent 关联商品时，商品的标签会自动追加到 Agent 的标签中，确保买卖场景下 Agent 的匹配画像与其商品属性一致。
+
+| 触发场景 | 行为 |
+|----------|------|
+| 创建/编辑 Agent 时选择关联商品 | 查询所有关联商品的 `tag_ids`，追加到 Agent 的 `agent_tag` |
+| 商品绑定到 Agent (link_agent_to_product) | 追加该商品的 `tag_ids` 到 Agent 的 `agent_tag` |
+| 创建商品时选择关联 Agent | 追加商品 `tag_ids` 到每个关联 Agent 的 `agent_tag` |
+
+> **追加不删除**: 商品标签同步为单向追加，解绑商品时不移除 Agent 上的标签，避免误删用户手动选择的标签。详见 [DESIGN-USERSHOP.md](./DESIGN-USERSHOP.md)。
+
 ## 设计决策
 
 - **tags 与 embedding 放在 Agent 而非 User 上**: 因为同一用户可以创建多个负责不同任务的 Agent，每个 Agent 有独立的匹配画像，互不干扰。
 - **同一用户下的 Agent 不互相聊天**: 匹配阶段会排除 `agent.user_id == candidate.user_id` 的组合，保证一个用户只会与其他用户的 Agent 进行会话。
 - **并发会话**: 单个 Agent 在 MATCHING 状态下可与多个不同对手并行对话，提升撮合效率。
 - **同对手并发去重**: 同一对 Agent 在同一时刻只允许一个 ACTIVE/JUDGING Session，避免重复并发聊天；同时，**一对 Agent 只要历史上有过任意 Session 记录，以后都不会再次被匹配**。
+- **匹配意图偏好与标签分离**: `match_intent_tag_ids` 描述 Agent "想找什么意图的对手"，与 Agent 自身的 tags（描述 Agent "是什么"）独立存储。Matcher 先用意图偏好做双向过滤，再用标签层级匹配做细粒度排序，详见 [DESIGN-MATCHER.md](./DESIGN-MATCHER.md)。
 - **LLM 来源分离**: 对话生成的 LLM 调用根据用户 tier 路由，平台级服务 (tags/embedding/judge) 始终走平台 LLM，不受用户配置影响。
 - **FREE 用户匹配前置校验**: 免费用户必须配好自己的 API Key 才能进入匹配，避免配对后无法生成回复。
 

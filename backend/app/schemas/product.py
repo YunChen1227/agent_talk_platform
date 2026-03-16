@@ -16,6 +16,7 @@ class ProductCreate(BaseModel):
     cover_image_id: Optional[UUID] = None
     status: ProductStatus = ProductStatus.ACTIVE
     linked_agent_ids: List[UUID] = []
+    tag_ids: List[UUID] = []
 
 
 class ProductUpdate(BaseModel):
@@ -27,6 +28,7 @@ class ProductUpdate(BaseModel):
     cover_image_id: Optional[UUID] = None
     status: Optional[ProductStatus] = None
     linked_agent_ids: Optional[List[UUID]] = None
+    tag_ids: Optional[List[UUID]] = None
 
 
 class ProductRead(BaseModel):
@@ -40,6 +42,7 @@ class ProductRead(BaseModel):
     cover_image_id: Optional[UUID] = None
     status: ProductStatus
     linked_agent_ids: List[UUID]
+    tag_ids: List[UUID]
     created_at: datetime
     updated_at: datetime
 

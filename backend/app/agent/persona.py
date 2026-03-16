@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import Tuple, List, Union, Optional
 from app.models.agent import Agent, AgentStatus
 from app.models.user import User
-from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository
+from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository, ProductRepository
 from app.services.llm import get_random_client, extract_tags, get_embedding, extract_tags_from_catalog
 import google.generativeai as genai
 
@@ -75,6 +75,7 @@ async def create_agent(
     tag_repo: Optional[TagRepository] = None,
     agent_tag_repo: Optional[AgentTagRepository] = None,
     tag_ids: Optional[List[UUID]] = None,
+    product_repo: Optional[ProductRepository] = None,
 ) -> Agent:
     if isinstance(user_id, str):
         user_id = UUID(user_id)
@@ -119,7 +120,31 @@ async def create_agent(
         elif is_paid_flow:
             await _assign_catalog_tags(created, final_system_prompt, tag_repo, agent_tag_repo)
 
+        if product_repo and linked_product_ids:
+            await _inherit_product_tags(created, linked_product_ids, product_repo, agent_tag_repo)
+
     return created
+
+
+async def _inherit_product_tags(
+    agent: Agent,
+    linked_product_ids: List[UUID],
+    product_repo: ProductRepository,
+    agent_tag_repo: AgentTagRepository,
+) -> None:
+    """Append tag_ids from all linked products to the agent's existing tags."""
+    product_tag_ids: set = set()
+    for pid in linked_product_ids:
+        product = await product_repo.get(pid)
+        if product and product.tag_ids:
+            product_tag_ids.update(product.tag_ids)
+    if not product_tag_ids:
+        return
+    existing_tags = await agent_tag_repo.get_tags_for_agent(agent.id)
+    existing_ids = {t.id for t in existing_tags}
+    merged = list(existing_ids | product_tag_ids)
+    if len(merged) > len(existing_ids):
+        await agent_tag_repo.set_tags(agent.id, merged)
 
 
 async def _assign_manual_tags(

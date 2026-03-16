@@ -1,5 +1,11 @@
 from pydantic import BaseModel
+from uuid import UUID
 from typing import Optional, List
+
+
+class TagCreate(BaseModel):
+    name: str
+    category_id: UUID
 
 
 class TagRead(BaseModel):

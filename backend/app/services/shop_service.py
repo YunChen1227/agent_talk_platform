@@ -5,7 +5,22 @@ from datetime import datetime
 
 from app.models.product import Product
 from app.models.enums import ProductStatus
-from app.repositories.base import ProductRepository, AgentRepository
+from app.repositories.base import ProductRepository, AgentRepository, AgentTagRepository
+
+
+async def _sync_product_tags_to_agent(
+    agent_id: UUID,
+    product_tag_ids: List[UUID],
+    agent_tag_repo: AgentTagRepository,
+) -> None:
+    """Append product tag_ids to agent's existing tags (union, no overwrite)."""
+    if not product_tag_ids:
+        return
+    existing_tags = await agent_tag_repo.get_tags_for_agent(agent_id)
+    existing_ids = {t.id for t in existing_tags}
+    merged = list(existing_ids | set(product_tag_ids))
+    if len(merged) > len(existing_ids):
+        await agent_tag_repo.set_tags(agent_id, merged)
 
 
 async def create_product(
@@ -19,9 +34,12 @@ async def create_product(
     image_ids: Optional[List[UUID]] = None,
     cover_image_id: Optional[UUID] = None,
     linked_agent_ids: Optional[List[UUID]] = None,
+    tag_ids: Optional[List[UUID]] = None,
+    agent_tag_repo: Optional[AgentTagRepository] = None,
 ) -> Product:
     image_ids = image_ids or []
     linked_agent_ids = linked_agent_ids or []
+    tag_ids = tag_ids or []
     product = Product(
         user_id=user_id,
         name=name,
@@ -32,9 +50,9 @@ async def create_product(
         cover_image_id=cover_image_id,
         status=ProductStatus.ACTIVE,
         linked_agent_ids=linked_agent_ids,
+        tag_ids=tag_ids,
     )
     product = await product_repo.create(product)
-    # Sync agent side: add this product to each linked agent's linked_product_ids
     for agent_id in linked_agent_ids:
         agent = await agent_repo.get(agent_id)
         if agent and agent.user_id == user_id:
@@ -43,6 +61,8 @@ async def create_product(
                 ids.append(product.id)
                 agent.linked_product_ids = ids
                 await agent_repo.update(agent)
+            if agent_tag_repo and tag_ids:
+                await _sync_product_tags_to_agent(agent_id, tag_ids, agent_tag_repo)
     return product
 
 
@@ -51,6 +71,7 @@ async def update_product(
     agent_repo: AgentRepository,
     product_id: UUID,
     user_id: UUID,
+    agent_tag_repo: Optional[AgentTagRepository] = None,
     **kwargs,
 ) -> Optional[Product]:
     product = await product_repo.get(product_id)
@@ -61,7 +82,6 @@ async def update_product(
             setattr(product, key, value)
     product.updated_at = datetime.utcnow()
     if "linked_agent_ids" in kwargs:
-        # Sync agents: remove from others, add to new
         old_ids = set(product.linked_agent_ids or [])
         new_ids = set(kwargs["linked_agent_ids"] or [])
         for agent_id in old_ids - new_ids:
@@ -77,7 +97,12 @@ async def update_product(
                     ids.append(product_id)
                     agent.linked_product_ids = ids
                     await agent_repo.update(agent)
+                if agent_tag_repo and product.tag_ids:
+                    await _sync_product_tags_to_agent(agent_id, product.tag_ids, agent_tag_repo)
         product.linked_agent_ids = list(new_ids)
+    elif agent_tag_repo and "tag_ids" in kwargs and kwargs["tag_ids"] is not None:
+        for agent_id in (product.linked_agent_ids or []):
+            await _sync_product_tags_to_agent(agent_id, kwargs["tag_ids"], agent_tag_repo)
     return await product_repo.update(product)
 
 
@@ -104,6 +129,7 @@ async def link_agent_to_product(
     product_id: UUID,
     agent_id: UUID,
     user_id: UUID,
+    agent_tag_repo: Optional[AgentTagRepository] = None,
 ) -> bool:
     product = await product_repo.get(product_id)
     agent = await agent_repo.get(agent_id)
@@ -121,6 +147,8 @@ async def link_agent_to_product(
         agent_ids.append(product_id)
         agent.linked_product_ids = agent_ids
         await agent_repo.update(agent)
+    if agent_tag_repo and product.tag_ids:
+        await _sync_product_tags_to_agent(agent_id, product.tag_ids, agent_tag_repo)
     return True
 
 

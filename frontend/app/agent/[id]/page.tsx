@@ -9,8 +9,10 @@ import {
   createProduct,
   createSkill,
   getPlazaTags,
+  createPlazaTag,
   PlazaTagCategory,
 } from "@/lib/api";
+import TagDropdownSelect from "@/components/TagDropdownSelect";
 
 interface Item {
   id: string;
@@ -171,108 +173,6 @@ function MultiSelectWithCreate({
   );
 }
 
-function TagPicker({
-  categories,
-  selectedTagIds,
-  onToggle,
-}: {
-  categories: PlazaTagCategory[];
-  selectedTagIds: Set<string>;
-  onToggle: (tagId: string) => void;
-}) {
-  const [expandedParents, setExpandedParents] = useState<Set<string>>(
-    new Set()
-  );
-
-  const toggleExpand = (parentId: string) => {
-    setExpandedParents((prev) => {
-      const next = new Set(prev);
-      if (next.has(parentId)) next.delete(parentId);
-      else next.add(parentId);
-      return next;
-    });
-  };
-
-  return (
-    <div>
-      <label className="block font-bold mb-2">
-        Tags (标签)
-        <span className="block text-sm font-normal text-gray-500">
-          修改标签以调整 Agent 在 Plaza 中的分类和搜索可见性
-        </span>
-      </label>
-      <div className="border border-gray-300 rounded-lg p-3 space-y-2.5 bg-gray-50">
-        {categories.map((cat) => (
-          <div key={cat.id} className="space-y-1.5">
-            <div className="flex items-start gap-2">
-              <span className="text-sm font-medium text-gray-500 min-w-[3.5rem] pt-0.5 text-right shrink-0">
-                {cat.name}:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {cat.tags.map((tag) => {
-                  const hasKids = tag.children.length > 0;
-                  const isSelected = selectedTagIds.has(tag.id);
-                  return (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => {
-                        onToggle(tag.id);
-                        if (hasKids) toggleExpand(tag.id);
-                      }}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        isSelected
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
-                      }`}
-                    >
-                      {tag.name}
-                      {hasKids && !isSelected && (
-                        <span className="ml-0.5 text-gray-400">+</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            {cat.tags
-              .filter(
-                (tag) =>
-                  tag.children.length > 0 && expandedParents.has(tag.id)
-              )
-              .map((parent) => (
-                <div
-                  key={`children-${parent.id}`}
-                  className="flex items-start gap-2 ml-2"
-                >
-                  <span className="text-xs text-gray-400 min-w-[3.5rem] pt-1 text-right shrink-0">
-                    {parent.name}
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {parent.children.map((child) => (
-                      <button
-                        key={child.id}
-                        type="button"
-                        onClick={() => onToggle(child.id)}
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
-                          selectedTagIds.has(child.id)
-                            ? "bg-purple-500 text-white shadow-sm"
-                            : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300"
-                        }`}
-                      >
-                        {child.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function AgentDetail({ params }: { params: { id: string } }) {
   const [agent, setAgent] = useState<any>(null);
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -289,6 +189,9 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
 
   const [tagCategories, setTagCategories] = useState<PlazaTagCategory[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [selectedIntentIds, setSelectedIntentIds] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -316,6 +219,12 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
           setSelectedTagIds(
             new Set(data.catalog_tags.map((t: any) => t.id))
           );
+        }
+        if (
+          data.match_intent_tag_ids &&
+          Array.isArray(data.match_intent_tag_ids)
+        ) {
+          setSelectedIntentIds(new Set(data.match_intent_tag_ids));
         }
       }
       setLoading(false);
@@ -361,6 +270,37 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
     });
   };
 
+  const toggleIntentId = (tagId: string) => {
+    setSelectedIntentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  };
+
+  const handleCreateTag = async (name: string, categoryId: string) => {
+    try {
+      const newTag = await createPlazaTag(name, categoryId);
+      const cats = await getPlazaTags();
+      setTagCategories(cats);
+      setSelectedTagIds((prev) => new Set([...prev, newTag.id]));
+    } catch {
+      alert("Failed to create tag");
+    }
+  };
+
+  const handleCreateIntentTag = async (name: string, categoryId: string) => {
+    try {
+      const newTag = await createPlazaTag(name, categoryId);
+      const cats = await getPlazaTags();
+      setTagCategories(cats);
+      setSelectedIntentIds((prev) => new Set([...prev, newTag.id]));
+    } catch {
+      alert("Failed to create tag");
+    }
+  };
+
   const handleCreateProduct = async (name: string) => {
     if (!user) return;
     const prod = await createProduct({ user_id: user.id, name, price: 0 });
@@ -386,6 +326,7 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         linked_product_ids: selectedProductIds,
         linked_skill_ids: selectedSkillIds,
         tag_ids: Array.from(selectedTagIds),
+        match_intent_tag_ids: Array.from(selectedIntentIds),
       });
       alert("Agent updated successfully!");
     } catch (e) {
@@ -446,11 +387,25 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         </div>
 
         {tagCategories.length > 0 && (
-          <TagPicker
-            categories={tagCategories}
-            selectedTagIds={selectedTagIds}
-            onToggle={toggleTagId}
-          />
+          <>
+            <TagDropdownSelect
+              categories={tagCategories}
+              selectedTagIds={selectedIntentIds}
+              onToggle={toggleIntentId}
+              label="匹配意图 (Match Intent)"
+              placeholder="搜索意图标签..."
+              filterCategorySlugs={["intent"]}
+              onCreateTag={handleCreateIntentTag}
+            />
+            <TagDropdownSelect
+              categories={tagCategories}
+              selectedTagIds={selectedTagIds}
+              onToggle={toggleTagId}
+              label="Tags (标签)"
+              placeholder="搜索标签..."
+              onCreateTag={handleCreateTag}
+            />
+          </>
         )}
 
         <MultiSelectWithCreate

@@ -18,6 +18,7 @@ class ProductBase(SQLModel):
     cover_image_id: Optional[UUID] = Field(default=None)
     status: ProductStatus = Field(default=ProductStatus.ACTIVE)
     linked_agent_ids: List[UUID] = Field(default=[], sa_column=Column(JSONB))
+    tag_ids: List[UUID] = Field(default=[], sa_column=Column(JSONB))
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
