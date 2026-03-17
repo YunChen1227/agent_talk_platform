@@ -7,8 +7,20 @@ if (-not $mysql) {
 } elseif ($mysql.Status -eq "Running") {
     Write-Host "  MySQL80 already running" -ForegroundColor Green
 } else {
-    Start-Service -Name "MySQL80"
-    Write-Host "  MySQL80 started" -ForegroundColor Green
+    try {
+        Start-Service -Name "MySQL80" -ErrorAction Stop
+        Start-Sleep -Seconds 1
+        $mysql = Get-Service -Name "MySQL80"
+        if ($mysql.Status -eq "Running") {
+            Write-Host "  MySQL80 started" -ForegroundColor Green
+        } else {
+            Write-Host "  MySQL80 did not reach Running (Status: $($mysql.Status))" -ForegroundColor Red
+        }
+    } catch {
+        Write-Host "  ERROR: Could not start MySQL80 — $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  Fix: Right-click PowerShell -> Run as administrator, then run this script again." -ForegroundColor Yellow
+        Write-Host "  Or: Win+R -> services.msc -> find MySQL80 -> Start." -ForegroundColor Yellow
+    }
 }
 
 Write-Host "[2/2] Starting Elasticsearch..."
@@ -38,4 +50,5 @@ if ($esProc) {
 
 Write-Host ""
 Write-Host "Done. Services status:" -ForegroundColor Cyan
-Get-Service -Name "MySQL80" | Format-Table Name, Status -AutoSize
+$s = Get-Service -Name "MySQL80" -ErrorAction SilentlyContinue
+if ($s) { $s | Format-Table Name, Status -AutoSize } else { Write-Host "  MySQL80: (service not found)" }
