@@ -6,6 +6,16 @@
 
 Skill 是 Agent 在对话过程中可使用的扩展能力。平台将 Skill 分为**内置技能 (Built-in)** 和**用户自定义技能 (User-defined)** 两类。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | Skill CRUD API 路由 |
+| **SQLModel** | Skill 数据模型 |
+| **Pydantic** | SkillCreate / SkillUpdate / SkillRead Schema |
+| **Prompt Engineering** | 内置技能通过 system_prompt 追加约束注入 LLM |
+| **Python 字符串匹配** | 回复校验 (关键词 + 商品名白名单) |
+
 - **内置技能**: 平台代码内置，根据 Agent 状态自动激活，**FREE + PAID 用户均可使用**，无需手动配置。
 - **用户自定义技能**: 用户通过 API 创建 Skill 实体并关联到 Agent，**仅 PAID 用户**可用。
 

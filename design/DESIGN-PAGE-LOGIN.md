@@ -6,6 +6,10 @@
 
 用户名密码认证页面，支持登录与注册两种模式切换。
 
+## 技术框架
+
+Next.js 14 (App Router) · React 18 `useState` · Axios (`POST /auth/*`) · localStorage · Tailwind CSS
+
 ## 页面布局
 
 ```

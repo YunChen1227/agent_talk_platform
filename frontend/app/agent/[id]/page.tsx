@@ -6,17 +6,20 @@ import {
   updateAgent,
   listProducts,
   listSkills,
-  createProduct,
-  createSkill,
   getPlazaTags,
   createPlazaTag,
   PlazaTagCategory,
 } from "@/lib/api";
 import TagDropdownSelect from "@/components/TagDropdownSelect";
+import { useDraft } from "@/lib/useDraft";
 
 interface Item {
   id: string;
   name: string;
+}
+
+interface ProductItem extends Item {
+  tag_ids: string[];
 }
 
 function MultiSelectWithCreate({
@@ -26,14 +29,17 @@ function MultiSelectWithCreate({
   onToggle,
   onCreate,
   createPlaceholder,
+  createHref,
 }: {
   label: string;
   items: Item[];
   selectedIds: string[];
   onToggle: (id: string) => void;
-  onCreate: (name: string) => Promise<void>;
-  createPlaceholder: string;
+  onCreate?: (name: string) => Promise<void>;
+  createPlaceholder?: string;
+  createHref?: string;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -52,7 +58,7 @@ function MultiSelectWithCreate({
   }, []);
 
   const handleCreate = async () => {
-    if (!newName.trim() || submitting) return;
+    if (!onCreate || !newName.trim() || submitting) return;
     setSubmitting(true);
     try {
       await onCreate(newName.trim());
@@ -60,6 +66,16 @@ function MultiSelectWithCreate({
       setCreating(false);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCreateNewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (createHref) {
+      router.push(createHref);
+      setOpen(false);
+    } else {
+      setCreating(true);
     }
   };
 
@@ -118,19 +134,19 @@ function MultiSelectWithCreate({
             );
           })}
 
-          {items.length === 0 && !creating && (
+          {items.length === 0 && !creating && !createHref && (
             <div className="px-3 py-2 text-sm text-gray-400">
               No items yet.
             </div>
           )}
 
           <div className="border-t border-gray-100">
-            {creating ? (
+            {creating && !createHref ? (
               <div className="p-2 flex gap-2">
                 <input
                   autoFocus
                   className="flex-1 p-1.5 border border-gray-300 rounded text-sm text-black"
-                  placeholder={createPlaceholder}
+                  placeholder={createPlaceholder ?? "Name"}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => {
@@ -157,10 +173,7 @@ function MultiSelectWithCreate({
             ) : (
               <div
                 className="px-3 py-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 text-sm text-blue-600 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCreating(true);
-                }}
+                onClick={handleCreateNewClick}
               >
                 <span className="text-lg leading-none">+</span>
                 <span>Create new</span>
@@ -173,6 +186,8 @@ function MultiSelectWithCreate({
   );
 }
 
+const DRAFT_KEY_AGENT_EDIT = (id: string) => `draft:agent:edit:${id}`;
+
 export default function AgentDetail({ params }: { params: { id: string } }) {
   const [agent, setAgent] = useState<any>(null);
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -180,9 +195,10 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const draftRestored = useRef(false);
 
   const [user, setUser] = useState<any>(null);
-  const [products, setProducts] = useState<Item[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [skills, setSkills] = useState<Item[]>([]);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
@@ -191,6 +207,22 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [selectedIntentIds, setSelectedIntentIds] = useState<Set<string>>(
     new Set()
+  );
+
+  const draftState = {
+    name,
+    systemPrompt,
+    openingRemark,
+    selectedProductIds,
+    selectedSkillIds,
+    selectedTagIds: Array.from(selectedTagIds),
+    selectedIntentIds: Array.from(selectedIntentIds),
+  };
+  const { draft, clearDraft, hasDraft } = useDraft(
+    DRAFT_KEY_AGENT_EDIT(params.id),
+    draftState,
+    !!agent,
+    user?.id
   );
 
   useEffect(() => {
@@ -232,6 +264,28 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
+    if (!draftRestored.current && hasDraft && draft && !loading) {
+      draftRestored.current = true;
+      const d = draft as {
+        name?: string;
+        systemPrompt?: string;
+        openingRemark?: string;
+        selectedProductIds?: string[];
+        selectedSkillIds?: string[];
+        selectedTagIds?: string[];
+        selectedIntentIds?: string[];
+      };
+      if (typeof d.name === "string") setName(d.name);
+      if (typeof d.systemPrompt === "string") setSystemPrompt(d.systemPrompt);
+      if (typeof d.openingRemark === "string") setOpeningRemark(d.openingRemark);
+      if (Array.isArray(d.selectedProductIds)) setSelectedProductIds(d.selectedProductIds);
+      if (Array.isArray(d.selectedSkillIds)) setSelectedSkillIds(d.selectedSkillIds);
+      if (Array.isArray(d.selectedTagIds)) setSelectedTagIds(new Set(d.selectedTagIds));
+      if (Array.isArray(d.selectedIntentIds)) setSelectedIntentIds(new Set(d.selectedIntentIds));
+    }
+  }, [hasDraft, draft, loading]);
+
+  useEffect(() => {
     if (!user) return;
     loadItems(user.id);
   }, [user]);
@@ -242,7 +296,7 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         listProducts(userId),
         listSkills(userId),
       ]);
-      setProducts(prods.map((p: any) => ({ id: p.id, name: p.name })));
+      setProducts(prods.map((p: any) => ({ id: p.id, name: p.name, tag_ids: p.tag_ids || [] })));
       setSkills(sklls.map((s: any) => ({ id: s.id, name: s.name })));
     } catch {
       /* ignore */
@@ -259,6 +313,21 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         ? selected.filter((x) => x !== id)
         : [...selected, id]
     );
+  };
+
+  const handleToggleProduct = (productId: string) => {
+    const isAdding = !selectedProductIds.includes(productId);
+    toggleId(productId, selectedProductIds, setSelectedProductIds);
+    if (isAdding) {
+      const product = products.find((p) => p.id === productId);
+      if (product && product.tag_ids.length > 0) {
+        setSelectedTagIds((prev) => {
+          const next = new Set(prev);
+          product.tag_ids.forEach((tid) => next.add(tid));
+          return next;
+        });
+      }
+    }
   };
 
   const toggleTagId = (tagId: string) => {
@@ -301,22 +370,6 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleCreateProduct = async (name: string) => {
-    if (!user) return;
-    const prod = await createProduct({ user_id: user.id, name, price: 0 });
-    const newItem = { id: prod.id, name: prod.name };
-    setProducts((prev) => [...prev, newItem]);
-    setSelectedProductIds((prev) => [...prev, prod.id]);
-  };
-
-  const handleCreateSkill = async (name: string) => {
-    if (!user) return;
-    const sk = await createSkill({ user_id: user.id, name });
-    const newItem = { id: sk.id, name: sk.name };
-    setSkills((prev) => [...prev, newItem]);
-    setSelectedSkillIds((prev) => [...prev, sk.id]);
-  };
-
   const handleSave = async () => {
     try {
       await updateAgent(params.id, {
@@ -328,6 +381,7 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
         tag_ids: Array.from(selectedTagIds),
         match_intent_tag_ids: Array.from(selectedIntentIds),
       });
+      clearDraft();
       alert("Agent updated successfully!");
     } catch (e) {
       alert("Error updating agent");
@@ -341,10 +395,12 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
     <main className="flex min-h-screen flex-col items-center p-24 bg-gray-100">
       <div className="w-full max-w-4xl mb-8">
         <button
+          type="button"
           onClick={() => router.back()}
-          className="text-blue-500 hover:underline mb-4"
+          className="text-blue-500 hover:underline flex items-center gap-1 mb-4"
         >
-          &larr; Back to Dashboard
+          <span>&larr;</span>
+          <span>Back</span>
         </button>
         <h1 className="text-4xl font-bold text-black">Edit Agent Persona</h1>
       </div>
@@ -402,7 +458,8 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
               selectedTagIds={selectedTagIds}
               onToggle={toggleTagId}
               label="Tags (标签)"
-              placeholder="搜索标签..."
+              placeholder="搜索 Agent 标签..."
+              filterCategorySlugs={["intent", "domain", "role", "style"]}
               onCreateTag={handleCreateTag}
             />
           </>
@@ -412,11 +469,8 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
           label="Linked Products"
           items={products}
           selectedIds={selectedProductIds}
-          onToggle={(id) =>
-            toggleId(id, selectedProductIds, setSelectedProductIds)
-          }
-          onCreate={handleCreateProduct}
-          createPlaceholder="New product name"
+          onToggle={handleToggleProduct}
+          createHref="/shop"
         />
 
         <MultiSelectWithCreate
@@ -426,16 +480,26 @@ export default function AgentDetail({ params }: { params: { id: string } }) {
           onToggle={(id) =>
             toggleId(id, selectedSkillIds, setSelectedSkillIds)
           }
-          onCreate={handleCreateSkill}
-          createPlaceholder="New skill name"
+          createHref="/skill/new"
         />
 
-        <div className="flex justify-end pt-4 border-t border-gray-100">
+        <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
           <button
+            type="button"
             className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
             onClick={handleSave}
           >
             Save Changes
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft();
+              router.back();
+            }}
+            className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300"
+          >
+            Cancel
           </button>
         </div>
       </div>

@@ -6,6 +6,10 @@
 
 展示除当前用户以外所有用户的 Agent，支持按**分类标签**分面过滤、**混合精度搜索**（关键词 + 语义），并展示每个 Agent 与当前用户的**匹配状态**。可发起直接会话。
 
+## 技术框架
+
+Next.js 14 (App Router) · React 18 `useState`/`useEffect` · Axios · 500ms 防抖搜索 · Tailwind CSS 网格布局 · 分页控件
+
 ## 页面布局
 
 ```

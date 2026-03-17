@@ -6,6 +6,10 @@
 
 创建新 Agent 或编辑已有 Agent 的人设信息。创建时根据用户 tier (FREE/PAID) 展示不同表单。
 
+## 技术框架
+
+Next.js 14 (App Router / Dynamic Routes `[id]`) · React 18 `useState`/`useEffect` · Axios · TagDropdownSelect 自定义组件 · Tailwind CSS 表单样式
+
 ---
 
 ## 创建页 (`/agent/new`)

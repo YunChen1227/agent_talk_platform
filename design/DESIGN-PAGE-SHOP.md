@@ -6,6 +6,10 @@
 
 用户个人商店，仅展示当前用户的商品，支持创建、删除商品。从 Profile 页面的 "My Shop" 卡片进入。
 
+## 技术框架
+
+Next.js 14 (App Router) · React 18 `useState`/`useEffect` · Axios · TagDropdownSelect 标签选择组件 · Tailwind CSS · Decimal 价格输入
+
 ## 页面布局
 
 ```

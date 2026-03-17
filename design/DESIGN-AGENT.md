@@ -6,6 +6,18 @@
 
 代表用户进行自动交涉的虚拟实体。根据用户账户层级 (`FREE` / `PAID`)，Agent 的创建方式和可用能力不同。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | Agent CRUD / match / result API 路由 |
+| **SQLModel** | Agent 数据模型 (含 pgvector embedding 字段) |
+| **Pydantic** | AgentCreate / AgentUpdate / AgentRead Schema |
+| **OpenAI SDK (AsyncOpenAI)** | Embedding 生成 (`text-embedding-ada-002`)、标签提取、对话回复 |
+| **Google GenerativeAI SDK** | 人设自动生成 (`generate_system_prompt`)、Gemini 对话回复 |
+| **pgvector** | Prod 模式 Agent embedding 向量存储与检索 |
+| **Python math** | Dev 模式 cosine similarity 计算 |
+
 ## 目录结构
 
 `backend/app/agent/`

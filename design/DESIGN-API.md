@@ -6,6 +6,15 @@
 
 基于 FastAPI 的 RESTful API，提供用户认证、Agent 管理、媒体上传、用户商店、会话查询与控制、系统状态等接口。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | APIRouter 路由注册、`Depends()` 依赖注入、HTTPException 错误处理 |
+| **CORSMiddleware** | 跨域请求支持 (`allow_origins=["*"]`) |
+| **Pydantic** | 所有请求 Body 与响应 Model 的自动校验与序列化 |
+| **Uvicorn** | ASGI 服务器，支持 `--reload` 热重载 (开发) |
+
 ## Auth (`/auth`)
 
 | Method | Path | Description |

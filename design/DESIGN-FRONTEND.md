@@ -6,6 +6,20 @@
 
 基于 **Next.js 14 (App Router)** + **Tailwind CSS**，前端轮询 (5s) 自动刷新 Agent 状态、活跃会话与历史结果会话。
 
+## 技术框架
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| **Next.js** | 14 (App Router) | React SSR 框架、文件路由系统、`useEffect` / `useState` 状态管理 |
+| **React** | 18 | UI 组件渲染 |
+| **TypeScript** | 5 | 类型安全，编译时错误检查 |
+| **Tailwind CSS** | 3 | 原子化 CSS 样式 (响应式布局、颜色主题) |
+| **Axios** | 1.x | 后端 REST API 调用 (封装在 `lib/api.ts`) |
+| **Lucide React** | 0.330 | SVG 图标组件 |
+| **clsx + tailwind-merge** | — | 动态 CSS 类名合并 |
+| **localStorage** | Web API | 用户登录态持久化 (`user` 对象) |
+| **setInterval** | Web API | 5s/3s 轮询刷新 (Dashboard / 弹窗) |
+
 ## 页面结构
 
 | 路由 | 页面 | 详细设计 |

@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { listProducts, createProduct, updateProduct, deleteProduct, getPlazaTags, createPlazaTag, PlazaTagCategory } from "@/lib/api";
 import TagDropdownSelect from "@/components/TagDropdownSelect";
+import { useDraft } from "@/lib/useDraft";
+
+const DRAFT_KEY_PRODUCT_CREATE = "draft:product:create";
 
 export default function ShopPage() {
   const [user, setUser] = useState<any>(null);
@@ -17,6 +19,21 @@ export default function ShopPage() {
   const [tagCategories, setTagCategories] = useState<PlazaTagCategory[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const router = useRouter();
+  const draftRestored = useRef(false);
+
+  const draftState = {
+    name,
+    description,
+    price,
+    selectedTagIds: Array.from(selectedTagIds),
+  };
+  const draftEnabled = showForm && !editingId;
+  const { draft, clearDraft, hasDraft } = useDraft(
+    DRAFT_KEY_PRODUCT_CREATE,
+    draftState,
+    draftEnabled,
+    user?.id
+  );
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -35,6 +52,19 @@ export default function ShopPage() {
   useEffect(() => {
     getPlazaTags().then(setTagCategories).catch(() => setTagCategories([]));
   }, []);
+
+  useEffect(() => {
+    if (!draftRestored.current && hasDraft && draft && user) {
+      draftRestored.current = true;
+      const d = draft as { name?: string; description?: string; price?: string; selectedTagIds?: string[] };
+      if (typeof d.name === "string") setName(d.name);
+      if (typeof d.description === "string") setDescription(d.description);
+      if (typeof d.price === "string") setPrice(d.price);
+      if (Array.isArray(d.selectedTagIds)) setSelectedTagIds(new Set(d.selectedTagIds));
+      setShowForm(true);
+      setEditingId(null);
+    }
+  }, [hasDraft, draft, user]);
 
   const resetForm = () => {
     setName("");
@@ -58,6 +88,7 @@ export default function ShopPage() {
         currency: "CNY",
         tag_ids: selectedTagIds.size > 0 ? Array.from(selectedTagIds) : undefined,
       });
+      clearDraft();
       resetForm();
       const list = await listProducts(user.id);
       setProducts(list);
@@ -88,6 +119,7 @@ export default function ShopPage() {
         price: parseFloat(price) || 0,
         tag_ids: Array.from(selectedTagIds),
       });
+      clearDraft();
       resetForm();
       const list = await listProducts(user.id);
       setProducts(list);
@@ -130,6 +162,7 @@ export default function ShopPage() {
   };
 
   const handleCancelForm = () => {
+    clearDraft();
     resetForm();
   };
 
@@ -146,18 +179,18 @@ export default function ShopPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-100">
       <div className="w-full max-w-4xl flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-black">My Shop</h1>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="text-blue-500 hover:underline flex items-center gap-1"
+          >
+            <span>&larr;</span>
+            <span>Back</span>
+          </button>
+          <h1 className="text-2xl font-bold text-black">My Shop</h1>
+        </div>
         <div className="flex gap-4 items-center">
-          {showForm ? (
-            <button
-              type="button"
-              onClick={handleCancelForm}
-              className="text-blue-600 hover:underline"
-            >← My Shop</button>
-          ) : (
-            <Link href="/profile" className="text-blue-600 hover:underline">← Profile</Link>
-          )}
-          <Link href="/" className="text-blue-600 hover:underline">Dashboard</Link>
           <button
             type="button"
             onClick={showForm ? handleCancelForm : handleNewClick}

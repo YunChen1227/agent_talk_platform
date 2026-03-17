@@ -4,7 +4,16 @@
 
 ## 概述
 
-**每个 Chat Session 配有独立的 Judge**，作为旁观者 AI 负责监控与裁决。每轮对话结束后自动介入评估，判定对话是否达成共识或陷入僵局。
+**每个 Chat Session 配有独立的 Judge**，作为旁观者 AI 负责监控与裁决。
+
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **OpenAI SDK (AsyncOpenAI)** | `judge_conversation()` 调用 LLM 分析对话，返回裁决 |
+| **JSON mode** (`response_format={"type": "json_object"}`) | 约束 LLM 输出结构化 JSON (verdict/summary/reason/final_outcome) |
+| **Prompt Engineering** | 裁判 Prompt 模板，含严格的 CONSENSUS/DEADLOCK/PENDING 判定规则 |
+| **SQLModel** | MatchResult 数据模型持久化裁决结果 |每轮对话结束后自动介入评估，判定对话是否达成共识或陷入僵局。
 
 > **LLM 来源**: Judge 始终使用**平台 LLM**，不受用户层级 (FREE/PAID) 影响。裁判的公正性和一致性由平台统一保障。
 

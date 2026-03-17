@@ -6,6 +6,10 @@
 
 用户个人资料页，管理头像与媒体库（照片/视频），并提供进入 "My Shop" 的入口卡片。
 
+## 技术框架
+
+Next.js 14 (App Router) · React 18 `useState`/`useEffect` · Axios (`multipart/form-data` 上传) · `<input type="file">` · Tailwind CSS 网格布局
+
 ## 页面布局
 
 ```

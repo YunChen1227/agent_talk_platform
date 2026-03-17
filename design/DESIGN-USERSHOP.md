@@ -4,7 +4,19 @@
 
 ## 概述
 
-每个用户拥有一个个人商店 (Shop)。用户可在商店中创建商品、定价、上传商品图片等。**所有用户的商品界面仅可看到自己的商品**，即列表与详情接口均按 `user_id` 过滤，仅返回当前用户拥有的商品。在买卖场景下，Agent 可将商品以「商品卡片」形式发送给对方。创建 Agent 时可绑定用户的一个或多个商品；创建商品时也可关联到已有 Agent，形成双向绑定。
+每个用户拥有一个个人商店 (Shop)。
+
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | 商品 CRUD、关联/解绑 API 路由 |
+| **SQLModel** | Product 数据模型 |
+| **PostgreSQL JSONB** | 商品的 `images` / `linked_agent_ids` / `tag_ids` 列表字段存储 |
+| **Pydantic** | ProductCreate / ProductUpdate / ProductRead Schema |
+| **Decimal** | 商品价格精度处理 (max_digits=12, decimal_places=2) |
+
+用户可在商店中创建商品、定价、上传商品图片等。**所有用户的商品界面仅可看到自己的商品**，即列表与详情接口均按 `user_id` 过滤，仅返回当前用户拥有的商品。在买卖场景下，Agent 可将商品以「商品卡片」形式发送给对方。创建 Agent 时可绑定用户的一个或多个商品；创建商品时也可关联到已有 Agent，形成双向绑定。
 
 ## 字段 (Product)
 

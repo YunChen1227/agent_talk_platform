@@ -1,22 +1,24 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   createAgent,
   listProducts,
   listSkills,
-  createProduct,
-  createSkill,
   getPlazaTags,
   createPlazaTag,
   PlazaTagCategory,
 } from "@/lib/api";
 import TagDropdownSelect from "@/components/TagDropdownSelect";
+import { useDraft } from "@/lib/useDraft";
 
 interface Item {
   id: string;
   name: string;
+}
+
+interface ProductItem extends Item {
+  tag_ids: string[];
 }
 
 function MultiSelectWithCreate({
@@ -26,14 +28,17 @@ function MultiSelectWithCreate({
   onToggle,
   onCreate,
   createPlaceholder,
+  createHref,
 }: {
   label: string;
   items: Item[];
   selectedIds: string[];
   onToggle: (id: string) => void;
-  onCreate: (name: string) => Promise<void>;
-  createPlaceholder: string;
+  onCreate?: (name: string) => Promise<void>;
+  createPlaceholder?: string;
+  createHref?: string;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -52,7 +57,7 @@ function MultiSelectWithCreate({
   }, []);
 
   const handleCreate = async () => {
-    if (!newName.trim() || submitting) return;
+    if (!onCreate || !newName.trim() || submitting) return;
     setSubmitting(true);
     try {
       await onCreate(newName.trim());
@@ -60,6 +65,16 @@ function MultiSelectWithCreate({
       setCreating(false);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCreateNewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (createHref) {
+      router.push(createHref);
+      setOpen(false);
+    } else {
+      setCreating(true);
     }
   };
 
@@ -118,19 +133,19 @@ function MultiSelectWithCreate({
             );
           })}
 
-          {items.length === 0 && !creating && (
+          {items.length === 0 && !creating && !createHref && (
             <div className="px-3 py-2 text-sm text-gray-400">
               No items yet.
             </div>
           )}
 
           <div className="border-t border-gray-100">
-            {creating ? (
+            {creating && !createHref ? (
               <div className="p-2 flex gap-2">
                 <input
                   autoFocus
                   className="flex-1 p-1.5 border border-gray-300 rounded text-sm text-black"
-                  placeholder={createPlaceholder}
+                  placeholder={createPlaceholder ?? "Name"}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => {
@@ -157,10 +172,7 @@ function MultiSelectWithCreate({
             ) : (
               <div
                 className="px-3 py-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 text-sm text-blue-600 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCreating(true);
-                }}
+                onClick={handleCreateNewClick}
               >
                 <span className="text-lg leading-none">+</span>
                 <span>Create new</span>
@@ -173,6 +185,8 @@ function MultiSelectWithCreate({
   );
 }
 
+const DRAFT_KEY_AGENT_NEW = "draft:agent:new";
+
 export default function CreateAgentPage() {
   const [user, setUser] = useState<any>(null);
   const [agentName, setAgentName] = useState("");
@@ -182,7 +196,7 @@ export default function CreateAgentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const [products, setProducts] = useState<Item[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [skills, setSkills] = useState<Item[]>([]);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
@@ -194,6 +208,24 @@ export default function CreateAgentPage() {
   );
 
   const isPaidUser = false;
+
+  const draftState = {
+    agentName,
+    description,
+    systemPrompt,
+    openingRemark,
+    selectedProductIds,
+    selectedSkillIds,
+    selectedTagIds: Array.from(selectedTagIds),
+    selectedIntentIds: Array.from(selectedIntentIds),
+  };
+  const { draft, clearDraft, hasDraft } = useDraft(
+    DRAFT_KEY_AGENT_NEW,
+    draftState,
+    !!user,
+    user?.id
+  );
+  const draftRestored = useRef(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -212,13 +244,37 @@ export default function CreateAgentPage() {
       .catch(() => setTagCategories([]));
   }, []);
 
+  useEffect(() => {
+    if (!draftRestored.current && hasDraft && draft && user) {
+      draftRestored.current = true;
+      const d = draft as {
+        agentName?: string;
+        description?: string;
+        systemPrompt?: string;
+        openingRemark?: string;
+        selectedProductIds?: string[];
+        selectedSkillIds?: string[];
+        selectedTagIds?: string[];
+        selectedIntentIds?: string[];
+      };
+      if (typeof d.agentName === "string") setAgentName(d.agentName);
+      if (typeof d.description === "string") setDescription(d.description);
+      if (typeof d.systemPrompt === "string") setSystemPrompt(d.systemPrompt);
+      if (typeof d.openingRemark === "string") setOpeningRemark(d.openingRemark);
+      if (Array.isArray(d.selectedProductIds)) setSelectedProductIds(d.selectedProductIds);
+      if (Array.isArray(d.selectedSkillIds)) setSelectedSkillIds(d.selectedSkillIds);
+      if (Array.isArray(d.selectedTagIds)) setSelectedTagIds(new Set(d.selectedTagIds));
+      if (Array.isArray(d.selectedIntentIds)) setSelectedIntentIds(new Set(d.selectedIntentIds));
+    }
+  }, [hasDraft, draft, user]);
+
   const loadItems = async (userId: string) => {
     try {
       const [prods, sklls] = await Promise.all([
         listProducts(userId),
         listSkills(userId),
       ]);
-      setProducts(prods.map((p: any) => ({ id: p.id, name: p.name })));
+      setProducts(prods.map((p: any) => ({ id: p.id, name: p.name, tag_ids: p.tag_ids || [] })));
       setSkills(sklls.map((s: any) => ({ id: s.id, name: s.name })));
     } catch {
       /* ignore load errors */
@@ -235,6 +291,21 @@ export default function CreateAgentPage() {
         ? selected.filter((x) => x !== id)
         : [...selected, id]
     );
+  };
+
+  const handleToggleProduct = (productId: string) => {
+    const isAdding = !selectedProductIds.includes(productId);
+    toggleId(productId, selectedProductIds, setSelectedProductIds);
+    if (isAdding) {
+      const product = products.find((p) => p.id === productId);
+      if (product && product.tag_ids.length > 0) {
+        setSelectedTagIds((prev) => {
+          const next = new Set(prev);
+          product.tag_ids.forEach((tid) => next.add(tid));
+          return next;
+        });
+      }
+    }
   };
 
   const toggleTagId = (tagId: string) => {
@@ -277,22 +348,6 @@ export default function CreateAgentPage() {
     }
   };
 
-  const handleCreateProduct = async (name: string) => {
-    if (!user) return;
-    const prod = await createProduct({ user_id: user.id, name, price: 0 });
-    const newItem = { id: prod.id, name: prod.name };
-    setProducts((prev) => [...prev, newItem]);
-    setSelectedProductIds((prev) => [...prev, prod.id]);
-  };
-
-  const handleCreateSkill = async (name: string) => {
-    if (!user) return;
-    const sk = await createSkill({ user_id: user.id, name });
-    const newItem = { id: sk.id, name: sk.name };
-    setSkills((prev) => [...prev, newItem]);
-    setSelectedSkillIds((prev) => [...prev, sk.id]);
-  };
-
   const handleCreate = async () => {
     if (!user || !agentName.trim()) return;
     if (!isPaidUser && selectedTagIds.size === 0) return;
@@ -315,6 +370,7 @@ export default function CreateAgentPage() {
         tagIdArr,
         intentIdArr
       );
+      clearDraft();
       router.push("/");
     } catch (e) {
       alert("Error creating agent");
@@ -334,12 +390,14 @@ export default function CreateAgentPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-24 bg-gray-100">
       <div className="w-full max-w-4xl mb-8">
-        <Link
-          href="/"
-          className="text-blue-500 hover:underline mb-4 inline-block"
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-blue-500 hover:underline flex items-center gap-1 mb-4"
         >
-          &larr; Back to Dashboard
-        </Link>
+          <span>&larr;</span>
+          <span>Back</span>
+        </button>
         <h1 className="text-4xl font-bold text-black mt-2">Create New Agent</h1>
         <p className="text-gray-600 mt-2">
           {isPaidUser
@@ -428,7 +486,8 @@ export default function CreateAgentPage() {
               onToggle={toggleTagId}
               label="Tags (标签)"
               required={!isPaidUser}
-              placeholder="搜索标签..."
+              placeholder="搜索 Agent 标签..."
+              filterCategorySlugs={["intent", "domain", "role", "style"]}
               onCreateTag={handleCreateTag}
             />
           </>
@@ -438,11 +497,8 @@ export default function CreateAgentPage() {
           label="Linked Products"
           items={products}
           selectedIds={selectedProductIds}
-          onToggle={(id) =>
-            toggleId(id, selectedProductIds, setSelectedProductIds)
-          }
-          onCreate={handleCreateProduct}
-          createPlaceholder="New product name"
+          onToggle={handleToggleProduct}
+          createHref="/shop"
         />
 
         <MultiSelectWithCreate
@@ -452,8 +508,7 @@ export default function CreateAgentPage() {
           onToggle={(id) =>
             toggleId(id, selectedSkillIds, setSelectedSkillIds)
           }
-          onCreate={handleCreateSkill}
-          createPlaceholder="New skill name"
+          createHref="/skill/new"
         />
 
         <div className="flex gap-3 pt-4 border-t border-gray-100">
@@ -464,12 +519,16 @@ export default function CreateAgentPage() {
           >
             {isSubmitting ? "Creating..." : "Create Agent"}
           </button>
-          <Link
-            href="/"
-            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 text-center font-medium"
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft();
+              router.back();
+            }}
+            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-medium"
           >
             Cancel
-          </Link>
+          </button>
         </div>
       </div>
     </main>

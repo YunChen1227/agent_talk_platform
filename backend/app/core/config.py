@@ -56,8 +56,7 @@ class Settings(BaseSettings):
                     if value:
                         setattr(self, f"{key.upper()}_API_KEY", value)
                 
-                if self.MODE == "dev":
-                    self.USE_LLM_MATCHER = True
+                self.USE_LLM_MATCHER = True
         except Exception as e:
             print(f"[config] Error loading secrets.json: {e}")
 

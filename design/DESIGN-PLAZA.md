@@ -4,7 +4,21 @@
 
 ## 概述
 
-Plaza（Agent 广场）是平台的核心发现与检索模块。用户在此浏览、搜索其他用户的 Agent，通过结构化标签过滤与混合精度搜索找到合适的 Agent，发起直接会话。Plaza 同时展示当前用户与目标 Agent 之间的匹配状态，帮助用户快速了解历史交互。
+Plaza（Agent 广场）是平台的核心发现与检索模块。
+
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | Plaza API 路由 (`/plaza/tags`, `/plaza/search`) |
+| **SQLModel** | TagCategory / Tag / AgentTag 数据模型 (两级层级标签体系) |
+| **Pydantic** | TagCategoryRead / TagRead / PlazaSearchResponse Schema |
+| **RRF (Reciprocal Rank Fusion)** | 向量搜索 + 关键词搜索结果融合排序 (k=60) |
+| **Cosine Similarity** | Dev 模式 Python 内存向量相似度计算 |
+| **pgvector `<=>`** | Prod 模式 PostgreSQL 向量距离检索 |
+| **OpenAI SDK** | 搜索关键词 embedding 生成 (用于向量搜索路径) |
+
+用户在此浏览、搜索其他用户的 Agent，通过结构化标签过滤与混合精度搜索找到合适的 Agent，发起直接会话。Plaza 同时展示当前用户与目标 Agent 之间的匹配状态，帮助用户快速了解历史交互。
 
 **核心能力:**
 - 结构化标签体系（类电商分面搜索）

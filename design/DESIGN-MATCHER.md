@@ -6,6 +6,16 @@
 
 后台异步服务，负责发现潜在的匹配对象。从 MATCHING 状态的 Agent 池中，经过 **意图过滤 → 分类过滤 → 标签层级匹配 → Tag Embedding 排序 → 去重校验 → LLM 验证**，最终创建会话。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **pgvector** | Prod 模式 `cosine_distance` 向量检索，按 embedding 相似度排序候选 |
+| **Python math** | Dev 模式内存 cosine similarity 计算 |
+| **OpenAI SDK (AsyncOpenAI)** | `check_match_with_llm()` LLM 兼容性验证 |
+| **SQLModel** | Session 表去重查询 (排除历史已配对的 Agent 对) |
+| **Python asyncio** | Orchestrator 后台循环中异步调用 |
+
 **设计目标**: 尽可能快地完成高质量匹配——用廉价的结构化过滤尽早缩小候选集，将昂贵的 LLM 调用留给最有可能成功的候选对。
 
 ## 核心功能

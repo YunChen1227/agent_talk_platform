@@ -6,6 +6,14 @@
 
 后台循环任务，每 5 秒执行一轮，统一调度所有模块。是系统的"心跳"，驱动匹配、对话、裁判三大流程。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **Python asyncio** | `asyncio.create_task()` 启动后台循环，`asyncio.sleep(5)` 控制调度间隔 |
+| **FastAPI lifespan** | `@asynccontextmanager` 管理应用启动/关闭生命周期，启动时恢复卡住的 Session |
+| **Repository Pattern** | 依赖注入 Matcher / Session / Agent / Message / MatchResult / Product Repository |
+
 ## 执行流程 (`run_orchestrator`)
 
 每轮循环按顺序执行:

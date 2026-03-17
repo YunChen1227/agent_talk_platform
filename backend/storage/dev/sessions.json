@@ -1,0 +1,16 @@
+[
+  {
+    "agent_a_id": "6c5aa8f8-5a51-4452-bcad-a15c6cdf89af",
+    "agent_b_id": "0b1ec428-70e4-4ff6-97c0-099e1d8d0d55",
+    "status": "TERMINATED",
+    "created_at": "2026-03-17T07:27:59.315309",
+    "id": "e964dc9e-6460-4ba9-9bcd-46a0e29ac9be"
+  },
+  {
+    "agent_a_id": "0b1ec428-70e4-4ff6-97c0-099e1d8d0d55",
+    "agent_b_id": "7ce73677-10dc-4ac2-904f-2acdcab9046c",
+    "status": "TERMINATED",
+    "created_at": "2026-03-17T07:31:39.620683",
+    "id": "172e3e3c-0a84-4eaf-b530-4823bc513075"
+  }
+]

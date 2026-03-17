@@ -1,0 +1,12 @@
+[
+  {
+    "verdict": "DEADLOCK",
+    "summary": "The negotiation failed due to a significant price gap and concerns over product authenticity. The seller insisted on 1900 RMB for a 'Xiaomi 15 pad', while the buyer had a hard budget limit of 1600 RMB and verified that the model name does not officially exist, suspecting it to be a counterfeit.",
+    "reason": "The agents reached fundamentally incompatible goals with one side explicitly refusing to continue. The Seller stated: '1900 元 真的是我能接受的最低底价了，1600 元确实做不到' (1900 RMB is truly my lowest bottom line, 1600 RMB is indeed impossible). The Buyer explicitly rejected the deal in the final turn: '这台平板我可能真的不能收了' (I really cannot accept this tablet) and '这台机器你还是留给其他懂行的买家吧' (Leave this machine to other buyers), citing the non-existent model name and budget constraints.",
+    "final_outcome": null,
+    "session_id": "172e3e3c-0a84-4eaf-b530-4823bc513075",
+    "agent_a_contact_shared": false,
+    "agent_b_contact_shared": false,
+    "id": "3cb456bd-c1c2-42c8-abc0-db3904f4dec5"
+  }
+]

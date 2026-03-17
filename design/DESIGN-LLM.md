@@ -6,6 +6,16 @@
 
 LLM 服务分为两层: **平台 LLM** 和 **用户 LLM**。平台 LLM 提供撮合与裁判所需的核心 AI 能力，所有用户共享；用户 LLM 驱动 Agent 的人设生成与对话，来源取决于用户层级。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **OpenAI Python SDK (AsyncOpenAI)** | 统一客户端，接入 DeepSeek / Qwen / OpenAI / UCloud 等 OpenAI 兼容接口 |
+| **Google GenerativeAI SDK** | Gemini 模型接入 (`GenerativeModel`, `start_chat`, `send_message_async`) |
+| **JSON mode** (`response_format`) | Judge 裁决等场景约束 LLM 输出结构化 JSON |
+| **pydantic-settings** | 从 `config/secrets.json` 和 `.env` 加载 API Key 与配置 |
+| **Python random** | `get_random_client()` 多 Provider 随机负载均衡 |
+
 ## 服务分层
 
 ```

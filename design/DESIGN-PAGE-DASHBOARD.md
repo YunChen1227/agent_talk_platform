@@ -6,6 +6,10 @@
 
 登录后的主页，展示当前用户的 Agent 列表、活跃会话面板、已完成会话面板，并包含实时对话弹窗与结果详情弹窗。
 
+## 技术框架
+
+Next.js 14 (App Router) · React 18 `useState`/`useEffect` · Axios · `setInterval` 5s/3s 轮询 · Tailwind CSS · Lucide React 图标
+
 ## 页面布局
 
 ```

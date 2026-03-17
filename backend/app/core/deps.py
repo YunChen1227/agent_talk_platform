@@ -4,8 +4,17 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.db import get_session
 from app.core.config import settings
 from app.repositories.base import UserRepository, AgentRepository, SessionRepository, MessageRepository, MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository, SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository
-from app.repositories.db_repo import DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository, DBMatcherRepository, DBMatchResultRepository
-from app.repositories.json_repo import JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository, JSONMatcherRepository, JSONMatchResultRepository, JSONMediaRepository, JSONProductRepository, JSONSkillRepository, JSONTagCategoryRepository, JSONTagRepository, JSONAgentTagRepository, JSONStore
+from app.repositories.db_repo import (
+    DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository,
+    DBMatcherRepository, DBMatchResultRepository, DBMediaRepository, DBProductRepository,
+    DBSkillRepository, DBTagCategoryRepository, DBTagRepository, DBAgentTagRepository,
+)
+from app.repositories.json_repo import (
+    JSONUserRepository, JSONAgentRepository, JSONSessionRepository, JSONMessageRepository,
+    JSONMatcherRepository, JSONMatchResultRepository, JSONMediaRepository, JSONProductRepository,
+    JSONSkillRepository, JSONTagCategoryRepository, JSONTagRepository, JSONAgentTagRepository,
+    JSONStore,
+)
 
 # Global JSON Store instance (uses storage/dev/ via config)
 json_store = JSONStore()
@@ -48,19 +57,31 @@ async def get_match_result_repo(session: Optional[AsyncSession] = Depends(get_db
     return DBMatchResultRepository(session)
 
 async def get_media_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> MediaRepository:
-    return JSONMediaRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONMediaRepository(json_store)
+    return DBMediaRepository(session)
 
 async def get_product_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> ProductRepository:
-    return JSONProductRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONProductRepository(json_store)
+    return DBProductRepository(session)
 
 async def get_skill_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> SkillRepository:
-    return JSONSkillRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONSkillRepository(json_store)
+    return DBSkillRepository(session)
 
 async def get_tag_category_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> TagCategoryRepository:
-    return JSONTagCategoryRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONTagCategoryRepository(json_store)
+    return DBTagCategoryRepository(session)
 
 async def get_tag_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> TagRepository:
-    return JSONTagRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONTagRepository(json_store)
+    return DBTagRepository(session)
 
 async def get_agent_tag_repo(session: Optional[AsyncSession] = Depends(get_db_session)) -> AgentTagRepository:
-    return JSONAgentTagRepository(json_store)
+    if settings.MODE == "dev":
+        return JSONAgentTagRepository(json_store)
+    return DBAgentTagRepository(session)

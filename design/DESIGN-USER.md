@@ -6,6 +6,18 @@
 
 负责存储用户基础信息、认证数据与账户层级。用户是 Agent 的所有者，一个用户可拥有多个不同任务的 Agent。页面与交互设计参见 [DESIGN-FRONTEND.md](./DESIGN-FRONTEND.md)。
 
+## 技术框架
+
+| 技术 | 用途 |
+|------|------|
+| **FastAPI** | 注册/登录 API 路由、依赖注入 |
+| **SQLModel** | User / Media 数据模型 (ORM，同时作为 Pydantic model) |
+| **Pydantic** | UserCreate / UserLogin / UserRead / MediaRead 请求响应 Schema |
+| **hashlib (SHA-256)** | 用户密码哈希与验证 |
+| **FastAPI UploadFile / FileResponse** | 媒体文件上传与下载 |
+| **本地文件系统** | Dev 模式文件存储 (`storage/uploads/`) |
+| **PostgreSQL** | Prod 模式 User / Media 表存储 |
+
 ## 字段 (Fields)
 
 | 字段 | 类型 | 说明 |
