@@ -2,16 +2,29 @@ version: '3.8'
 
 services:
   db:
-    image: pgvector/pgvector:pg16
+    image: mysql:8.0
     container_name: agentmatch_db
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: agentmatch
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: agentmatch
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: agentmatch_es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
 
   redis:
     image: redis:7
@@ -20,4 +33,5 @@ services:
       - "6379:6379"
 
 volumes:
-  postgres_data:
+  mysql_data:
+  es_data:

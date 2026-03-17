@@ -14,12 +14,6 @@ async def scan_and_match(
     message_repo: MessageRepository,
     threshold: float = 0.2
 ) -> List[Tuple[UUID, UUID]]:
-    # In dev mode, we use mock embeddings which are random.
-    # Random vectors have distance ~1.0, so default threshold 0.2 is too strict.
-    # We relax it to 2.0 to allow all matches, then filter by LLM.
-    if settings.MODE == "dev":
-        threshold = 2.0
-
     matched_pairs = await matcher_repo.find_matches(threshold)
     
     final_pairs = []

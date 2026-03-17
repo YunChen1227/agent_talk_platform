@@ -3,22 +3,21 @@ from uuid import UUID, uuid4
 from datetime import datetime
 from decimal import Decimal
 from sqlmodel import Field, SQLModel
-from sqlalchemy import Column
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, JSON, Text
 from app.models.enums import ProductStatus
 
 
 class ProductBase(SQLModel):
     user_id: UUID = Field(foreign_key="user.id")
     name: str = Field()
-    description: Optional[str] = Field(default=None)
+    description: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
     price: Decimal = Field(max_digits=12, decimal_places=2)
     currency: str = Field(default="CNY")
-    images: List[UUID] = Field(default=[], sa_column=Column(JSONB))
+    images: List[UUID] = Field(default=[], sa_column=Column(JSON))
     cover_image_id: Optional[UUID] = Field(default=None)
     status: ProductStatus = Field(default=ProductStatus.ACTIVE)
-    linked_agent_ids: List[UUID] = Field(default=[], sa_column=Column(JSONB))
-    tag_ids: List[UUID] = Field(default=[], sa_column=Column(JSONB))
+    linked_agent_ids: List[UUID] = Field(default=[], sa_column=Column(JSON))
+    tag_ids: List[UUID] = Field(default=[], sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

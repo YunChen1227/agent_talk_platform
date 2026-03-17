@@ -93,54 +93,77 @@ class DBMatcherRepository(MatcherRepository):
         self.session = session
 
     async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:
+        from app.core.es import get_es_client, AGENT_EMBEDDING_INDEX
+
         statement = select(Agent).where(Agent.status == AgentStatus.MATCHING)
         result = await self.session.exec(statement)
         agents = result.all()
-        
+
+        agent_map = {str(a.id): a for a in agents}
         matched_pairs = []
         processed_pairs = set()
-        
+
+        es = get_es_client()
+
         for agent in agents:
-            await self.session.refresh(agent)
-            if agent.status != AgentStatus.MATCHING:
+            agent_id_str = str(agent.id)
+
+            if agent_id_str in {str(p) for pair in processed_pairs for p in pair}:
                 continue
-                
-            if agent.embedding is None:
+
+            try:
+                doc = await es.get(index=AGENT_EMBEDDING_INDEX, id=agent_id_str)
+                embedding = doc["_source"]["embedding"]
+            except Exception:
                 continue
-                
-            stmt = select(Agent, Agent.embedding.cosine_distance(agent.embedding)).where(
-                Agent.status == AgentStatus.MATCHING,
-                Agent.id != agent.id,
-                # 同一个用户下的 Agent 不互相聊天
-                Agent.user_id != agent.user_id,
-                Agent.embedding.isnot(None),
-            ).order_by(Agent.embedding.cosine_distance(agent.embedding))
-            
-            candidate_results = (await self.session.exec(stmt)).all()
-            
-            for match in candidate_results:
-                candidate, distance = match
-                
-                if (candidate.id, agent.id) in processed_pairs or (agent.id, candidate.id) in processed_pairs:
+
+            # Build exclusion list: self + same-user agents + already processed
+            exclude_ids = [agent_id_str]
+            for a in agents:
+                if a.user_id == agent.user_id and a.id != agent.id:
+                    exclude_ids.append(str(a.id))
+
+            knn_query = {
+                "field": "embedding",
+                "query_vector": embedding,
+                "k": 10,
+                "num_candidates": 50,
+                "filter": {"bool": {"must_not": [{"ids": {"values": exclude_ids}}]}},
+            }
+
+            resp = await es.search(index=AGENT_EMBEDDING_INDEX, knn=knn_query, size=10)
+
+            for hit in resp["hits"]["hits"]:
+                score = hit["_score"]
+                # ES cosine similarity returns [0, 2] mapped to [0, 1] relevance.
+                # threshold is a cosine distance; convert score: distance = 1 - score
+                distance = 1.0 - score
+                if distance >= threshold:
                     continue
 
-                if distance is not None and distance < threshold:
-                    # 之前无论什么状态，只要有过 Session 记录，就不再配对
-                    existing_session_stmt = select(Session).where(
-                        or_(
-                            and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
-                            and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id)
-                        )
-                    )
-                    existing_session = (await self.session.exec(existing_session_stmt)).first()
-                    
-                    if existing_session:
-                        continue
+                candidate_id_str = hit["_source"]["agent_id"]
+                candidate = agent_map.get(candidate_id_str)
+                if candidate is None:
+                    continue
 
-                    matched_pairs.append((agent.id, candidate.id))
-                    processed_pairs.add((agent.id, candidate.id))
-                    break 
-                    
+                pair_key = tuple(sorted([agent_id_str, candidate_id_str]))
+                if pair_key in processed_pairs:
+                    continue
+
+                existing_session_stmt = select(Session).where(
+                    or_(
+                        and_(Session.agent_a_id == agent.id, Session.agent_b_id == candidate.id),
+                        and_(Session.agent_a_id == candidate.id, Session.agent_b_id == agent.id),
+                    )
+                )
+                existing_session = (await self.session.exec(existing_session_stmt)).first()
+                if existing_session:
+                    continue
+
+                matched_pairs.append((agent.id, candidate.id))
+                processed_pairs.add(pair_key)
+                break
+
         return matched_pairs
 
 class DBSessionRepository(SessionRepository):

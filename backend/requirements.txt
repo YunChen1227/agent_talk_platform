@@ -1,8 +1,9 @@
 fastapi
 uvicorn[standard]
 sqlmodel
-asyncpg
-pgvector
+asyncmy
+cryptography
+elasticsearch[async]
 redis
 python-dotenv
 pydantic
@@ -12,3 +13,4 @@ httpx
 alembic
 google-generativeai
 greenlet
+python-multipart

@@ -9,11 +9,14 @@ CONFIG_DIR = BASE_DIR / "config"
 STORAGE_DIR = BASE_DIR / "storage"
 
 class Settings(BaseSettings):
-    POSTGRES_USER: str = "user"
-    POSTGRES_PASSWORD: str = "password"
-    POSTGRES_DB: str = "agentmatch"
-    POSTGRES_HOST: str = "localhost"
-    POSTGRES_PORT: int = 5432
+    MYSQL_USER: str = "root"
+    MYSQL_PASSWORD: str = "cy1234567"
+    MYSQL_DB: str = "agentmatch"
+    MYSQL_HOST: str = "localhost"
+    MYSQL_PORT: int = 3306
+
+    ES_HOST: str = "localhost"
+    ES_PORT: int = 9200
     
     REDIS_URL: str = "redis://localhost:6379/0"
     
@@ -23,16 +26,16 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = ""
     UCLOUD_API_KEY: Optional[str] = ""
     
-    MODE: str = "prod"  # "dev" or "prod"
+    MODE: str = "prod"  # "dev" or "prod" — only affects LLM mock behaviour
     USE_LLM_MATCHER: bool = False
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"mysql+asyncmy://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}?charset=utf8mb4"
 
     @property
-    def STORAGE_DEV_DIR(self) -> Path:
-        return STORAGE_DIR / "dev"
+    def ES_URL(self) -> str:
+        return f"http://{self.ES_HOST}:{self.ES_PORT}"
 
     @property
     def STORAGE_SEED_DIR(self) -> Path:
@@ -41,7 +44,6 @@ class Settings(BaseSettings):
     @property
     def UPLOADS_DIR(self) -> Path:
         return STORAGE_DIR / "uploads"
-        env_file = str(CONFIG_DIR / ".env")
 
     def load_secrets(self):
         secrets_path = CONFIG_DIR / "secrets.json"

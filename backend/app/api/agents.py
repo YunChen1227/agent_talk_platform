@@ -179,6 +179,9 @@ async def delete_agent(
         )
         await match_result_repo.create(result)
 
+    from app.core.es import delete_embedding
+    await delete_embedding(str(id))
+
     success = await repo.delete(id)
     if not success:
         raise HTTPException(status_code=404, detail="Agent not found")

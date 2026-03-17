@@ -15,6 +15,7 @@ from app.repositories.base import (
     MatchResultRepository,
 )
 from app.services.llm import get_embedding
+from app.core.es import search_nearest
 from app.core.config import settings
 
 
@@ -255,19 +256,10 @@ def _keyword_search(candidates: List[Agent], query: str) -> List[Agent]:
 
 def _vector_search(candidates: List[Agent], query: str) -> List[Agent]:
     """
-    In dev mode, use cached mock embeddings with cosine similarity.
-    For a real query embedding, we'd need async call — here we do
-    a synchronous fallback using the existing agent embeddings only.
+    Return candidates in their original order.
+    Full vector ranking is handled asynchronously in search_plaza when needed.
     """
-    if settings.MODE == "dev":
-        return candidates
-
-    scored = []
-    for a in candidates:
-        if a.embedding:
-            scored.append(a)
-
-    return scored
+    return candidates
 
 
 def _compute_match_status(

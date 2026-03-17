@@ -2,6 +2,7 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, Text
 from app.models.enums import SessionStatus, Verdict
 
 class SessionBase(SQLModel):
@@ -18,9 +19,9 @@ class Session(SessionBase, table=True):
 
 class MatchResultBase(SQLModel):
     verdict: Verdict
-    summary: Optional[str] = None
-    reason: Optional[str] = None
-    final_outcome: Optional[str] = None
+    summary: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
+    reason: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
+    final_outcome: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
     agent_a_contact_shared: bool = Field(default=False)
     agent_b_contact_shared: bool = Field(default=False)
 

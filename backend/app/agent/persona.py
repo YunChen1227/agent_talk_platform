@@ -108,11 +108,14 @@ async def create_agent(
         opening_remark=final_opening_remark,
         status=AgentStatus.IDLE,
         tags=tags,
-        embedding=embedding,
         linked_product_ids=linked_product_ids or [],
         linked_skill_ids=linked_skill_ids or [],
     )
     created = await agent_repo.create(agent)
+
+    if embedding:
+        from app.core.es import upsert_embedding
+        await upsert_embedding(str(created.id), embedding)
 
     if tag_repo and agent_tag_repo:
         if tag_ids:
