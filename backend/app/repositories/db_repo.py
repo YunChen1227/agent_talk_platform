@@ -92,8 +92,10 @@ class DBMatcherRepository(MatcherRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:
-        from app.core.es import get_es_client, AGENT_EMBEDDING_INDEX
+    async def find_matches(self, threshold: float, embedding_repo=None) -> List[Tuple[UUID, UUID]]:
+        if embedding_repo is None:
+            from app.core.deps import get_embedding_repo
+            embedding_repo = get_embedding_repo()
 
         statement = select(Agent).where(Agent.status == AgentStatus.MATCHING)
         result = await self.session.exec(statement)
@@ -103,45 +105,30 @@ class DBMatcherRepository(MatcherRepository):
         matched_pairs = []
         processed_pairs = set()
 
-        es = get_es_client()
-
         for agent in agents:
             agent_id_str = str(agent.id)
 
             if agent_id_str in {str(p) for pair in processed_pairs for p in pair}:
                 continue
 
-            try:
-                doc = await es.get(index=AGENT_EMBEDDING_INDEX, id=agent_id_str)
-                embedding = doc["_source"]["embedding"]
-            except Exception:
+            embedding = await embedding_repo.get(agent_id_str)
+            if embedding is None:
                 continue
 
-            # Build exclusion list: self + same-user agents + already processed
             exclude_ids = [agent_id_str]
             for a in agents:
                 if a.user_id == agent.user_id and a.id != agent.id:
                     exclude_ids.append(str(a.id))
 
-            knn_query = {
-                "field": "embedding",
-                "query_vector": embedding,
-                "k": 10,
-                "num_candidates": 50,
-                "filter": {"bool": {"must_not": [{"ids": {"values": exclude_ids}}]}},
-            }
+            hits = await embedding_repo.search_nearest(embedding, k=10, exclude_ids=exclude_ids)
 
-            resp = await es.search(index=AGENT_EMBEDDING_INDEX, knn=knn_query, size=10)
-
-            for hit in resp["hits"]["hits"]:
-                score = hit["_score"]
-                # ES cosine similarity returns [0, 2] mapped to [0, 1] relevance.
-                # threshold is a cosine distance; convert score: distance = 1 - score
+            for hit in hits:
+                score = hit["score"]
                 distance = 1.0 - score
                 if distance >= threshold:
                     continue
 
-                candidate_id_str = hit["_source"]["agent_id"]
+                candidate_id_str = hit["agent_id"]
                 candidate = agent_map.get(candidate_id_str)
                 if candidate is None:
                     continue

@@ -78,8 +78,7 @@ async def get_embedding(text: str) -> List[float]:
 
 
 async def extract_tags(text: str) -> List[str]:
-    # In dev mode, skip LLM call for speed
-    if settings.MODE == "dev":
+    if settings.is_dev:
         print("[LLM] Dev mode: Returning mock tags")
         return ["dev_tag_1", "dev_tag_2", "dev_tag_3"]
 
@@ -105,7 +104,7 @@ async def extract_tags(text: str) -> List[str]:
 
 async def extract_tags_from_catalog(text: str, available_slugs: List[str]) -> List[str]:
     """Select matching tag slugs from a predefined catalog."""
-    if settings.MODE == "dev":
+    if settings.is_dev:
         import random as _rand
         sample_size = min(4, len(available_slugs))
         return _rand.sample(available_slugs, sample_size) if available_slugs else []

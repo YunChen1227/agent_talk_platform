@@ -6,8 +6,8 @@ from app.models.session import SessionStatus, MatchResult
 from app.models.enums import Verdict
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.agent.persona import create_agent
-from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository, TagRepository, AgentTagRepository, ProductRepository
-from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo, get_tag_repo, get_agent_tag_repo, get_product_repo
+from app.repositories.base import AgentRepository, UserRepository, SessionRepository, MessageRepository, MatchResultRepository, TagRepository, AgentTagRepository, ProductRepository, EmbeddingRepository
+from app.core.deps import get_agent_repo, get_user_repo, get_session_repo, get_message_repo, get_match_result_repo, get_tag_repo, get_agent_tag_repo, get_product_repo, get_embedding_repo
 
 router = APIRouter()
 
@@ -49,6 +49,7 @@ async def create_new_agent(
     tag_repo: TagRepository = Depends(get_tag_repo),
     agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
     product_repo: ProductRepository = Depends(get_product_repo),
+    embedding_repo: EmbeddingRepository = Depends(get_embedding_repo),
 ):
     agent = await create_agent(
         agent_repo,
@@ -64,6 +65,7 @@ async def create_new_agent(
         agent_tag_repo=agent_tag_repo,
         tag_ids=agent_in.tag_ids,
         product_repo=product_repo,
+        embedding_repo=embedding_repo,
     )
     return await _enrich_with_catalog_tags(agent, agent_tag_repo)
 
@@ -153,7 +155,8 @@ async def delete_agent(
     id: UUID,
     repo: AgentRepository = Depends(get_agent_repo),
     session_repo: SessionRepository = Depends(get_session_repo),
-    match_result_repo: MatchResultRepository = Depends(get_match_result_repo)
+    match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+    embedding_repo: EmbeddingRepository = Depends(get_embedding_repo),
 ):
     agent = await repo.get(id)
     if not agent:
@@ -179,8 +182,7 @@ async def delete_agent(
         )
         await match_result_repo.create(result)
 
-    from app.core.es import delete_embedding
-    await delete_embedding(str(id))
+    await embedding_repo.delete(str(id))
 
     success = await repo.delete(id)
     if not success:

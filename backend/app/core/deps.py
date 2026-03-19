@@ -1,4 +1,4 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.db import get_session
@@ -6,6 +6,7 @@ from app.repositories.base import (
     UserRepository, AgentRepository, SessionRepository, MessageRepository,
     MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository,
     SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository,
+    EmbeddingRepository,
 )
 from app.repositories.db_repo import (
     DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository,
@@ -13,11 +14,29 @@ from app.repositories.db_repo import (
     DBSkillRepository, DBTagCategoryRepository, DBTagRepository, DBAgentTagRepository,
 )
 
+# ---- Embedding repo singleton (set during app startup) ----
+
+_embedding_repo: Optional[EmbeddingRepository] = None
+
+
+def set_embedding_repo(repo: EmbeddingRepository) -> None:
+    global _embedding_repo
+    _embedding_repo = repo
+
+
+def get_embedding_repo() -> EmbeddingRepository:
+    assert _embedding_repo is not None, "EmbeddingRepository not initialised"
+    return _embedding_repo
+
+
+# ---- DB session ----
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async for session in get_session():
         yield session
 
+
+# ---- MySQL repositories ----
 
 async def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
     return DBUserRepository(session)

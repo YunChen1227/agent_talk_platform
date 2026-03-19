@@ -26,8 +26,16 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = ""
     UCLOUD_API_KEY: Optional[str] = ""
     
-    MODE: str = "prod"  # "dev" or "prod" — only affects LLM mock behaviour
+    MODE: str = "prod"  # "dev_1" | "dev_2" | "prod"
     USE_LLM_MATCHER: bool = False
+
+    @property
+    def is_dev(self) -> bool:
+        return self.MODE in ("dev", "dev_1", "dev_2")
+
+    @property
+    def use_json_es(self) -> bool:
+        return self.MODE == "dev_1"
 
     @property
     def DATABASE_URL(self) -> str:
@@ -36,6 +44,10 @@ class Settings(BaseSettings):
     @property
     def ES_URL(self) -> str:
         return f"http://{self.ES_HOST}:{self.ES_PORT}"
+
+    @property
+    def STORAGE_DEV_DIR(self) -> Path:
+        return STORAGE_DIR / "dev"
 
     @property
     def STORAGE_SEED_DIR(self) -> Path:

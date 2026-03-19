@@ -3,11 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.db import init_db, get_session
-from app.core.es import init_es, close_es
 from app.core.config import settings
 from app.api import agents, sessions, auth, media, shop, skill, plaza
 from app.services.orchestrator import run_orchestrator
-from app.core.deps import get_session_repo, get_agent_repo, get_matcher_repo, get_message_repo, get_match_result_repo, get_product_repo
+from app.core.deps import (
+    get_session_repo, get_agent_repo, get_matcher_repo,
+    get_message_repo, get_match_result_repo, get_product_repo,
+    set_embedding_repo, get_embedding_repo,
+)
 from app.services.llm import validate_api_keys, valid_clients
 
 async def background_task():
@@ -32,7 +35,26 @@ async def lifespan(app: FastAPI):
     validate_api_keys()
 
     await init_db()
-    await init_es()
+
+    if settings.use_json_es:
+        from app.repositories.embedding_repo import JsonEmbeddingRepository
+        repo = JsonEmbeddingRepository(settings.STORAGE_DEV_DIR / "embeddings.json")
+    else:
+        from app.repositories.embedding_repo import ESEmbeddingRepository
+        repo = ESEmbeddingRepository(settings.ES_URL)
+
+    await repo.init()
+    set_embedding_repo(repo)
+    print(f"[startup] ES backend: {'JSON file' if settings.use_json_es else 'Elasticsearch'}")
+
+    if settings.is_dev:
+        try:
+            from app.core.seed import seed_tags
+            async for session in get_session():
+                await seed_tags(session)
+                break
+        except Exception as e:
+            print(f"[seed] Error seeding tags: {e}")
 
     try:
         async for session in get_session():
@@ -45,7 +67,7 @@ async def lifespan(app: FastAPI):
 
     asyncio.create_task(background_task())
     yield
-    await close_es()
+    await get_embedding_repo().close()
 
 app = FastAPI(title="AgentMatch Platform", lifespan=lifespan)
 

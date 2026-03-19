@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any
 from uuid import UUID
 from app.models.user import User
 from app.models.agent import Agent, AgentStatus
@@ -9,6 +9,40 @@ from app.models.media import Media
 from app.models.product import Product
 from app.models.skill import Skill
 from app.models.tag import TagCategory, Tag, AgentTag
+
+
+class EmbeddingRepository(ABC):
+    """Abstract interface for vector embedding storage (ES / JSON / etc.)."""
+
+    @abstractmethod
+    async def init(self) -> None:
+        pass
+
+    @abstractmethod
+    async def close(self) -> None:
+        pass
+
+    @abstractmethod
+    async def upsert(self, agent_id: str, embedding: List[float]) -> None:
+        pass
+
+    @abstractmethod
+    async def delete(self, agent_id: str) -> None:
+        pass
+
+    @abstractmethod
+    async def get(self, agent_id: str) -> Optional[List[float]]:
+        pass
+
+    @abstractmethod
+    async def search_nearest(
+        self,
+        embedding: List[float],
+        k: int = 10,
+        exclude_ids: Optional[List[str]] = None,
+    ) -> List[Dict]:
+        """Return list of {\"agent_id\": str, \"score\": float}."""
+        pass
 
 class UserRepository(ABC):
     @abstractmethod
@@ -62,7 +96,7 @@ class AgentRepository(ABC):
 
 class MatcherRepository(ABC):
     @abstractmethod
-    async def find_matches(self, threshold: float) -> List[Tuple[UUID, UUID]]:
+    async def find_matches(self, threshold: float, embedding_repo: "EmbeddingRepository") -> List[Tuple[UUID, UUID]]:
         pass
 
 class SessionRepository(ABC):

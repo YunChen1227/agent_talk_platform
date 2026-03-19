@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import Tuple, List, Union, Optional
 from app.models.agent import Agent, AgentStatus
 from app.models.user import User
-from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository, ProductRepository
+from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository, ProductRepository, EmbeddingRepository
 from app.services.llm import get_random_client, extract_tags, get_embedding, extract_tags_from_catalog
 import google.generativeai as genai
 
@@ -76,6 +76,7 @@ async def create_agent(
     agent_tag_repo: Optional[AgentTagRepository] = None,
     tag_ids: Optional[List[UUID]] = None,
     product_repo: Optional[ProductRepository] = None,
+    embedding_repo: Optional[EmbeddingRepository] = None,
 ) -> Agent:
     if isinstance(user_id, str):
         user_id = UUID(user_id)
@@ -113,9 +114,8 @@ async def create_agent(
     )
     created = await agent_repo.create(agent)
 
-    if embedding:
-        from app.core.es import upsert_embedding
-        await upsert_embedding(str(created.id), embedding)
+    if embedding and embedding_repo:
+        await embedding_repo.upsert(str(created.id), embedding)
 
     if tag_repo and agent_tag_repo:
         if tag_ids:

@@ -15,8 +15,6 @@ from app.repositories.base import (
     MatchResultRepository,
 )
 from app.services.llm import get_embedding
-from app.core.es import search_nearest
-from app.core.config import settings
 
 
 def _cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
