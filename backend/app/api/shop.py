@@ -2,8 +2,11 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 
+import re
+from uuid import uuid4 as _uuid4
+
 from app.schemas.product import ProductCreate, ProductUpdate, ProductRead, LinkAgentBody
-from app.schemas.plaza import TagCategoryRead
+from app.schemas.plaza import TagCategoryRead, TagCreate, TagRead
 from app.repositories.base import ProductRepository, AgentRepository, TagCategoryRepository, TagRepository
 from app.core.deps import get_product_repo, get_agent_repo, get_tag_category_repo, get_tag_repo
 from app.services.shop_service import (
@@ -14,6 +17,8 @@ from app.services.shop_service import (
     unlink_agent_from_product as svc_unlink_agent,
 )
 from app.services.plaza_service import get_tag_catalog
+from app.services.llm import get_embedding
+from app.models.tag import Tag
 
 router = APIRouter()
 
@@ -25,6 +30,41 @@ async def list_product_tags(
 ):
     """Return product-scope tag catalog grouped by category."""
     return await get_tag_catalog(cat_repo, tag_repo, scope="product")
+
+
+@router.post("/tags", response_model=TagRead)
+async def create_product_tag(
+    body: TagCreate,
+    tag_repo: TagRepository = Depends(get_tag_repo),
+    cat_repo: TagCategoryRepository = Depends(get_tag_category_repo),
+):
+    """Create a new user-defined tag in a product-scope category."""
+    cats = await cat_repo.list_active_by_scope("product")
+    if not any(c.id == body.category_id for c in cats):
+        raise HTTPException(status_code=400, detail="Category not found or not product-scope")
+
+    slug = re.sub(r"[^a-z0-9]+", "-", body.name.lower()).strip("-")
+    if not slug:
+        slug = f"user-tag-{_uuid4().hex[:8]}"
+    existing = await tag_repo.get_by_slug(slug)
+    if existing:
+        if not existing.embedding:
+            existing.embedding = await get_embedding(existing.name)
+            await tag_repo.update(existing)
+        return TagRead(id=str(existing.id), name=existing.name, slug=existing.slug, children=[])
+
+    tag = Tag(
+        category_id=body.category_id,
+        name=body.name,
+        slug=slug,
+        sort_order=999,
+        is_active=True,
+        is_user_defined=True,
+    )
+    tag = await tag_repo.create(tag)
+    tag.embedding = await get_embedding(tag.name)
+    tag = await tag_repo.update(tag)
+    return TagRead(id=str(tag.id), name=tag.name, slug=tag.slug, children=[])
 
 
 def _to_read(p) -> ProductRead:

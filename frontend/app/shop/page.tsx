@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { listProducts, createProduct, updateProduct, deleteProduct, getPlazaTags, createPlazaTag, PlazaTagCategory } from "@/lib/api";
+import { listProducts, createProduct, updateProduct, deleteProduct, getShopTags, createShopTag, PlazaTagCategory } from "@/lib/api";
 import TagDropdownSelect from "@/components/TagDropdownSelect";
 import { useDraft } from "@/lib/useDraft";
 
@@ -50,7 +50,7 @@ export default function ShopPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    getPlazaTags().then(setTagCategories).catch(() => setTagCategories([]));
+    getShopTags().then(setTagCategories).catch(() => setTagCategories([]));
   }, []);
 
   useEffect(() => {
@@ -152,8 +152,8 @@ export default function ShopPage() {
 
   const handleCreateTag = async (name: string, categoryId: string) => {
     try {
-      const newTag = await createPlazaTag(name, categoryId);
-      const cats = await getPlazaTags();
+      const newTag = await createShopTag(name, categoryId);
+      const cats = await getShopTags();
       setTagCategories(cats);
       setSelectedTagIds((prev) => new Set([...prev, newTag.id]));
     } catch {

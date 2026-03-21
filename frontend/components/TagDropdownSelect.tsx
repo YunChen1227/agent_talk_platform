@@ -291,41 +291,61 @@ export default function TagDropdownSelect({
       <div
         className="w-full min-h-[44px] p-2 border border-gray-300 rounded-lg cursor-pointer flex items-center gap-2 focus-within:ring-2 focus-within:ring-blue-500"
         onClick={() => {
-          setOpen(true);
-          setTimeout(() => inputRef.current?.focus(), 0);
+          setOpen((v) => !v);
+          if (!open) setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
-        <svg
-          className="w-4 h-4 text-gray-400 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        {onCreateTag ? (
+          <svg
+            className="w-4 h-4 text-gray-400 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        ) : null}
+        {!onCreateTag && selectedTags.length > 0 && !open ? (
+          <div className="flex-1 flex flex-wrap gap-1">
+            {selectedTags.map((tag) => (
+              <span
+                key={tag.id}
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  tag.depth === 0
+                    ? "bg-purple-100 text-purple-800"
+                    : "bg-indigo-50 text-indigo-700"
+                }`}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <input
+            ref={inputRef}
+            type="text"
+            className="flex-1 outline-none text-sm text-black bg-transparent"
+            placeholder={!onCreateTag && selectedTags.length > 0 ? "筛选标签..." : placeholder}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              if (!open) setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setOpen(false);
+                setSearch("");
+              }
+            }}
           />
-        </svg>
-        <input
-          ref={inputRef}
-          type="text"
-          className="flex-1 outline-none text-sm text-black bg-transparent"
-          placeholder={placeholder}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            if (!open) setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setOpen(false);
-              setSearch("");
-            }
-          }}
-        />
+        )}
         <svg
           className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
@@ -341,7 +361,7 @@ export default function TagDropdownSelect({
         </svg>
       </div>
 
-      {selectedTags.length > 0 && (
+      {selectedTags.length > 0 && (onCreateTag || open) && (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {selectedTags.map((tag) => (
             <span

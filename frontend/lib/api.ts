@@ -306,6 +306,22 @@ export const deleteProduct = async (productId: string, userId: string) => {
   await api.delete(`/shop/products/${productId}?user_id=${userId}`);
 };
 
+export const getShopTags = async (): Promise<PlazaTagCategory[]> => {
+  const res = await api.get("/shop/tags");
+  return res.data;
+};
+
+export const createShopTag = async (
+  name: string,
+  categoryId: string
+): Promise<PlazaTag> => {
+  const res = await api.post("/shop/tags", {
+    name,
+    category_id: categoryId,
+  });
+  return res.data;
+};
+
 export const linkProductToAgent = async (
   productId: string,
   userId: string,
