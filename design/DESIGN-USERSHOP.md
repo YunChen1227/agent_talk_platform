@@ -30,7 +30,7 @@
 | `images` | List[UUID] | 是 | 商品图片，从用户媒体库中选取，引用 UserMedia.id；第一张默认作为封面 |
 | `description` | Text | 否 | 商品介绍，描述商品详情、卖点等 |
 | `price` | Decimal | 是 | 商品价格 (默认货币 CNY) |
-| `tag_ids` | List[UUID] | 否 | 商品标签，从预置标签目录中选择 (意图/领域/角色)，与 Agent 标签体系对齐 |
+| `tag_ids` | List[UUID] | 否 | 商品标签，从 product-scope 预置标签目录中选择 (商品分类/品质/类型/适用)，与 Agent 标签体系完全隔离 |
 
 ### 系统与关联字段
 
@@ -43,7 +43,7 @@
 | `currency` | String | 货币，默认 `CNY` |
 | `cover_image_id` | UUID (可选) | 封面图，默认为 `images` 的第一张，用户可手动指定 |
 | `status` | Enum | `ACTIVE` / `INACTIVE`，仅 ACTIVE 可被 Agent 发送；默认 ACTIVE |
-| `tag_ids` | List[UUID] | 商品标签 ID 列表，用户选择并存储，与 Agent 标签体系共用预置目录 |
+| `tag_ids` | List[UUID] | 商品标签 ID 列表，仅接受 product-scope 标签，与 Agent 标签体系隔离 |
 | `linked_agent_ids` | List[UUID] | 已关联的 Agent，通过关联操作维护 |
 | `created_at` | Timestamp | 创建时间 |
 | `updated_at` | Timestamp | 更新时间 |
@@ -59,26 +59,14 @@
 - **创建/编辑 Agent 时**：用户可勾选已有商品，将 Agent 关联到这些商品（写入 `Agent.linked_product_ids`）。
 - 双向一致：若商品 A 的 `linked_agent_ids` 包含 Agent X，则 Agent X 的 `linked_product_ids` 应包含商品 A，反之亦然。实现时需在「关联/解绑」接口中同时维护 Product 与 Agent 两侧。
 
-## 商品标签与 Agent 标签自动同步
+## 商品标签与 Agent 标签彻底分离
 
-商品和 Agent 共用同一套预置标签目录（参见 [DESIGN-PLAZA.md](./DESIGN-PLAZA.md)）。创建商品时可选择意图 (intent)、领域 (domain)、角色 (role) 三个维度的标签。
+商品标签和 Agent 标签通过 `tag_category.scope` 字段在数据源头隔离（参见 [DESIGN-PLAZA.md](./DESIGN-PLAZA.md)）：
 
-**标签自动继承规则:**
-
-- **商品绑定 Agent 时** (创建商品时选择关联 Agent，或通过 `link_agent_to_product`)：系统自动将商品的 `tag_ids` 合并到 Agent 的 `agent_tag` 关联表中（仅追加，不覆盖 Agent 原有标签）。
-- **Agent 绑定商品时** (创建/编辑 Agent 时选择关联商品)：系统自动将所有已关联商品的 `tag_ids` 合并到 Agent 的 `agent_tag` 关联表中。
-- **追加不删除**: 标签同步为单向追加——商品标签会自动添加到 Agent 上，但解绑商品时不会自动移除 Agent 上的标签（避免误删用户手动选择的标签）。
-
-```
-商品创建 (带 tag_ids + linked_agent_ids)
-  └─> 对每个关联的 Agent，追加商品的 tag_ids 到 agent_tag
-
-商品绑定 Agent (link_agent_to_product)
-  └─> 追加该商品的 tag_ids 到目标 Agent 的 agent_tag
-
-Agent 创建/编辑 (带 linked_product_ids)
-  └─> 查询所有关联商品的 tag_ids，追加到该 Agent 的 agent_tag
-```
+- **商品标签** (`scope = "product"`)：商品分类、品质、类型、适用四个维度，仅限平台预置标签。通过 `GET /shop/tags` 获取。
+- **Agent 标签** (`scope = "agent"`)：意图、领域、角色、风格四个维度，允许用户自定义。通过 `GET /plaza/tags` 获取。
+- **无交叉同步**：关联商品与 Agent 时只维护 `linked_product_ids` / `linked_agent_ids` 双向关系，不再将商品标签同步到 `agent_tag`。两套标签体系完全独立。
+- **校验**：Product 的 `tag_ids` 只接受 product-scope 标签，若传入 agent-scope 标签，API 返回 400。
 
 ## 商品在对话中的使用
 
@@ -87,12 +75,12 @@ Agent 创建/编辑 (带 linked_product_ids)
 
 ## 核心功能 (Functions)
 
-- `create_product(user_id, name, description, price, currency, image_ids, cover_image_id, linked_agent_ids?, tag_ids?)`: 创建商品，可选标签和关联 Agent；若关联了 Agent，自动将商品标签追加到 Agent。
+- `create_product(user_id, name, description, price, currency, image_ids, cover_image_id, linked_agent_ids?, tag_ids?)`: 创建商品，可选 product-scope 标签和关联 Agent。
 - `update_product(product_id, user_id, ...)`: 更新商品信息（含图片、关联 Agent），仅允许所属用户。
 - `delete_product(product_id, user_id)`: 删除商品，仅允许所属用户；删除时解除与所有 Agent 的关联。
 - `list_products(user_id)`: 列出该用户的全部商品（仅本人可见）。
 - `get_product(product_id, user_id)`: 获取商品详情，仅允许所属用户。
-- `link_agent_to_product(product_id, agent_id, user_id)`: 将 Agent 与商品关联，需校验 Agent 与 Product 均属于该用户；自动将商品 `tag_ids` 追加到 Agent 的 `agent_tag`。
+- `link_agent_to_product(product_id, agent_id, user_id)`: 将 Agent 与商品关联，需校验 Agent 与 Product 均属于该用户。
 - `unlink_agent_from_product(product_id, agent_id, user_id)`: 解除 Agent 与商品的关联。
 
 ## 相关文件

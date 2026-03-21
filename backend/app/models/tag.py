@@ -1,12 +1,14 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, JSON
 
 
 class TagCategoryBase(SQLModel):
     name: str
     slug: str = Field(unique=True, index=True)
     description: Optional[str] = None
+    scope: str = Field(default="agent", index=True)  # "agent" | "product"
     sort_order: int = Field(default=0)
     is_active: bool = Field(default=True)
 
@@ -23,6 +25,8 @@ class TagBase(SQLModel):
     parent_id: Optional[UUID] = Field(default=None, foreign_key="tag.id")
     sort_order: int = Field(default=0)
     is_active: bool = Field(default=True)
+    embedding: Optional[List[float]] = Field(default=None, sa_column=Column(JSON))
+    is_user_defined: bool = Field(default=False)
 
 
 class Tag(TagBase, table=True):

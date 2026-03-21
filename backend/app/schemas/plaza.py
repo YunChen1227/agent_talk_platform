@@ -8,6 +8,16 @@ class TagCreate(BaseModel):
     category_id: UUID
 
 
+class TagEmbedRequest(BaseModel):
+    """Batch (re)compute tag embeddings via local embedding service."""
+
+    force_all: bool = False
+
+
+class TagEmbedResponse(BaseModel):
+    updated: int
+
+
 class TagRead(BaseModel):
     id: str
     name: str

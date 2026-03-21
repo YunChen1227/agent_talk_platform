@@ -4,6 +4,7 @@
     "name": "意图",
     "slug": "intent",
     "description": "Agent 的主要交互意图",
+    "scope": "agent",
     "sort_order": 1,
     "is_active": true
   },
@@ -12,6 +13,7 @@
     "name": "领域",
     "slug": "domain",
     "description": "Agent 涉及的行业或领域",
+    "scope": "agent",
     "sort_order": 2,
     "is_active": true
   },
@@ -20,6 +22,7 @@
     "name": "角色",
     "slug": "role",
     "description": "Agent 在交互中的角色定位",
+    "scope": "agent",
     "sort_order": 3,
     "is_active": true
   },
@@ -28,6 +31,7 @@
     "name": "风格",
     "slug": "style",
     "description": "Agent 的对话风格",
+    "scope": "agent",
     "sort_order": 4,
     "is_active": true
   },
@@ -36,7 +40,8 @@
     "name": "商品分类",
     "slug": "category",
     "description": "商品所属品类",
-    "sort_order": 5,
+    "scope": "product",
+    "sort_order": 1,
     "is_active": true
   },
   {
@@ -44,7 +49,8 @@
     "name": "品质",
     "slug": "condition",
     "description": "商品新旧/定制状态",
-    "sort_order": 6,
+    "scope": "product",
+    "sort_order": 2,
     "is_active": true
   },
   {
@@ -52,7 +58,8 @@
     "name": "类型",
     "slug": "product_type",
     "description": "商品交付形式",
-    "sort_order": 7,
+    "scope": "product",
+    "sort_order": 3,
     "is_active": true
   },
   {
@@ -60,7 +67,8 @@
     "name": "适用",
     "slug": "target",
     "description": "商品适用人群",
-    "sort_order": 8,
+    "scope": "product",
+    "sort_order": 4,
     "is_active": true
   }
 ]

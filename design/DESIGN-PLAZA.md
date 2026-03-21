@@ -16,7 +16,7 @@ Plaza（Agent 广场）是平台的核心发现与检索模块。
 | **RRF (Reciprocal Rank Fusion)** | 向量搜索 + 关键词搜索结果融合排序 (k=60) |
 | **Cosine Similarity** | Dev 模式 Python 内存向量相似度计算 |
 | **pgvector `<=>`** | Prod 模式 PostgreSQL 向量距离检索 |
-| **OpenAI SDK** | 搜索关键词 embedding 生成 (用于向量搜索路径) |
+| **本地 Embedding 服务** | Agent/Tag 向量与（可选）Plaza 关键词向量：`EMBEDDING_API_URL`，OpenAI 兼容 `POST /v1/embeddings` |
 
 用户在此浏览、搜索其他用户的 Agent，通过结构化标签过滤与混合精度搜索找到合适的 Agent，发起直接会话。Plaza 同时展示当前用户与目标 Agent 之间的匹配状态，帮助用户快速了解历史交互。
 
@@ -60,6 +60,7 @@ backend/app/services/plaza_service.py # 混合搜索 + 匹配状态计算
 | `name` | String | 分类名称，如"意图"、"领域" |
 | `slug` | String (unique) | URL 友好标识，如"intent"、"domain" |
 | `description` | Text (可选) | 分类说明 |
+| `scope` | String | `"agent"` 或 `"product"`，标识该分类维度所属域。Agent 维度 (意图/领域/角色/风格) 与 Product 维度 (商品分类/品质/类型/适用) 在数据源头彻底隔离 |
 | `sort_order` | Integer | 排序权重，升序 |
 | `is_active` | Boolean | 是否启用，默认 True |
 
@@ -74,6 +75,8 @@ backend/app/services/plaza_service.py # 混合搜索 + 匹配状态计算
 | `parent_id` | UUID (FK → tag, 可选) | 父标签 ID；为 NULL 表示一级标签，非 NULL 表示二级子标签 |
 | `sort_order` | Integer | 分类内排序权重 |
 | `is_active` | Boolean | 是否启用，默认 True |
+| `embedding` | JSON (float 数组，可选) | 标签名称的语义向量，维度 = `EMBEDDING_DIM`（与 Agent 向量一致），用于 Matcher Tag Embedding 排序等 |
+| `is_user_defined` | Boolean | `true` 表示用户通过 Plaza 创建的自定义标签；预置 seed 标签为 `false` |
 
 **agent_tag** (Agent-Tag 多对多关联):
 
@@ -82,7 +85,9 @@ backend/app/services/plaza_service.py # 混合搜索 + 匹配状态计算
 | `agent_id` | UUID (FK → agent) | 复合主键之一 |
 | `tag_id` | UUID (FK → tag) | 复合主键之二 |
 
-### 预置标签目录（两级结构）
+### 预置标签目录（两级结构，按 scope 隔离）
+
+**Agent scope** (`scope = "agent"`):
 
 | 分类 | 一级标签 | 二级子标签 |
 |------|----------|------------|
@@ -115,17 +120,28 @@ backend/app/services/plaza_service.py # 混合搜索 + 匹配状态计算
 
 ### Tag 提取流程
 
-Agent 创建时，平台 LLM 从预置标签目录中选择匹配的标签（约束提取），而非自由生成。
+Agent 创建时，平台 LLM 从预置标签目录中选择匹配的标签（约束提取），而非自由生成。用户还可通过 Plaza **新增自定义标签**并绑定到自己的 Agent；自定义标签与预置标签一样写入 `agent_tag`，并具备 `embedding`（创建或批量补算时写入）。
 
 ```
 Agent 创建/更新
-  └─> 平台 LLM 分析 system_prompt
+  └─> 平台 LLM 分析 system_prompt（PAID 路径）
        └─> 从预置标签目录中选取匹配的 tag slugs
             └─> 写入 agent_tag 关联表
                  └─> 同步缓存到 Agent.tags (List[str])
+  或 用户手动 tag_ids（含预置 + 自定义）
 ```
 
 提取 Prompt 模板向 LLM 传入完整标签目录 (JSON)，要求 LLM 输出选中的 tag slug 列表。
+
+### Agent 标签与 Product 标签彻底分离
+
+通过 `tag_category.scope` 字段实现数据源头隔离：
+
+- **Agent 标签** (`scope = "agent"`)：意图、领域、角色、风格四个维度。Agent 的 `tag_ids` 只接受 agent-scope 下的标签；用户可通过 `POST /plaza/tags` 创建自定义标签（`is_user_defined=true`），自定义标签始终属于 agent-scope。
+- **Product 标签** (`scope = "product"`)：商品分类、品质、类型、适用四个维度。Product 的 `tag_ids` 只接受 product-scope 下的标签；不允许用户自定义。
+- **无交叉同步**：Product 标签不会自动继承到 Agent 的 `agent_tag`，两套标签体系完全独立。
+- **API 隔离**：`GET /plaza/tags` 仅返回 agent-scope 标签；`GET /shop/tags` 仅返回 product-scope 标签。
+- **自定义标签的向量**：创建时调用本地 Embedding 服务，写入 `tag.embedding`；也可调用 `POST /plaza/tags/embed` 批量补算或全量重算。
 
 ---
 
@@ -281,6 +297,18 @@ RRF_score(agent) = Σ 1/(k + rank_i)  对每条搜索路径 i
 ]
 ```
 
+### POST /plaza/tags
+
+在指定分类下创建**用户自定义标签**（`is_user_defined=true`）。创建成功后异步写入 `embedding`（标签名称作为输入文本）。若同名 slug 已存在则返回已有标签。
+
+### POST /plaza/tags/embed
+
+批量为标签生成/刷新 `embedding`（调用本地 Embedding 服务）。
+
+| 参数（Body JSON） | 类型 | 说明 |
+|------------------|------|------|
+| `force_all` | Boolean | 默认 `false`：仅处理 `embedding` 为空的标签；`true`：重算所有活跃标签 |
+
 ### GET /plaza/search
 
 混合搜索，返回 Agent 列表 + 匹配状态。
@@ -331,7 +359,7 @@ RRF_score(agent) = Σ 1/(k + rank_i)  对每条搜索路径 i
 
 ## 五、设计决策
 
-- **标签目录由平台预置**: 确保标签一致性，便于分面搜索。LLM 提取时从目录中选取，避免自由生成导致的标签碎片化。
+- **Agent/Product 标签通过 scope 彻底分离**: `tag_category.scope` 从数据层面隔离两套标签体系。Agent 侧允许用户扩展自定义标签；Product 侧仅使用平台预置标签，无交叉同步。
 - **保留 Agent.tags 缓存字段**: 反规范化设计，避免每次读取都需要 JOIN 查询，同时保持向后兼容。
 - **RRF 融合而非简单加权**: RRF 对不同量纲的分数天然免疫，无需人工调参。
 - **匹配状态查询时计算**: 不存储冗余字段，直接从 Session 和 MatchResult 推导，避免数据不一致。

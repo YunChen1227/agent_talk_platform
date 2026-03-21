@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     MODE: str = "prod"  # "dev_1" | "dev_2" | "prod"
     USE_LLM_MATCHER: bool = False
 
+    # Local OpenAI-compatible embedding service (e.g. backend/embedding/embedding_server.py)
+    EMBEDDING_API_URL: str = "http://127.0.0.1:8830/v1/embeddings"
+    EMBEDDING_DIM: int = 1024  # Qwen3-Embedding-0.6B typical hidden size; align with model
+
     @property
     def is_dev(self) -> bool:
         return self.MODE in ("dev", "dev_1", "dev_2")

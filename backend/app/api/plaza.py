@@ -2,7 +2,14 @@ from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.schemas.plaza import TagCategoryRead, TagCreate, PlazaSearchResponse, TagRead
+from app.schemas.plaza import (
+    TagCategoryRead,
+    TagCreate,
+    PlazaSearchResponse,
+    TagRead,
+    TagEmbedRequest,
+    TagEmbedResponse,
+)
 from app.repositories.base import (
     AgentRepository,
     TagCategoryRepository,
@@ -20,7 +27,8 @@ from app.core.deps import (
     get_match_result_repo,
 )
 from app.models.tag import Tag
-from app.services.plaza_service import get_tag_catalog, search_plaza
+from app.services.plaza_service import get_tag_catalog, search_plaza, embed_tag_vectors
+from app.services.llm import get_embedding
 import re
 from uuid import uuid4 as _uuid4
 
@@ -32,8 +40,8 @@ async def list_tags(
     cat_repo: TagCategoryRepository = Depends(get_tag_category_repo),
     tag_repo: TagRepository = Depends(get_tag_repo),
 ):
-    """Return the full tag catalog grouped by category."""
-    return await get_tag_catalog(cat_repo, tag_repo)
+    """Return agent-scope tag catalog grouped by category."""
+    return await get_tag_catalog(cat_repo, tag_repo, scope="agent")
 
 
 @router.post("/tags", response_model=TagRead)
@@ -42,16 +50,19 @@ async def create_tag(
     tag_repo: TagRepository = Depends(get_tag_repo),
     cat_repo: TagCategoryRepository = Depends(get_tag_category_repo),
 ):
-    """Create a new user-defined tag in a given category."""
-    cats = await cat_repo.list_active()
+    """Create a new user-defined tag in an agent-scope category."""
+    cats = await cat_repo.list_active_by_scope("agent")
     if not any(c.id == body.category_id for c in cats):
-        raise HTTPException(status_code=400, detail="Category not found")
+        raise HTTPException(status_code=400, detail="Category not found or not agent-scope")
 
     slug = re.sub(r"[^a-z0-9]+", "-", body.name.lower()).strip("-")
     if not slug:
         slug = f"user-tag-{_uuid4().hex[:8]}"
     existing = await tag_repo.get_by_slug(slug)
     if existing:
+        if not existing.embedding:
+            existing.embedding = await get_embedding(existing.name)
+            await tag_repo.update(existing)
         return TagRead(id=str(existing.id), name=existing.name, slug=existing.slug, children=[])
 
     tag = Tag(
@@ -60,9 +71,22 @@ async def create_tag(
         slug=slug,
         sort_order=999,
         is_active=True,
+        is_user_defined=True,
     )
     tag = await tag_repo.create(tag)
+    tag.embedding = await get_embedding(tag.name)
+    tag = await tag_repo.update(tag)
     return TagRead(id=str(tag.id), name=tag.name, slug=tag.slug, children=[])
+
+
+@router.post("/tags/embed", response_model=TagEmbedResponse)
+async def embed_tags(
+    body: TagEmbedRequest,
+    tag_repo: TagRepository = Depends(get_tag_repo),
+):
+    """Batch compute tag embeddings (missing only, or all if force_all)."""
+    n = await embed_tag_vectors(tag_repo, force_all=body.force_all)
+    return TagEmbedResponse(updated=n)
 
 
 @router.get("/search", response_model=PlazaSearchResponse)

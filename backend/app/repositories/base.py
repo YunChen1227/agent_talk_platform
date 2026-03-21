@@ -219,6 +219,11 @@ class TagCategoryRepository(ABC):
         pass
 
     @abstractmethod
+    async def list_active_by_scope(self, scope: str) -> List[TagCategory]:
+        """Return active categories filtered by scope ('agent' or 'product')."""
+        pass
+
+    @abstractmethod
     async def get_by_slug(self, slug: str) -> Optional[TagCategory]:
         pass
 
@@ -230,6 +235,11 @@ class TagCategoryRepository(ABC):
 class TagRepository(ABC):
     @abstractmethod
     async def list_active(self) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def list_active_by_scope(self, scope: str) -> List[Tag]:
+        """Return active tags whose category has the given scope."""
         pass
 
     @abstractmethod
@@ -256,6 +266,15 @@ class TagRepository(ABC):
 
     @abstractmethod
     async def create(self, tag: Tag) -> Tag:
+        pass
+
+    @abstractmethod
+    async def update(self, tag: Tag) -> Tag:
+        pass
+
+    @abstractmethod
+    async def list_without_embedding(self) -> List[Tag]:
+        """Tags that need an embedding vector (missing or empty)."""
         pass
 
 

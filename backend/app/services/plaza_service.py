@@ -14,7 +14,9 @@ from app.repositories.base import (
     SessionRepository,
     MatchResultRepository,
 )
-from app.services.llm import get_embedding
+from app.services.llm import get_embeddings
+
+_EMBED_CHUNK = 32
 
 
 def _cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
@@ -28,13 +30,41 @@ def _cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
     return dot_product / (norm_a * norm_b)
 
 
+async def embed_tag_vectors(
+    tag_repo: TagRepository,
+    force_all: bool = False,
+) -> int:
+    """
+    Generate or refresh tag.name embeddings into tag.embedding.
+    If force_all=False, only tags missing embedding are updated.
+    """
+    if force_all:
+        tags = await tag_repo.list_active()
+    else:
+        tags = await tag_repo.list_without_embedding()
+    if not tags:
+        return 0
+    updated = 0
+    for i in range(0, len(tags), _EMBED_CHUNK):
+        chunk = tags[i : i + _EMBED_CHUNK]
+        texts = [t.name for t in chunk]
+        vectors = await get_embeddings(texts)
+        for tag, vec in zip(chunk, vectors):
+            tag.embedding = vec
+            await tag_repo.update(tag)
+            updated += 1
+    return updated
+
+
 async def get_tag_catalog(
     cat_repo: TagCategoryRepository,
     tag_repo: TagRepository,
+    scope: str = "agent",
 ) -> List[dict]:
-    """Return the full tag catalog grouped by category, with two-level hierarchy."""
-    categories = await cat_repo.list_active()
-    all_tags = await tag_repo.list_active()
+    """Return tag catalog grouped by category, filtered by scope."""
+    categories = await cat_repo.list_active_by_scope(scope)
+    cat_ids = {c.id for c in categories}
+    all_tags = [t for t in await tag_repo.list_active() if t.category_id in cat_ids]
 
     tag_by_cat: Dict[UUID, List[Tag]] = {}
     for t in all_tags:

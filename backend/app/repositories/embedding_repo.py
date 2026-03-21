@@ -11,13 +11,17 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from app.repositories.base import EmbeddingRepository
+from app.core.config import settings
 
 # ---------------------------------------------------------------------------
 # Elasticsearch implementation
 # ---------------------------------------------------------------------------
 
 AGENT_EMBEDDING_INDEX = "agent_embeddings"
-EMBEDDING_DIM = 1536
+
+
+def _embedding_dims() -> int:
+    return int(settings.EMBEDDING_DIM)
 
 
 class ESEmbeddingRepository(EmbeddingRepository):
@@ -44,7 +48,7 @@ class ESEmbeddingRepository(EmbeddingRepository):
                     "agent_id": {"type": "keyword"},
                     "embedding": {
                         "type": "dense_vector",
-                        "dims": EMBEDDING_DIM,
+                        "dims": _embedding_dims(),
                         "index": True,
                         "similarity": "cosine",
                     },

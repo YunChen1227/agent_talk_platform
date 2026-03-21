@@ -79,7 +79,7 @@ tag_similarity(agent_a, agent_b):
   return mean(top_k(pairs, k=min(len(tags_a), len(tags_b))))
 ```
 
-- 每个预置标签的 embedding 在系统初始化时预计算并缓存（参见 Tag Embedding 依赖一节）。
+- 每个标签（预置与用户自定义）的 `embedding` 存于 `tag.embedding`（JSON），在 **seed 后补算**、**用户创建标签时** 或 **`POST /plaza/tags/embed`** 时写入；与 Agent 向量同源（本地 Qwen3 Embedding 服务，维度 `EMBEDDING_DIM`）。
 - 计算开销极低（纯向量运算），相比 LLM 调用几乎可忽略。
 
 #### Step 6 — 去重检查
@@ -146,15 +146,20 @@ MATCHING Agents
 
 ## Tag Embedding 依赖
 
-Matcher 的 Tag Embedding 排序依赖每个预置标签拥有 embedding 向量。需在 Tag 数据模型中新增 `embedding: Vector[1536]` 字段，并在系统初始化 (seed) 时预计算。
+Matcher 的 Tag Embedding 排序依赖 `tag` 表中的 **`embedding`（JSON 浮点数组）** 与 **`is_user_defined`**。实现要点：
 
-> 详见 [DESIGN-PLAZA.md](./DESIGN-PLAZA.md) Tag 数据模型。
+- 向量由 **本地 Embedding HTTP 服务**（OpenAI 兼容 `/v1/embeddings`）对**标签展示名** `tag.name` 编码得到。
+- **预置标签**：`seed` 插入后，启动流程中 `seed_tags` 会为缺失向量的标签批量补算。
+- **用户自定义标签**：`POST /plaza/tags` 创建时写入向量；也可调用 `POST /plaza/tags/embed` 批量补算或全量重算。
+- 若某标签暂时无向量，实现上可跳过该标签参与相似度聚合或视为零向量（以代码为准）。
+
+> 详见 [DESIGN-PLAZA.md](./DESIGN-PLAZA.md) Tag 数据模型与 API。
 
 ## Dev 模式适配
 
 | 维度 | Dev 模式 | Prod 模式 |
 |------|----------|-----------|
-| Tag Embedding | Mock 随机向量 | 预计算 (平台 Embedding 模型) |
+| Tag Embedding | 与 Prod 相同逻辑；若 `EMBEDDING_API_URL` 不可达则向量可能为空直至服务可用 | 依赖可用的本地/内网 Embedding 服务 |
 | Tier 限制 | 全部 Round 开放 (忽略 tier) | 按 tier 限制可用 Round |
 | LLM 验证 | 默认开启，保证匹配质量 | 可选 |
 

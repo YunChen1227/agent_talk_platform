@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 import json
 import random
+import httpx
 from openai import AsyncOpenAI
 from app.core.config import settings
 
@@ -61,20 +62,46 @@ def get_random_client() -> Optional[Dict[str, Any]]:
     return {"provider": provider, **valid_clients[provider]}
 
 
-async def get_embedding(text: str) -> List[float]:
-    if "openai" in valid_clients:
-        client = valid_clients["openai"]["client"]
-        try:
-            response = await client.embeddings.create(
-                input=text,
-                model="text-embedding-ada-002"
+def _mock_embedding() -> List[float]:
+    return [random.random() for _ in range(max(1, int(settings.EMBEDDING_DIM)))]
+
+
+async def get_embeddings(texts: List[str]) -> List[List[float]]:
+    """
+    Batch embeddings via local OpenAI-compatible service (EMBEDDING_API_URL).
+    Returns one vector per input string, same order.
+    """
+    if not texts:
+        return []
+    url = (settings.EMBEDDING_API_URL or "").strip()
+    if not url:
+        return [_mock_embedding() for _ in texts]
+
+    payload: Dict[str, Any] = {
+        "input": texts if len(texts) > 1 else texts[0],
+        "model": "qwen3-embedding",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            body = resp.json()
+        data = body.get("data") or []
+        by_index = sorted(data, key=lambda x: x.get("index", 0))
+        out = [item["embedding"] for item in by_index]
+        if len(out) != len(texts):
+            raise ValueError(
+                f"Embedding API returned {len(out)} vectors for {len(texts)} inputs"
             )
-            return response.data[0].embedding
-        except Exception as e:
-            print(f"Error getting embedding from OpenAI: {e}")
-    
-    # Mock embedding
-    return [random.random() for _ in range(1536)]
+        return out
+    except Exception as e:
+        print(f"[embedding] Error calling {url}: {e}")
+        return [_mock_embedding() for _ in texts]
+
+
+async def get_embedding(text: str) -> List[float]:
+    vecs = await get_embeddings([text])
+    return vecs[0] if vecs else _mock_embedding()
 
 
 async def extract_tags(text: str) -> List[str]:

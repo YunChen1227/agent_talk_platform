@@ -2,9 +2,10 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 
-from app.schemas.product import ProductCreate, ProductUpdate, ProductRead, LinkAgentBody, LinkAgentBody
-from app.repositories.base import ProductRepository, AgentRepository, AgentTagRepository
-from app.core.deps import get_product_repo, get_agent_repo, get_agent_tag_repo
+from app.schemas.product import ProductCreate, ProductUpdate, ProductRead, LinkAgentBody
+from app.schemas.plaza import TagCategoryRead
+from app.repositories.base import ProductRepository, AgentRepository, TagCategoryRepository, TagRepository
+from app.core.deps import get_product_repo, get_agent_repo, get_tag_category_repo, get_tag_repo
 from app.services.shop_service import (
     create_product as svc_create_product,
     update_product as svc_update_product,
@@ -12,7 +13,18 @@ from app.services.shop_service import (
     link_agent_to_product as svc_link_agent,
     unlink_agent_from_product as svc_unlink_agent,
 )
+from app.services.plaza_service import get_tag_catalog
+
 router = APIRouter()
+
+
+@router.get("/tags", response_model=List[TagCategoryRead])
+async def list_product_tags(
+    cat_repo: TagCategoryRepository = Depends(get_tag_category_repo),
+    tag_repo: TagRepository = Depends(get_tag_repo),
+):
+    """Return product-scope tag catalog grouped by category."""
+    return await get_tag_catalog(cat_repo, tag_repo, scope="product")
 
 
 def _to_read(p) -> ProductRead:
@@ -38,22 +50,25 @@ async def api_create_product(
     body: ProductCreate,
     product_repo: ProductRepository = Depends(get_product_repo),
     agent_repo: AgentRepository = Depends(get_agent_repo),
-    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+    tag_repo: TagRepository = Depends(get_tag_repo),
 ):
-    product = await svc_create_product(
-        product_repo,
-        agent_repo,
-        body.user_id,
-        body.name,
-        body.price,
-        description=body.description,
-        currency=body.currency,
-        image_ids=body.image_ids,
-        cover_image_id=body.cover_image_id,
-        linked_agent_ids=body.linked_agent_ids,
-        tag_ids=body.tag_ids,
-        agent_tag_repo=agent_tag_repo,
-    )
+    try:
+        product = await svc_create_product(
+            product_repo,
+            agent_repo,
+            body.user_id,
+            body.name,
+            body.price,
+            description=body.description,
+            currency=body.currency,
+            image_ids=body.image_ids,
+            cover_image_id=body.cover_image_id,
+            linked_agent_ids=body.linked_agent_ids,
+            tag_ids=body.tag_ids,
+            tag_repo=tag_repo,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return _to_read(product)
 
 
@@ -85,12 +100,22 @@ async def api_update_product(
     body: ProductUpdate,
     product_repo: ProductRepository = Depends(get_product_repo),
     agent_repo: AgentRepository = Depends(get_agent_repo),
-    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
+    tag_repo: TagRepository = Depends(get_tag_repo),
 ):
     kwargs = body.model_dump(exclude_unset=True)
     if "image_ids" in kwargs:
         kwargs["images"] = kwargs.pop("image_ids")
-    product = await svc_update_product(product_repo, agent_repo, product_id, user_id, agent_tag_repo=agent_tag_repo, **kwargs)
+    try:
+        product = await svc_update_product(
+            product_repo,
+            agent_repo,
+            product_id,
+            user_id,
+            tag_repo=tag_repo,
+            **kwargs,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return _to_read(product)
@@ -115,9 +140,8 @@ async def api_link_agent(
     body: LinkAgentBody,
     product_repo: ProductRepository = Depends(get_product_repo),
     agent_repo: AgentRepository = Depends(get_agent_repo),
-    agent_tag_repo: AgentTagRepository = Depends(get_agent_tag_repo),
 ):
-    ok = await svc_link_agent(product_repo, agent_repo, product_id, body.agent_id, body.user_id, agent_tag_repo=agent_tag_repo)
+    ok = await svc_link_agent(product_repo, agent_repo, product_id, body.agent_id, body.user_id)
     if not ok:
         raise HTTPException(status_code=400, detail="Product or agent not found or not owned by user")
     return {"ok": True}

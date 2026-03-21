@@ -331,6 +331,14 @@ class DBTagCategoryRepository(TagCategoryRepository):
         statement = select(TagCategory).where(TagCategory.is_active == True).order_by(TagCategory.sort_order)
         return (await self.session.exec(statement)).all()
 
+    async def list_active_by_scope(self, scope: str) -> List[TagCategory]:
+        statement = (
+            select(TagCategory)
+            .where(TagCategory.is_active == True, TagCategory.scope == scope)
+            .order_by(TagCategory.sort_order)
+        )
+        return (await self.session.exec(statement)).all()
+
     async def get_by_slug(self, slug: str) -> Optional[TagCategory]:
         statement = select(TagCategory).where(TagCategory.slug == slug)
         return (await self.session.exec(statement)).first()
@@ -348,6 +356,15 @@ class DBTagRepository(TagRepository):
 
     async def list_active(self) -> List[Tag]:
         statement = select(Tag).where(Tag.is_active == True).order_by(Tag.sort_order)
+        return (await self.session.exec(statement)).all()
+
+    async def list_active_by_scope(self, scope: str) -> List[Tag]:
+        statement = (
+            select(Tag)
+            .join(TagCategory, Tag.category_id == TagCategory.id)
+            .where(Tag.is_active == True, TagCategory.scope == scope)
+            .order_by(Tag.sort_order)
+        )
         return (await self.session.exec(statement)).all()
 
     async def list_by_category(self, category_id: UUID) -> List[Tag]:
@@ -383,6 +400,16 @@ class DBTagRepository(TagRepository):
         await self.session.commit()
         await self.session.refresh(tag)
         return tag
+
+    async def update(self, tag: Tag) -> Tag:
+        self.session.add(tag)
+        await self.session.commit()
+        await self.session.refresh(tag)
+        return tag
+
+    async def list_without_embedding(self) -> List[Tag]:
+        rows = await self.list_active()
+        return [t for t in rows if not t.embedding]
 
 
 class DBAgentTagRepository(AgentTagRepository):

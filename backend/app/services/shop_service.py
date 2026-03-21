@@ -5,22 +5,24 @@ from datetime import datetime
 
 from app.models.product import Product
 from app.models.enums import ProductStatus
-from app.repositories.base import ProductRepository, AgentRepository, AgentTagRepository
+from app.repositories.base import ProductRepository, AgentRepository, TagRepository
 
 
-async def _sync_product_tags_to_agent(
-    agent_id: UUID,
-    product_tag_ids: List[UUID],
-    agent_tag_repo: AgentTagRepository,
+async def _assert_product_scope_tags(
+    tag_repo: TagRepository,
+    tag_ids: List[UUID],
 ) -> None:
-    """Append product tag_ids to agent's existing tags (union, no overwrite)."""
-    if not product_tag_ids:
+    """Products may only use tags under product-scope categories."""
+    if not tag_ids:
         return
-    existing_tags = await agent_tag_repo.get_tags_for_agent(agent_id)
-    existing_ids = {t.id for t in existing_tags}
-    merged = list(existing_ids | set(product_tag_ids))
-    if len(merged) > len(existing_ids):
-        await agent_tag_repo.set_tags(agent_id, merged)
+    product_tags = await tag_repo.list_active_by_scope("product")
+    valid_ids = {t.id for t in product_tags}
+    for tid in tag_ids:
+        if tid not in valid_ids:
+            raise ValueError(
+                f"Tag {tid} is not a product-scope tag. "
+                "Products can only use product-scope tags."
+            )
 
 
 async def create_product(
@@ -35,11 +37,13 @@ async def create_product(
     cover_image_id: Optional[UUID] = None,
     linked_agent_ids: Optional[List[UUID]] = None,
     tag_ids: Optional[List[UUID]] = None,
-    agent_tag_repo: Optional[AgentTagRepository] = None,
+    tag_repo: Optional[TagRepository] = None,
 ) -> Product:
     image_ids = image_ids or []
     linked_agent_ids = linked_agent_ids or []
     tag_ids = tag_ids or []
+    if tag_repo is not None:
+        await _assert_product_scope_tags(tag_repo, tag_ids)
     product = Product(
         user_id=user_id,
         name=name,
@@ -61,8 +65,6 @@ async def create_product(
                 ids.append(product.id)
                 agent.linked_product_ids = ids
                 await agent_repo.update(agent)
-            if agent_tag_repo and tag_ids:
-                await _sync_product_tags_to_agent(agent_id, tag_ids, agent_tag_repo)
     return product
 
 
@@ -71,12 +73,14 @@ async def update_product(
     agent_repo: AgentRepository,
     product_id: UUID,
     user_id: UUID,
-    agent_tag_repo: Optional[AgentTagRepository] = None,
+    tag_repo: Optional[TagRepository] = None,
     **kwargs,
 ) -> Optional[Product]:
     product = await product_repo.get(product_id)
     if not product or product.user_id != user_id:
         return None
+    if tag_repo is not None and "tag_ids" in kwargs and kwargs["tag_ids"] is not None:
+        await _assert_product_scope_tags(tag_repo, kwargs["tag_ids"])
     for key, value in kwargs.items():
         if value is not None and hasattr(product, key):
             setattr(product, key, value)
@@ -97,12 +101,7 @@ async def update_product(
                     ids.append(product_id)
                     agent.linked_product_ids = ids
                     await agent_repo.update(agent)
-                if agent_tag_repo and product.tag_ids:
-                    await _sync_product_tags_to_agent(agent_id, product.tag_ids, agent_tag_repo)
         product.linked_agent_ids = list(new_ids)
-    elif agent_tag_repo and "tag_ids" in kwargs and kwargs["tag_ids"] is not None:
-        for agent_id in (product.linked_agent_ids or []):
-            await _sync_product_tags_to_agent(agent_id, kwargs["tag_ids"], agent_tag_repo)
     return await product_repo.update(product)
 
 
@@ -129,7 +128,6 @@ async def link_agent_to_product(
     product_id: UUID,
     agent_id: UUID,
     user_id: UUID,
-    agent_tag_repo: Optional[AgentTagRepository] = None,
 ) -> bool:
     product = await product_repo.get(product_id)
     agent = await agent_repo.get(agent_id)
@@ -147,8 +145,6 @@ async def link_agent_to_product(
         agent_ids.append(product_id)
         agent.linked_product_ids = agent_ids
         await agent_repo.update(agent)
-    if agent_tag_repo and product.tag_ids:
-        await _sync_product_tags_to_agent(agent_id, product.tag_ids, agent_tag_repo)
     return True
 
 

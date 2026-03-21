@@ -1,8 +1,7 @@
 from uuid import UUID
 from typing import Tuple, List, Union, Optional
 from app.models.agent import Agent, AgentStatus
-from app.models.user import User
-from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository, ProductRepository, EmbeddingRepository
+from app.repositories.base import AgentRepository, UserRepository, TagRepository, AgentTagRepository, EmbeddingRepository
 from app.services.llm import get_random_client, extract_tags, get_embedding, extract_tags_from_catalog
 import google.generativeai as genai
 
@@ -75,7 +74,6 @@ async def create_agent(
     tag_repo: Optional[TagRepository] = None,
     agent_tag_repo: Optional[AgentTagRepository] = None,
     tag_ids: Optional[List[UUID]] = None,
-    product_repo: Optional[ProductRepository] = None,
     embedding_repo: Optional[EmbeddingRepository] = None,
 ) -> Agent:
     if isinstance(user_id, str):
@@ -117,37 +115,21 @@ async def create_agent(
     if embedding and embedding_repo:
         await embedding_repo.upsert(str(created.id), embedding)
 
+    tags_changed = False
     if tag_repo and agent_tag_repo:
         if tag_ids:
             await _assign_manual_tags(created, tag_ids, tag_repo, agent_tag_repo)
+            tags_changed = True
         elif is_paid_flow:
             await _assign_catalog_tags(created, final_system_prompt, tag_repo, agent_tag_repo)
+            tags_changed = True
 
-        if product_repo and linked_product_ids:
-            await _inherit_product_tags(created, linked_product_ids, product_repo, agent_tag_repo)
+    if tags_changed:
+        final_tags = await agent_tag_repo.get_tags_for_agent(created.id)
+        created.tags = [t.name for t in final_tags]
+        created = await agent_repo.update(created)
 
     return created
-
-
-async def _inherit_product_tags(
-    agent: Agent,
-    linked_product_ids: List[UUID],
-    product_repo: ProductRepository,
-    agent_tag_repo: AgentTagRepository,
-) -> None:
-    """Append tag_ids from all linked products to the agent's existing tags."""
-    product_tag_ids: set = set()
-    for pid in linked_product_ids:
-        product = await product_repo.get(pid)
-        if product and product.tag_ids:
-            product_tag_ids.update(product.tag_ids)
-    if not product_tag_ids:
-        return
-    existing_tags = await agent_tag_repo.get_tags_for_agent(agent.id)
-    existing_ids = {t.id for t in existing_tags}
-    merged = list(existing_ids | product_tag_ids)
-    if len(merged) > len(existing_ids):
-        await agent_tag_repo.set_tags(agent.id, merged)
 
 
 async def _assign_manual_tags(
@@ -156,15 +138,15 @@ async def _assign_manual_tags(
     tag_repo: TagRepository,
     agent_tag_repo: AgentTagRepository,
 ) -> None:
-    """Assign user-selected tags from the catalog."""
-    all_tags = await tag_repo.list_active()
-    valid_ids = {t.id for t in all_tags}
+    """Assign user-selected tags; only agent-scope tags are accepted."""
+    agent_tags = await tag_repo.list_active_by_scope("agent")
+    valid_ids = {t.id for t in agent_tags}
     filtered_ids = [tid for tid in tag_ids if tid in valid_ids]
 
     if filtered_ids:
         await agent_tag_repo.set_tags(agent.id, filtered_ids)
 
-    tag_map = {t.id: t for t in all_tags}
+    tag_map = {t.id: t for t in agent_tags}
     agent.tags = [tag_map[tid].name for tid in filtered_ids if tid in tag_map]
 
 
@@ -174,8 +156,8 @@ async def _assign_catalog_tags(
     tag_repo: TagRepository,
     agent_tag_repo: AgentTagRepository,
 ) -> None:
-    """Extract tags from predefined catalog via LLM and write to agent_tag relation."""
-    all_tags = await tag_repo.list_active()
+    """Extract tags from agent-scope catalog via LLM and write to agent_tag relation."""
+    all_tags = await tag_repo.list_active_by_scope("agent")
     if not all_tags:
         return
 
