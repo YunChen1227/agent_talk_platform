@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.db import init_db, get_session
 from app.core.config import settings
-from app.api import agents, sessions, auth, media, shop, skill, plaza
+from app.api import agents, sessions, auth, media, shop, skill, plaza, user
 from app.services.orchestrator import run_orchestrator
 from app.core.deps import (
     get_session_repo, get_agent_repo, get_matcher_repo,
@@ -86,6 +86,7 @@ app.include_router(media.router, prefix="/media", tags=["media"])
 app.include_router(shop.router, prefix="/shop", tags=["shop"])
 app.include_router(skill.router, prefix="/skills", tags=["skills"])
 app.include_router(plaza.router, prefix="/plaza", tags=["plaza"])
+app.include_router(user.router, prefix="/user", tags=["user"])
 
 @app.get("/")
 async def root():

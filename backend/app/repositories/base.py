@@ -8,7 +8,7 @@ from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
 from app.models.skill import Skill
-from app.models.tag import TagCategory, Tag, AgentTag
+from app.models.tag import TagCategory, Tag, AgentTag, UserTagPreference
 
 
 class EmbeddingRepository(ABC):
@@ -295,4 +295,17 @@ class AgentTagRepository(ABC):
 
     @abstractmethod
     async def list_all(self) -> List[AgentTag]:
+        pass
+
+
+class UserTagPreferenceRepository(ABC):
+    @abstractmethod
+    async def get_by_user(self, user_id: UUID) -> List[UserTagPreference]:
+        pass
+
+    @abstractmethod
+    async def set_preferences(
+        self, user_id: UUID, liked_ids: List[UUID], disliked_ids: List[UUID]
+    ) -> None:
+        """Replace all tag preferences for a user."""
         pass

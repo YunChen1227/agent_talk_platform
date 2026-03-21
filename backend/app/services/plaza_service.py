@@ -118,13 +118,17 @@ async def search_plaza(
     q: Optional[str] = None,
     page: int = 1,
     page_size: int = 20,
+    liked_tag_ids: Optional[Set[UUID]] = None,
+    disliked_tag_ids: Optional[Set[UUID]] = None,
 ) -> dict:
     """
     Hybrid search for plaza agents.
     1. Tag filtering (pre-filter)
-    2. If q: keyword search + embedding search -> RRF fusion
-    3. Compute match status for each result
-    4. Paginate
+    2. Filter out agents matching disliked tags
+    3. If q: keyword search + embedding search -> RRF fusion
+    4. Boost agents matching liked tags
+    5. Compute match status for each result
+    6. Paginate
     """
     all_agents = await agent_repo.list_all()
     candidates = [a for a in all_agents if a.user_id != user_id]
@@ -135,11 +139,34 @@ async def search_plaza(
         matching_agent_ids = set(await agent_tag_repo.get_agent_ids_by_tag_ids(expanded_ids))
         candidates = [a for a in candidates if a.id in matching_agent_ids]
 
+    # Pre-compute agent->tag mapping for preference filtering
+    all_agent_tag_links = await agent_tag_repo.list_all()
+    agent_tag_ids_map: Dict[UUID, Set[UUID]] = {}
+    for link in all_agent_tag_links:
+        agent_tag_ids_map.setdefault(link.agent_id, set()).add(link.tag_id)
+
+    # Filter out agents that have ANY disliked tag
+    if disliked_tag_ids:
+        candidates = [
+            a for a in candidates
+            if not agent_tag_ids_map.get(a.id, set()).intersection(disliked_tag_ids)
+        ]
+
     if q and q.strip():
         query = q.strip()
         scored = _hybrid_search(candidates, query)
     else:
         scored = [(a, 0.0) for a in candidates]
+
+    # Boost agents matching liked tags
+    if liked_tag_ids:
+        _LIKE_BOOST = 0.5
+        boosted = []
+        for agent, score in scored:
+            agent_tags = agent_tag_ids_map.get(agent.id, set())
+            overlap = len(agent_tags.intersection(liked_tag_ids))
+            boosted.append((agent, score + overlap * _LIKE_BOOST))
+        scored = boosted
 
     scored.sort(key=lambda x: x[1], reverse=True)
 
@@ -172,16 +199,12 @@ async def search_plaza(
     all_tags = await tag_repo.list_active()
     tag_map = {t.id: t for t in all_tags}
 
-    all_agent_tag_links = await agent_tag_repo.list_all()
+    # Reuse all_agent_tag_links fetched earlier for preference filtering
     agent_tags_map: Dict[UUID, List[Tag]] = {}
     for link in all_agent_tag_links:
         tag = tag_map.get(link.tag_id)
         if tag:
             agent_tags_map.setdefault(link.agent_id, []).append(tag)
-
-    cat_repo_data = {}
-    for t in all_tags:
-        cat_repo_data[t.category_id] = None
 
     items = []
     for agent, score in page_agents:

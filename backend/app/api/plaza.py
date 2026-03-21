@@ -17,6 +17,7 @@ from app.repositories.base import (
     AgentTagRepository,
     SessionRepository,
     MatchResultRepository,
+    UserTagPreferenceRepository,
 )
 from app.core.deps import (
     get_agent_repo,
@@ -25,6 +26,7 @@ from app.core.deps import (
     get_agent_tag_repo,
     get_session_repo,
     get_match_result_repo,
+    get_user_tag_pref_repo,
 )
 from app.models.tag import Tag
 from app.services.plaza_service import get_tag_catalog, search_plaza, embed_tag_vectors
@@ -101,13 +103,24 @@ async def search(
     tag_repo: TagRepository = Depends(get_tag_repo),
     session_repo: SessionRepository = Depends(get_session_repo),
     match_result_repo: MatchResultRepository = Depends(get_match_result_repo),
+    pref_repo: UserTagPreferenceRepository = Depends(get_user_tag_pref_repo),
 ):
-    """Hybrid search for plaza agents with match status."""
+    """Hybrid search for plaza agents with match status and user preferences."""
     parsed_tag_ids = None
     if tag_ids:
         parsed_tag_ids = [
             UUID(tid.strip()) for tid in tag_ids.split(",") if tid.strip()
         ]
+
+    # Load user tag preferences
+    prefs = await pref_repo.get_by_user(user_id)
+    liked = {p.tag_id for p in prefs if p.preference == "like"}
+    disliked = {p.tag_id for p in prefs if p.preference == "dislike"}
+
+    # When the user explicitly selects tag filters, show all matching agents
+    # (including disliked) so the filter result is complete.
+    # Dislike filtering only applies to the default browsing view.
+    has_explicit_filters = bool(parsed_tag_ids)
 
     result = await search_plaza(
         user_id=user_id,
@@ -120,5 +133,7 @@ async def search(
         q=q,
         page=page,
         page_size=page_size,
+        liked_tag_ids=liked or None,
+        disliked_tag_ids=None if has_explicit_filters else (disliked or None),
     )
     return result

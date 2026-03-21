@@ -9,11 +9,12 @@ from app.models.message import Message
 from app.models.media import Media
 from app.models.product import Product
 from app.models.skill import Skill
-from app.models.tag import TagCategory, Tag, AgentTag
+from app.models.tag import TagCategory, Tag, AgentTag, UserTagPreference
 from app.repositories.base import (
     UserRepository, AgentRepository, MatcherRepository, SessionRepository,
     MessageRepository, MatchResultRepository, MediaRepository, ProductRepository,
     SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository,
+    UserTagPreferenceRepository,
 )
 
 class DBUserRepository(UserRepository):
@@ -440,3 +441,25 @@ class DBAgentTagRepository(AgentTagRepository):
     async def list_all(self) -> List[AgentTag]:
         statement = select(AgentTag)
         return (await self.session.exec(statement)).all()
+
+
+class DBUserTagPreferenceRepository(UserTagPreferenceRepository):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_user(self, user_id: UUID) -> List[UserTagPreference]:
+        statement = select(UserTagPreference).where(UserTagPreference.user_id == user_id)
+        return (await self.session.exec(statement)).all()
+
+    async def set_preferences(
+        self, user_id: UUID, liked_ids: List[UUID], disliked_ids: List[UUID]
+    ) -> None:
+        statement = select(UserTagPreference).where(UserTagPreference.user_id == user_id)
+        existing = (await self.session.exec(statement)).all()
+        for pref in existing:
+            await self.session.delete(pref)
+        for tid in liked_ids:
+            self.session.add(UserTagPreference(user_id=user_id, tag_id=tid, preference="like"))
+        for tid in disliked_ids:
+            self.session.add(UserTagPreference(user_id=user_id, tag_id=tid, preference="dislike"))
+        await self.session.commit()

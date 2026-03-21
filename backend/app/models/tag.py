@@ -38,3 +38,10 @@ class AgentTag(SQLModel, table=True):
     __tablename__ = "agent_tag"
     agent_id: UUID = Field(foreign_key="agent.id", primary_key=True)
     tag_id: UUID = Field(foreign_key="tag.id", primary_key=True)
+
+
+class UserTagPreference(SQLModel, table=True):
+    __tablename__ = "user_tag_preference"
+    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+    tag_id: UUID = Field(foreign_key="tag.id", primary_key=True)
+    preference: str = Field(index=True)  # "like" | "dislike"

@@ -6,12 +6,13 @@ from app.repositories.base import (
     UserRepository, AgentRepository, SessionRepository, MessageRepository,
     MatcherRepository, MatchResultRepository, MediaRepository, ProductRepository,
     SkillRepository, TagCategoryRepository, TagRepository, AgentTagRepository,
-    EmbeddingRepository,
+    UserTagPreferenceRepository, EmbeddingRepository,
 )
 from app.repositories.db_repo import (
     DBUserRepository, DBAgentRepository, DBSessionRepository, DBMessageRepository,
     DBMatcherRepository, DBMatchResultRepository, DBMediaRepository, DBProductRepository,
     DBSkillRepository, DBTagCategoryRepository, DBTagRepository, DBAgentTagRepository,
+    DBUserTagPreferenceRepository,
 )
 
 # ---- Embedding repo singleton (set during app startup) ----
@@ -73,3 +74,6 @@ async def get_tag_repo(session: AsyncSession = Depends(get_db_session)) -> TagRe
 
 async def get_agent_tag_repo(session: AsyncSession = Depends(get_db_session)) -> AgentTagRepository:
     return DBAgentTagRepository(session)
+
+async def get_user_tag_pref_repo(session: AsyncSession = Depends(get_db_session)) -> UserTagPreferenceRepository:
+    return DBUserTagPreferenceRepository(session)

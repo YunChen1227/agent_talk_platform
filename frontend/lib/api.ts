@@ -373,3 +373,57 @@ export const updateSkill = async (
 export const deleteSkill = async (skillId: string, userId: string) => {
   await api.delete(`/skills/${skillId}?user_id=${userId}`);
 };
+
+// User Profile
+export interface UserProfile {
+  id: string;
+  username: string;
+  raw_demand?: string | null;
+  avatar_url?: string | null;
+  display_name?: string | null;
+  gender?: string | null;
+  birthday?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  personality?: string[] | null;
+  hobbies?: string[] | null;
+  occupation?: string | null;
+  website?: string | null;
+}
+
+export const getUserProfile = async (userId: string): Promise<UserProfile> => {
+  const res = await api.get(`/user/profile?user_id=${userId}`);
+  return res.data;
+};
+
+export const updateUserProfile = async (
+  userId: string,
+  data: Partial<Omit<UserProfile, "id" | "username">>
+): Promise<UserProfile> => {
+  const res = await api.put("/user/profile", { user_id: userId, ...data });
+  return res.data;
+};
+
+// User Tag Preferences
+export interface UserPreferences {
+  liked_tag_ids: string[];
+  disliked_tag_ids: string[];
+}
+
+export const getUserPreferences = async (userId: string): Promise<UserPreferences> => {
+  const res = await api.get(`/user/preferences?user_id=${userId}`);
+  return res.data;
+};
+
+export const updateUserPreferences = async (
+  userId: string,
+  likedTagIds: string[],
+  dislikedTagIds: string[]
+): Promise<UserPreferences> => {
+  const res = await api.put("/user/preferences", {
+    user_id: userId,
+    liked_tag_ids: likedTagIds,
+    disliked_tag_ids: dislikedTagIds,
+  });
+  return res.data;
+};
